@@ -1,0 +1,3 @@
+[submodule "CASMcode"]
+	path = CASMcode
+	url = https://github.com/prisms-center/CASMcode

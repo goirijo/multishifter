@@ -1,0 +1,11 @@
+bin_PROGRAMS += multishift
+
+multishift_SOURCES=\
+				   src/multishift.cpp
+
+
+# _casmutils_coord_shift_LDADD=\
+# 						libcasmutils.la\
+# 						$(BOOST_SYSTEM_LIB)\
+# 						$(BOOST_FILESYSTEM_LIB)\
+# 						$(BOOST_PROGRAM_OPTIONS_LIB)

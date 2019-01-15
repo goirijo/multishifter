@@ -1,0 +1,53 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+#annoying python crap
+*.pyc
+
+# Executables
+*.exe
+*.out
+*.app
+
+# vim stuff
+.ycm_extra_conf.py*
+*.swp
+*.vim
+*.taghl
+tags
+
+#Autotools generated
+Makefile.in
+*.log
+build-aux
+build
+configure
+config.h*
+*.m4
+*.cache
+
+
+#personal things
+.vimrc.local
