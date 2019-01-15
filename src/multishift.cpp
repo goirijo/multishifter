@@ -1,7 +1,8 @@
 #include <iostream>
+#include "casm/crystallography/Structure.hh"
 
 int main()
 {
-    std::cout<<"What up bitches"<<std::endl;
+    CASM::Structure test;
     return 0;
 }

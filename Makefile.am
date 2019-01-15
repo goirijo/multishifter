@@ -15,9 +15,11 @@ TESTS=
 AM_CXXFLAGS=
 
 AM_CPPFLAGS= -I$(srcdir)/include\
-             -I$(srcdir)/CASMcode/include
+             -I$(srcdir)/CASMcode/include\
+             -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhullcpp\
+             -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhull_r
 
-# AM_LDFLAGS=$(BOOST_LDFLAGS)
+AM_LDFLAGS=$(BOOST_LDFLAGS)
 
 #===========================================================================#
 #Now do the programs

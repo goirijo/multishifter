@@ -13,13 +13,16 @@ AM_INIT_AUTOMAKE([subdir-objects])
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_11
 
-# Checks for libraries. Hopefully we don't need any of this
-# BOOSTV=1.52
-# AX_BOOST_BASE([$BOOSTV],[],[AC_MSG_ERROR(You need Boost $BOOSTV libraries or higher.)])
-# AX_BOOST_SYSTEM
-# AX_BOOST_FILESYSTEM
-# AX_BOOST_PROGRAM_OPTIONS
+# Checks for libraries. There is no escaping boost. Boost was a mistake.
+BOOSTV=1.52
+AX_BOOST_BASE([$BOOSTV],[],[AC_MSG_ERROR(You need Boost $BOOSTV libraries or higher.)])
+AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
+AX_BOOST_PROGRAM_OPTIONS
+AX_BOOST_CHRONO
+AX_BOOST_REGEX
 # AX_BOOST_PYTHON
+AC_CHECK_LIB([dl], [dlopen], [], AC_MSG_ERROR(dlopen from dl library not found!))
 
 # We won't depend on a library. Instead we'll stuff all the dependencies into the executable itself
 # AC_CHECK_LIB([casm],[main], [], [AC_MSG_ERROR(The CASM libraries are required!)])
