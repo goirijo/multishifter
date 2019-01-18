@@ -1,0 +1,3 @@
+[submodule "casm-utilities"]
+	path = casm-utilities
+	url = https://github.com/goirijo/casm-utilities
