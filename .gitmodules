@@ -1,6 +1,0 @@
-[submodule "CASMcode"]
-	path = CASMcode
-	url = https://github.com/prisms-center/CASMcode
-[submodule "casm-utilities"]
-	path = casm-utilities
-	url = https://github.com/goirijo/casm-utilities

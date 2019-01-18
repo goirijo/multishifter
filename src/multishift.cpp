@@ -1,6 +1,8 @@
 #include "casm/casm_io/jsonParser.hh"
 #include "casm/crystallography/Structure.hh"
+#include "casm/crystallography/Lattice.hh"
 #include "casm/external/Eigen/Core"
+/* #include "casmutils/frankenstein.hpp" */
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
@@ -79,9 +81,14 @@ CASM::Structure raw_shift_unit(const CASM::Structure& prim, const Eigen::Vector3
     return raw_shift_unit;
 }
 
-CASM::Structure shift_unit(const CASM::Structure&, const CASM::Coordinate& coord_to_floor)
-{
-}
+///Given the raw shift unit, return the same structure with the basis translated such that
+///the given coordinate ends up on the shift plane
+/* CASM::Structure cooked_shift_unit(const CASM::Structure& raw_shift_unit, const CASM::Coordinate& coord_to_floor) */
+/* { */
+/*     Rewrap::Structure cooked_shift_unit(raw_shift_unit); */
+/*     Frankenstein::shift_coords_by(&cooked_shift_unit, -coord_to_floor.cart()); */
+/*     return cooked_shift_unit; */
+/* } */
 
 } // namespace mush
 
@@ -124,11 +131,10 @@ int main_candidate(int argc, char* argv[])
 
     std::cout << "lol" << std::endl;
 
-    CASM::Structure test("./POS");
-    return 0;
 }
 
 int main()
 {
+    CASM::Structure test("./POS");
     return 0;
 }

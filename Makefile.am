@@ -15,9 +15,11 @@ TESTS=
 AM_CXXFLAGS=
 
 AM_CPPFLAGS= -I$(srcdir)/include\
-             -I$(srcdir)/CASMcode/include\
-             -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhullcpp\
-             -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhull_r
+			 -I$(srcdir)/pybind11/include\
+			 -I$(srcdir)/casm-utilities/CASMcode/include\
+			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external\
+			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external/qhull/libqhullcpp\
+			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external/qhull/libqhull_r
 
 AM_LDFLAGS=$(BOOST_LDFLAGS)
 
