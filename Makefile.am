@@ -6,6 +6,7 @@ CLOCAL_AMFLAGS = -I build-aux/m4
 # lib_LTLIBRARIES=
 # pyexec_LTLIBRARIES=
 noinst_LIBRARIES=
+noinst_LTLIBRARIES=
 bin_PROGRAMS=
 check_PROGRAMS=
 man1_MANS=
@@ -16,6 +17,7 @@ AM_CXXFLAGS=
 
 AM_CPPFLAGS= -I$(srcdir)/include\
 			 -I$(srcdir)/pybind11/include\
+			 -I$(srcdir)/casm-utilities/include\
 			 -I$(srcdir)/casm-utilities/CASMcode/include\
 			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external\
 			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external/qhull/libqhullcpp\

@@ -1,24 +1,3 @@
-bin_PROGRAMS += multishift
-
-multishift_SOURCES=\
-				   src/multishift.cpp\
-				   CASMcode/src/casm/crystallography/Coordinate.cc\
-				   CASMcode/src/casm/crystallography/Structure.cc\
-				   CASMcode/src/casm/crystallography/PrimGrid.cc\
-				   CASMcode/src/casm/crystallography/Niggli.cc\
-				   CASMcode/src/casm/crystallography/LatticeIsEquivalent.cc\
-				   CASMcode/src/casm/crystallography/Site.cc\
-				   CASMcode/src/casm/crystallography/LatticeEnumEquivalents.cc\
-				   CASMcode/src/casm/crystallography/Molecule.cc\
-				   CASMcode/src/casm/crystallography/Lattice.cc\
-				   CASMcode/src/casm/crystallography/LatticeMap.cc\
-				   CASMcode/src/casm/crystallography/SupercellEnumerator.cc\
-				   CASMcode/src/casm/crystallography/CoordinateSystems.cc
-
-
-multishift_LDADD=\
-				 $(BOOST_SYSTEM_LIB)\
-				 $(BOOST_FILESYSTEM_LIB)\
-				 $(BOOST_CHRONO_LIB)\
-				 $(BOOST_REGEX_LIB)\
-				 $(BOOST_PROGRAM_OPTIONS_LIB)
+include src/casmblob/Makemodule.am
+include src/utiliblob/Makemodule.am
+include src/multishift/Makemodule.am

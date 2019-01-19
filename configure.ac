@@ -3,11 +3,14 @@
 
 AC_PREREQ([2.69])
 AC_INIT([multishifter], [0.0.0], [jgg@ucsb.edu])
-AC_CONFIG_SRCDIR([src/multishift.cpp])
+AC_CONFIG_SRCDIR([src/multishift/multishift.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 AM_INIT_AUTOMAKE([subdir-objects])
+
+#This is for dependent libraries that get compiled. You might be able to get rid of this though.
+LT_INIT
 
 # Checks for programs.
 AC_PROG_CXX
