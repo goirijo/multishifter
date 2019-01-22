@@ -1,0 +1,16 @@
+noinst_LTLIBRARIES += libutiliblob.la
+
+libutiliblob_la_SOURCES=
+libutiliblob_la_SOURCES+=\
+						 casm-utilities/src/casmutils/stage.cxx\
+						 casm-utilities/src/casmutils/structure.cxx\
+						 casm-utilities/src/casmutils/frankenstein.cxx\
+						 casm-utilities/src/casmutils/handlers.cxx
+
+libutiliblob_la_LIBADD=\
+					   libcasmblob.la\
+					   $(BOOST_SYSTEM_LIB)\
+					   $(BOOST_FILESYSTEM_LIB)\
+					   $(BOOST_CHRONO_LIB)\
+					   $(BOOST_REGEX_LIB)\
+					   $(BOOST_PROGRAM_OPTIONS_LIB)

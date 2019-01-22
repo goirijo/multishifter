@@ -1,0 +1,15 @@
+bin_PROGRAMS += multishift
+
+multishift_SOURCES=\
+				   src/multishift/base.cxx\
+				   src/multishift/io.cxx\
+				   src/multishift/multishift.cpp
+
+
+multishift_LDADD=\
+				 libutiliblob.la\
+				 $(BOOST_SYSTEM_LIB)\
+				 $(BOOST_FILESYSTEM_LIB)\
+				 $(BOOST_CHRONO_LIB)\
+				 $(BOOST_REGEX_LIB)\
+				 $(BOOST_PROGRAM_OPTIONS_LIB)
