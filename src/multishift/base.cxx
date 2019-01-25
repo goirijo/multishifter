@@ -62,7 +62,8 @@ MultiBase MultiBase::from_settings(const BaseSettings& init_settings)
 Structure MultiBase::_shift_unit_from_primitive(const Structure& init_prim,
                                                            const Eigen::Vector3i& init_millers)
 {
-    auto shift_lattice = init_prim.lattice().get_lattice_in_plane(init_millers);
+    //The 0 means "get the smallest cell possible", and I wish it was the default
+    auto shift_lattice = init_prim.lattice().get_lattice_in_plane(init_millers,0);
     CASM::Structure raw_shift_unit(shift_lattice);
     raw_shift_unit.fill_supercell(init_prim);
     return Structure(raw_shift_unit);
