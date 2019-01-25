@@ -2,6 +2,7 @@ bin_PROGRAMS += multishift
 
 multishift_SOURCES=\
 				   src/multishift/base.cxx\
+				   src/multishift/shift.cxx\
 				   src/multishift/io.cxx\
 				   src/multishift/multishift.cpp
 

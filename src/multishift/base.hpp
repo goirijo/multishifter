@@ -1,6 +1,7 @@
 #ifndef MULTIBUNDLE_HH
 #define MULTIBUNDLE_HH
 
+#include "./define.hpp"
 #include "casmutils/structure.hpp"
 
 namespace mush
@@ -20,12 +21,12 @@ namespace mush
 class BaseSettings
 {
 public:
-    BaseSettings(const CASM::fs::path& init_prim_path, const Eigen::Vector3i& init_millers, int init_slab_floor_ix, int init_stacks);
+    BaseSettings(const fs::path& init_prim_path, const Eigen::Vector3i& init_millers, int init_slab_floor_ix, int init_stacks);
     static BaseSettings from_json(const CASM::jsonParser& init_settings);
     CASM::jsonParser to_json() const;
-    /* static BaseSettings from_path(const CASM::fs::path& init_path); */
+    /* static BaseSettings from_path(const fs::path& init_path); */
 
-    const CASM::fs::path& prim_path() const { return m_prim_path; }
+    const fs::path& prim_path() const { return m_prim_path; }
     const Eigen::Vector3i& millers() const { return m_millers; }
     const int& floor_slab_atom_index() const { return m_floor_slab_atom_ix; }
     const int& stacks() const { return m_stacks; }
@@ -34,7 +35,7 @@ public:
 
 private:
     /// The path to the primitive cell
-    CASM::fs::path m_prim_path;
+    fs::path m_prim_path;
 
     /// The miller indexes for the desired shift plane relative to the primitive structure
     Eigen::Vector3i m_millers;
@@ -62,7 +63,6 @@ private:
 
 class MultiBase
 {
-    typedef Rewrap::Structure Structure;
     public:
 
         ///Explicit construction using all necessary parameters

@@ -1,4 +1,5 @@
 #include "./base.hpp"
+#include "./exceptions.hpp"
 #include "casmutils/frankenstein.hpp"
 
 namespace mush
@@ -21,11 +22,13 @@ BaseSettings BaseSettings::from_json(const CASM::jsonParser& init_settings)
 CASM::jsonParser BaseSettings::to_json() const
 {
     CASM::jsonParser serialized;
-    serialized["prim"]=m_prim_path.string();
+    serialized["prim"] = m_prim_path.string();
     /* serialized["millers"]=m_millers; */
-    serialized["millers"]=std::vector<int>{m_millers(0),m_millers(1),m_millers(2)}; //This is to avoid a really dumb bug in casm that writes Eigen stuff stupid
-    serialized["slab_floor_index"]=m_floor_slab_atom_ix;
-    serialized["stacks"]=m_stacks;
+    serialized["millers"] =
+        std::vector<int>{m_millers(0), m_millers(1),
+                         m_millers(2)}; // This is to avoid a really dumb bug in casm that writes Eigen stuff stupid
+    serialized["slab_floor_index"] = m_floor_slab_atom_ix;
+    serialized["stacks"] = m_stacks;
     return serialized;
 }
 
@@ -44,6 +47,10 @@ MultiBase::MultiBase(const Structure& init_prim, const Eigen::Vector3i& init_mil
       m_slab(this->_stacked_units(m_shift_unit, stacks)),
       m_floored_slab(this->_floored_structure(m_slab, floor_atom_ix))
 {
+    if (!m_prim.lattice().is_right_handed())
+    {
+        throw except::LeftHandedLattice();
+    }
 }
 
 MultiBase MultiBase::from_settings(const BaseSettings& init_settings)
@@ -52,7 +59,7 @@ MultiBase MultiBase::from_settings(const BaseSettings& init_settings)
                      init_settings.floor_slab_atom_index(), init_settings.stacks());
 }
 
-MultiBase::Structure MultiBase::_shift_unit_from_primitive(const Structure& init_prim,
+Structure MultiBase::_shift_unit_from_primitive(const Structure& init_prim,
                                                            const Eigen::Vector3i& init_millers)
 {
     auto shift_lattice = init_prim.lattice().get_lattice_in_plane(init_millers);
@@ -61,7 +68,7 @@ MultiBase::Structure MultiBase::_shift_unit_from_primitive(const Structure& init
     return Structure(raw_shift_unit);
 }
 
-MultiBase::Structure MultiBase::_floored_structure(const Structure& shiftable_struc, int floor_atom_ix)
+Structure MultiBase::_floored_structure(const Structure& shiftable_struc, int floor_atom_ix)
 {
     auto shifted_structure = shiftable_struc;
 
@@ -75,7 +82,7 @@ MultiBase::Structure MultiBase::_floored_structure(const Structure& shiftable_st
     return shifted_structure;
 }
 
-MultiBase::Structure MultiBase::_stacked_units(const Structure& stackable_struc, int stacks)
+Structure MultiBase::_stacked_units(const Structure& stackable_struc, int stacks)
 {
     // Always stack along c-direction
     Eigen::Matrix3i stack_mat;

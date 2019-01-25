@@ -7,29 +7,27 @@
 #include <iostream>
 #include <string>
 
+#include "./define.hpp"
 #include "./base.hpp"
 #include "./io.hpp"
+#include "./shift.hpp"
 
 namespace mush
 {
 
-class ShiftSettings
-{
-public:
-private:
-};
-
 class FullSettings
 {
 public:
-    FullSettings(const std::string& init_name, const BaseSettings& init_base_settings);
+    FullSettings(const std::string& init_name, const BaseSettings& init_base_settings,
+                 const ShiftSettings& init_shift_settings);
 
     static FullSettings from_json(const CASM::jsonParser& init_json);
-    static FullSettings from_path(const CASM::fs::path& init_path);
+    static FullSettings from_path(const fs::path& init_path);
 
     const std::string& name() const { return m_name; }
 
     const BaseSettings& base_settings() const { return m_base_settings; }
+    const ShiftSettings& shift_settings() const { return m_shift_settings; }
 
 private:
     /// Name for the particular set of shifts you're going to do
@@ -37,19 +35,24 @@ private:
 
     /// Specifies all the settings involved with creating a slab
     BaseSettings m_base_settings;
+
+    /// Specifies the settings for the gamma surface density and cleavage between slabs
+    ShiftSettings m_shift_settings;
 };
 
-FullSettings::FullSettings(const std::string& init_name, const BaseSettings& init_base_settings)
-    : m_name(init_name), m_base_settings(init_base_settings)
+FullSettings::FullSettings(const std::string& init_name, const BaseSettings& init_base_settings,
+                           const ShiftSettings& init_shift_settings)
+    : m_name(init_name), m_base_settings(init_base_settings), m_shift_settings(init_shift_settings)
 {
 }
 
 FullSettings FullSettings::from_json(const CASM::jsonParser& init_json)
 {
-    return FullSettings(init_json["name"].get<std::string>(), BaseSettings::from_json(init_json[BaseSettings::tag()]));
+    return FullSettings(init_json["name"].get<std::string>(), BaseSettings::from_json(init_json[BaseSettings::tag()]),
+                        ShiftSettings::from_json(init_json[ShiftSettings::tag()]));
 }
 
-FullSettings FullSettings::from_path(const CASM::fs::path& init_path)
+FullSettings FullSettings::from_path(const fs::path& init_path)
 {
     CASM::jsonParser settings_dump(init_path);
     return FullSettings::from_json(settings_dump);
@@ -80,7 +83,7 @@ int main_candidate(int argc, char* argv[])
     CASM::po::options_description desc("multishift options");
     desc.add_options()
         ("help,h", "Produce help message")
-        ("settings,s", CASM::po::value<CASM::fs::path>()->required(),"Path to file specifying how to perform shifts");
+        ("settings,s", CASM::po::value<mush::fs::path>()->required(),"Path to file specifying how to perform shifts");
     // clang-format on
 
     CASM::po::variables_map vm;
@@ -108,8 +111,10 @@ int main_candidate(int argc, char* argv[])
 
 int main()
 {
-    auto all_settings=mush::FullSettings::from_path("./mush.json");
-    std::cout<<all_settings.name()<<std::endl;
+    auto all_settings = mush::FullSettings::from_path("./mush.json");
+    std::cout << all_settings.name() << std::endl;
+
+    //***************
 
     const auto& base_settings = all_settings.base_settings();
     std::cout << base_settings.prim_path() << std::endl;
@@ -117,10 +122,29 @@ int main()
     std::cout << base_settings.floor_slab_atom_index() << std::endl;
     std::cout << base_settings.stacks() << std::endl;
 
-    auto base=mush::MultiBase::from_settings(all_settings.base_settings());
+    auto base = mush::MultiBase::from_settings(all_settings.base_settings());
 
     mush::MultiIO writer(all_settings.name());
-    writer.drop_base(base_settings,base);
+    writer.drop_base( base);
+
+    base_settings.to_json().write(writer.base_target()/(mush::BaseSettings::tag()+".json"));
+
+    //***************
+    
+    const auto& shift_settings = all_settings.shift_settings();
+    std::cout<<shift_settings.slab_path()<<std::endl;
+    std::cout<<shift_settings.a_points()<<std::endl;
+    std::cout<<shift_settings.b_points()<<std::endl;
+    for(const auto& val : shift_settings.cleavage_values())
+    {
+        std::cout<<val<<" ";
+    }
+    std::cout<<std::endl;
+
+    auto shifter=mush::MultiShift::from_settings(shift_settings);
+    writer.drop_shifts(shifter);
+
+    shift_settings.to_json().write(writer.shift_target()/(mush::ShiftSettings::tag()+".json"));
 
     return 0;
 }

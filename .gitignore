@@ -51,3 +51,4 @@ config.h*
 
 #personal things
 .vimrc.local
+*.bak
