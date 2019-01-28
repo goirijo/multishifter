@@ -60,7 +60,7 @@ fs::path MultiIO::_surface_point_path(const SurfacePoint& point) const
     fs::path shift_dir("shift_" + std::to_string(point.a) + "." + std::to_string(point.b));
 
     std::stringstream cleavestream;
-    cleavestream << std::fixed << std::setprecision(6) << point.cleaveage;
+    cleavestream << std::fixed << std::setprecision(6) << point.cleavage;
     fs::path cleave_dir("cleave_" + cleavestream.str());
 
     return shift_dir / cleave_dir;
@@ -93,7 +93,7 @@ void MultiIO::drop_shifts(const MultiShift& shifted_structures) {
         b_fracs.push_back(shift_point.b_frac);
         x_carts.push_back(shift_point.x_cart);
         y_carts.push_back(shift_point.y_cart);
-        cleavages.push_back(shift_point.cleaveage);
+        cleavages.push_back(shift_point.cleavage);
         pathnames.push_back(target.string());
     }
 
@@ -105,7 +105,7 @@ void MultiIO::drop_shifts(const MultiShift& shifted_structures) {
     shift_record["b_frac"]=b_fracs;
     shift_record["x_cart"]=x_carts;
     shift_record["y_cart"]=y_carts;
-    shift_record["cleaveage"]=cleavages;
+    shift_record["cleavage"]=cleavages;
     shift_record["path"]=pathnames;
     shift_record.write(this->shift_target()/"record.json");
     

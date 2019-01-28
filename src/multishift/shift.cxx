@@ -116,7 +116,7 @@ MultiShift::MultiShift(const Structure& init_slab, int a_density, int b_density,
     for (const auto& mush_coord : mush_coords)
     {
         const auto new_c_vector =
-            c_vector + mush_coord.a_frac * a_vector + mush_coord.b_frac * b_vector + mush_coord.cleaveage * normal_unit;
+            c_vector + mush_coord.a_frac * a_vector + mush_coord.b_frac * b_vector + mush_coord.cleavage * normal_unit;
         CASM::Lattice new_lattice(a_vector, b_vector, new_c_vector);
 
         this->m_shifted_slabs.push_back(std::make_pair(mush_coord, m_reference_slab));

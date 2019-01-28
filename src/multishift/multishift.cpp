@@ -145,6 +145,9 @@ int main()
     writer.drop_shifts(shifter);
 
     shift_settings.to_json().write(writer.shift_target()/(mush::ShiftSettings::tag()+".json"));
+    Simplicity::write_poscar(shifter.reference_slab(),writer.shift_target()/"slab.json");
 
+    //***************
+    
     return 0;
 }

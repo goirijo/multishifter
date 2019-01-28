@@ -61,11 +61,11 @@ public:
      const double b_frac;
      const double x_cart;
      const double y_cart;
-     const double cleaveage;
+     const double cleavage;
 
 private:
-    SurfacePoint(int a, int b, double a_frac, double b_frac, double x_cart, double y_cart, double cleaveage)
-        : a(a), b(b), a_frac(a_frac), b_frac(b_frac), x_cart(x_cart), y_cart(y_cart), cleaveage(cleaveage){};
+    SurfacePoint(int a, int b, double a_frac, double b_frac, double x_cart, double y_cart, double cleavage)
+        : a(a), b(b), a_frac(a_frac), b_frac(b_frac), x_cart(x_cart), y_cart(y_cart), cleavage(cleavage){};
 
     ///Given a lattice column matrix, return a lattice column matrix that has
     ///rotated the values such that the a vector points along the x-axis,
@@ -86,6 +86,8 @@ public:
     static MultiShift from_settings(const ShiftSettings& init_settings);
 
     const std::vector<std::pair<SurfacePoint, Structure>>& shifted_slabs() const { return this->m_shifted_slabs; };
+
+    const Structure reference_slab() const {return this->m_reference_slab;};
 
 private:
     /// The starting slab structure, this corresponds to no shift and no cleavage
