@@ -6,4 +6,4 @@ Documentation and features are being continually added.
 # Prerequisites
 # Installation
 # Usage
-For a more or less complete tutorial on the features and workflow see the official [pages](https://goirijo.github.io/multishift.html).
+For a more or less complete tutorial on the features and workflow see the official [pages](https://goirijo.github.io/multishifter).
