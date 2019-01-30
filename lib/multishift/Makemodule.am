@@ -1,0 +1,15 @@
+noinst_LTLIBRARIES += libmultishift.la
+
+libmultishift_la_SOURCES=\
+				   lib/multishift/base.cxx\
+				   lib/multishift/shift.cxx\
+				   lib/multishift/io.cxx
+
+
+libmultishift_la_LIBADD=\
+				 libutiliblob.la\
+				 $(BOOST_SYSTEM_LIB)\
+				 $(BOOST_FILESYSTEM_LIB)\
+				 $(BOOST_CHRONO_LIB)\
+				 $(BOOST_REGEX_LIB)\
+				 $(BOOST_PROGRAM_OPTIONS_LIB)

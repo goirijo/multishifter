@@ -1,0 +1,3 @@
+include lib/casmblob/Makemodule.am
+include lib/utiliblob/Makemodule.am
+include lib/multishift/Makemodule.am

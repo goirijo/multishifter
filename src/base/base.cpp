@@ -7,10 +7,10 @@
 #include <iostream>
 #include <string>
 
-#include "./define.hpp"
-#include "./base.hpp"
-#include "./io.hpp"
-#include "./shift.hpp"
+#include "multishift/define.hpp"
+#include "multishift/base.hpp"
+#include "multishift/io.hpp"
+#include "multishift/shift.hpp"
 
 namespace mush
 {

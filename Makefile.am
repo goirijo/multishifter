@@ -15,7 +15,7 @@ TESTS=
 
 AM_CXXFLAGS=
 
-AM_CPPFLAGS= -I$(srcdir)/include\
+AM_CPPFLAGS= -I$(srcdir)/lib\
 			 -I$(srcdir)/pybind11/include\
 			 -I$(srcdir)/casm-utilities/include\
 			 -I$(srcdir)/casm-utilities/CASMcode/include\
@@ -28,8 +28,8 @@ AM_LDFLAGS=$(BOOST_LDFLAGS)
 #===========================================================================#
 #Now do the programs
 #You may comment out any of these lines to suppress parts of the installation process
-include $(srcdir)/src/Makemodule.am				#utilities library
-
+include $(srcdir)/lib/Makemodule.am				#this is where the casm, casm-utilities, and multishift libraries are (not installed, just convenience)
+include $(srcdir)/src/Makemodule.am 			#this is where the actual executables are
 #===========================================================================#
 #Accept .cxpy as a c++ extension
 # $(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
