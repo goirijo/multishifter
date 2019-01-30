@@ -3,3 +3,4 @@ show_downloads: "true"
 github:
   zip_url: http://example.com/download.zip
   tar_url: http://example.com/download.zip
+github_username: goirijo
