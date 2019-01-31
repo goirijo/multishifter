@@ -1,3 +1,6 @@
 [submodule "casm-utilities"]
 	path = casm-utilities
 	url = https://github.com/goirijo/casm-utilities
+[submodule "cxxopts"]
+	path = cxxopts
+	url = git@github.com:jarro2783/cxxopts.git

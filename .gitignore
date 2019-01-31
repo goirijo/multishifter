@@ -52,3 +52,7 @@ config.h*
 #personal things
 .vimrc.local
 *.bak
+
+#jekyll
+_site
+*.lock
