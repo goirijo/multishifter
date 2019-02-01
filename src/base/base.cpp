@@ -1,6 +1,4 @@
 #include "casm/casm_io/jsonParser.hh"
-#include "casm/crystallography/Lattice.hh"
-#include "casm/crystallography/Structure.hh"
 /* #include "casm/external/Eigen/Core" */
 /* #include "casmutils/frankenstein.hpp" */
 #include "cxxopts.hpp"
@@ -12,66 +10,7 @@
 #include "multishift/exceptions.hpp"
 #include "multishift/io.hpp"
 #include "multishift/settings.hpp"
-
-int _main()
-{
-    auto all_settings = mush::FullSettings::from_path("./mush.json");
-    std::cout << all_settings.name() << std::endl;
-
-    //***************
-
-    const auto& base_settings = all_settings.base_settings();
-    std::cout << base_settings.prim_path() << std::endl;
-    std::cout << base_settings.millers().transpose() << std::endl;
-    std::cout << base_settings.floor_slab_atom_index() << std::endl;
-    std::cout << base_settings.stacks() << std::endl;
-
-    auto base = mush::MultiBase::from_settings(all_settings.base_settings());
-
-    mush::MultiIO writer(all_settings.name());
-    writer.drop_base(base);
-
-    base_settings.to_json().write(writer.base_target() / (mush::BaseSettings::tag() + ".json"));
-
-    //***************
-
-    const auto& shift_settings = all_settings.shift_settings();
-    std::cout << shift_settings.slab_path() << std::endl;
-    std::cout << shift_settings.a_points() << std::endl;
-    std::cout << shift_settings.b_points() << std::endl;
-    for (const auto& val : shift_settings.cleavage_values())
-    {
-        std::cout << val << " ";
-    }
-    std::cout << std::endl;
-
-    auto shifter = mush::MultiShift::from_settings(shift_settings);
-    writer.drop_shifts(shifter);
-
-    shift_settings.to_json().write(writer.shift_target() / (mush::ShiftSettings::tag() + ".json"));
-    Simplicity::write_poscar(shifter.reference_slab(), writer.shift_target() / "slab.json");
-
-    //***************
-
-    return 0;
-}
-
-namespace cxxopts
-{
-void required_argument_notify(const ParseResult& result, const std::vector<std::string>& required_arguments)
-{
-
-    for (const auto& arg : required_arguments)
-    {
-        if (!result.count(arg))
-        {
-            throw mush::except::RequiredArgumentMissing(arg);
-        }
-    }
-
-    return;
-}
-} // namespace cxxopts
+#include "multishift/misc.hpp"
 
 /**
  * multishift-base takes a primitive cell and some settings as input.
@@ -131,14 +70,15 @@ int main(int argc, char* argv[])
             std::cout << "Stack sliced unit " << base_settings.stacks() << "times." << std::endl;
         }
 
-        std::cout << "..........................................................." << std::endl;
+        loggy::divider();
+
         auto base = mush::MultiBase::from_settings(all_settings.base_settings());
         std::cout << "Structures constructed." << std::endl;
-        std::cout << std::setw(15) << "Primitive cell: " << std::setw(15) << base.primitive().basis.size() << " atoms."
+        std::cout << std::setw(20) << "Primitive cell: " << std::setw(20) << base.primitive().basis.size() << " atoms."
                   << std::endl;
-        std::cout << std::setw(15) << "Shift unit: " << std::setw(15) << base.shift_unit().basis.size() << " atoms."
+        std::cout << std::setw(20) << "Shift unit: " << std::setw(20) << base.shift_unit().basis.size() << " atoms."
                   << std::endl;
-        std::cout << std::setw(15) << "Slab: " << std::setw(15) << base.floored_slab().basis.size() << " atoms."
+        std::cout << std::setw(20) << "Slab: " << std::setw(20) << base.floored_slab().basis.size() << " atoms."
                   << std::endl;
 
         mush::MultiIO writer(all_settings.name());
@@ -147,7 +87,8 @@ int main(int argc, char* argv[])
 
         base_settings.to_json().write(writer.base_target() / (mush::BaseSettings::tag() + ".json"));
 
-        std::cout << "..........................................................." << std::endl;
+        loggy::divider();
+
         std::cout << "Structures written to " << writer.base_target() << " along with a backup of the settings used."
                   << std::endl;
     }
@@ -172,10 +113,15 @@ int main(int argc, char* argv[])
         std::cerr << e.what() << std::endl;
         return 3;
     }
+
     catch (const mush::except::FileExists& e)
     {
         std::cerr << e.what() << std::endl;
         std::cerr << "Rename it or delete it if you don't need it." << std::endl;
         return 4;
     }
+
+    //TODO: Catch file doesn't exist (bad settings path)
+
+    return 0;
 }

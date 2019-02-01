@@ -1,1 +1,2 @@
 include src/base/Makemodule.am
+include src/shift/Makemodule.am

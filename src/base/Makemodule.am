@@ -1,7 +1,7 @@
-bin_PROGRAMS += _multishift-base
+bin_PROGRAMS += multishift-base
 
-_multishift_base_SOURCES =\
+multishift_base_SOURCES =\
 						  src/base/base.cpp
 
-_multishift_base_LDADD =\
+multishift_base_LDADD =\
 						libmultishift.la

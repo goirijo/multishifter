@@ -14,8 +14,31 @@ ShiftSettings::ShiftSettings(const CASM::fs::path& init_slab_path, int init_a_po
 
 ShiftSettings ShiftSettings::from_json(const CASM::jsonParser& init_json)
 {
-    return ShiftSettings(init_json["slab"].get<CASM::fs::path>(), init_json["a"].get<int>(), init_json["b"].get<int>(),
-                         init_json["cleavage"].get<std::vector<double>>());
+    int aval = 1;
+    int bval = 1;
+    std::vector<double> cleave{0.0};
+
+    if (init_json.contains("a"))
+    {
+        aval = init_json["a"].get<int>();
+    }
+
+    if (init_json.contains("b"))
+    {
+        bval = init_json["b"].get<int>();
+    }
+
+    if (init_json.contains("cleavage"))
+    {
+        cleave = init_json["cleavage"].get<decltype(cleave)>();
+        std::sort(cleave.begin(), cleave.end());
+    }
+
+    return ShiftSettings(init_json["slab"].get<CASM::fs::path>(), aval, bval, cleave);
+
+    /* return ShiftSettings(init_json["slab"].get<CASM::fs::path>(), init_json["a"].get<int>(),
+     * init_json["b"].get<int>(), */
+    /*                      init_json["cleavage"].get<std::vector<double>>()); */
 }
 
 CASM::jsonParser ShiftSettings::to_json() const
@@ -94,7 +117,6 @@ MultiShift MultiShift::from_settings(const ShiftSettings& init_settings)
     return MultiShift(Structure::from_poscar(init_settings.slab_path()), init_settings.a_points(),
                       init_settings.b_points(), init_settings.cleavage_values());
 }
-
 
 MultiShift::MultiShift(const Structure& init_slab, int a_density, int b_density,
                        const std::vector<double>& cleavage_values)
