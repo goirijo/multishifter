@@ -15,8 +15,16 @@ BaseSettings::BaseSettings(const CASM::fs::path& init_prim_path, const Eigen::Ve
 
 BaseSettings BaseSettings::from_json(const CASM::jsonParser& init_settings)
 {
+    int floor_index = 0;
+    if (init_settings.contains("floor_slab_index"))
+    {
+        floor_index = init_settings["slab_floor_index"].get<int>();
+    }
+
+    //TODO: Make exception safe. The CASM exceptions are way to generic to forward though.
+
     return BaseSettings(init_settings["prim"].get<CASM::fs::path>(), init_settings["millers"].get<Eigen::Vector3i>(),
-                        init_settings["slab_floor_index"].get<int>(), init_settings["stacks"].get<int>());
+                        floor_index, init_settings["stacks"].get<int>());
 }
 
 CASM::jsonParser BaseSettings::to_json() const
@@ -59,11 +67,10 @@ MultiBase MultiBase::from_settings(const BaseSettings& init_settings)
                      init_settings.floor_slab_atom_index(), init_settings.stacks());
 }
 
-Structure MultiBase::_shift_unit_from_primitive(const Structure& init_prim,
-                                                           const Eigen::Vector3i& init_millers)
+Structure MultiBase::_shift_unit_from_primitive(const Structure& init_prim, const Eigen::Vector3i& init_millers)
 {
-    //The 0 means "get the smallest cell possible", and I wish it was the default
-    auto shift_lattice = init_prim.lattice().get_lattice_in_plane(init_millers,0);
+    // The 0 means "get the smallest cell possible", and I wish it was the default
+    auto shift_lattice = init_prim.lattice().get_lattice_in_plane(init_millers, 0);
     CASM::Structure raw_shift_unit(shift_lattice);
     raw_shift_unit.fill_supercell(init_prim);
     return Structure(raw_shift_unit);

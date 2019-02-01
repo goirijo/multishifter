@@ -16,6 +16,7 @@ TESTS=
 AM_CXXFLAGS=
 
 AM_CPPFLAGS= -I$(srcdir)/lib\
+			 -I$(srcdir)/cxxopts/include\
 			 -I$(srcdir)/pybind11/include\
 			 -I$(srcdir)/casm-utilities/include\
 			 -I$(srcdir)/casm-utilities/CASMcode/include\
@@ -23,29 +24,13 @@ AM_CPPFLAGS= -I$(srcdir)/lib\
 			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external/qhull/libqhullcpp\
 			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external/qhull/libqhull_r
 
-AM_LDFLAGS=$(BOOST_LDFLAGS)
+AM_LDFLAGS=$(BOOST_LDFLAGS)	#I hate you
 
 #===========================================================================#
 #Now do the programs
 #You may comment out any of these lines to suppress parts of the installation process
-include $(srcdir)/lib/Makemodule.am				#this is where the casm, casm-utilities, and multishift libraries are (not installed, just convenience)
-include $(srcdir)/src/Makemodule.am 			#this is where the actual executables are
-#===========================================================================#
-#Accept .cxpy as a c++ extension
-# $(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
-# $(CXXCOMPILE) -MT $@ -MD -MP -MF -c -o $@ $< 
-# SUFFIXES: .cxpy
-# .cxpy.o:
-# 	$(CXXCOMPILE) -c -o $@ $<
-
-# .cxpy.obj:
-# 	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
-# 	$(CXXCOMPILE) -MT $@ -MD -MP -MF -c -o $@ `$(CYGPATH_W) '$<'` 
-
-# .cxpy.lo:
-# 	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
-# 	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF -c -o $@ $< 
-
+include $(srcdir)/lib/Makemodule.am    #this is where the casm, casm-utilities, and multishift libraries are (not installed, just convenience)
+include $(srcdir)/src/Makemodule.am    #this is where the actual executables are
 
 #===========================================================================#
 EXTRA_DIST=
