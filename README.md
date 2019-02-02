@@ -21,8 +21,33 @@ apt-get install libboost-all-dev
 
 # Installation
 You can install `multishift` by compiling from a tarball or zipball, or by cloning the git repository.
-## Installing from tarrball or zipball (recommended)
+## Installing from tarball or zipball (recommended)
+Head over to the [releases](https://github.com/goirijo/multishifter/releases) page and download the `tar.gz` or `zip` file of the latest version (*not* the "Source code" files, you want the attachment with the extension in the name).
+
+Once you've downloaded it, unpack it and run
+
+    ./configure
+    make
+    make install
+    
+The build involves compiling some relatively heavy libraries, so it may take a few minutes to finish. You can speed up the build running `make -j4`, which will parallize the compilation on 4 processors.
+
 ## Installing from git repository
+If you need to use features which are on the repository but have not been released yet, or want to compile from the git repository for whatever reason, you can clone whichever branch you're interested in, go inside, and run
+
+    bash bootstrap.sh
+    ./configure
+    make
+    make install
+    
+The `bootstrap.sh` script introduces additional dependencies, as it uses autotools to create the `configure` file. In order for this to work you'll need to have the following installed:
+
+- autoconf
+- automake
+- libtool
+- autoconf-archive
 
 # Usage
 For a more or less complete tutorial on the features and workflow see the official [pages](https://goirijo.github.io/multishifter).
+
+Acknowledgements
