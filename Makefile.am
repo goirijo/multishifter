@@ -2,6 +2,7 @@
 CLOCAL_AMFLAGS = -I build-aux/m4
 
 #===========================================================================#
+EXTRA_DIST=
 #Values are filled by Makemodue.am files
 # lib_LTLIBRARIES=
 # pyexec_LTLIBRARIES=
@@ -33,7 +34,6 @@ include $(srcdir)/lib/Makemodule.am    #this is where the casm, casm-utilities, 
 include $(srcdir)/src/Makemodule.am    #this is where the actual executables are
 
 #===========================================================================#
-EXTRA_DIST=
 
 var-check:
 	echo $(LIBS)

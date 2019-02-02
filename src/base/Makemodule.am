@@ -1,6 +1,7 @@
 bin_PROGRAMS += multishift-base
 
 multishift_base_SOURCES =\
+						  cxxopts/include/cxxopts.hpp\
 						  src/base/base.cpp
 
 multishift_base_LDADD =\

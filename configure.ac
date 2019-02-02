@@ -7,7 +7,8 @@ AC_CONFIG_SRCDIR([src/base/base.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
-AM_INIT_AUTOMAKE([subdir-objects])
+#These nested directories are a PITA
+AM_INIT_AUTOMAKE([subdir-objects 1.9 tar-ustar])
 
 #This is for dependent libraries that get compiled. You might be able to get rid of this though.
 LT_INIT

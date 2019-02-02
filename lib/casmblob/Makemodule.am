@@ -115,3 +115,7 @@ libcasmblob_la_SOURCES=\
 				   casm-utilities/CASMcode/src/casm/external/qhull/libqhullcpp/RboxPoints.cpp\
 				   casm-utilities/CASMcode/src/casm/external/qhull/libqhullcpp/QhullVertex.cpp\
 				   casm-utilities/CASMcode/src/casm/external/qhull/libqhullcpp/QhullFacet.cpp
+
+#I'm in a hurry and can't be bothered to add the headers to the SOURCES right now,
+#but that's what should be happening instead of this
+EXTRA_DIST+=casm-utilities/CASMcode/include
