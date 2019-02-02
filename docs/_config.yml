@@ -2,6 +2,6 @@ theme: jekyll-theme-minimal
 show_downloads: "true"
 logo: /misc/logo.png
 github:
-  zip_url: http://example.com/download.zip
-  tar_url: http://example.com/download.zip
+  tar_url: https://github.com/goirijo/multishifter/releases/download/v0.1.0/multishifter-0.1.0.tar.gz
+  zip_url: https://github.com/goirijo/multishifter/releases/download/v0.1.0/multishifter-0.1.0.zip
 github_username: goirijo
