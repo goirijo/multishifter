@@ -21,6 +21,9 @@ BaseSettings BaseSettings::from_json(const CASM::jsonParser& init_settings)
         floor_index = init_settings["slab_floor_index"].get<int>();
     }
 
+    //TODO: Make stacks default to 1, also who's going to be in charge of making sense
+    //the settings aren't ridiculous values?
+
     //TODO: Make exception safe. The CASM exceptions are way to generic to forward though.
 
     return BaseSettings(init_settings["prim"].get<CASM::fs::path>(), init_settings["millers"].get<Eigen::Vector3i>(),

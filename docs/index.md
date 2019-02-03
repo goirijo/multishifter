@@ -6,6 +6,7 @@ title: multishift guide
 
 # What is multishift for?
 A common technique for investigating dislocations, stacking faults, and slip planes in crystals involves the calculation of $$\gamma$$-surface energies.
+The software provided in in the `multishifter` toolbox facilitate the creation of crystal structures for calculations of UBER curves and surface energies along arbitrary slip planes.
 
 # Basic usage
 Most `multishift` commands will take a settings file as input in a `json` format, where you will specify how to construct slabs, shift, interpolate, etc.
@@ -57,6 +58,7 @@ Use **shift** as the settings key. Options are:
 - cleavage: List of values in $$\AA$$ of space that should be inserted between the slabs.
 
 # Tutorials
-[Tutorial I: Calculating the UBER of Mg]()<br/>
-[Tutorial II: A $$\gamma$$-surface for Mg]()<br/>
-[Tutorial III: A better $$\gamma$$-surface for Mg]()<br/>
+[Tutorial I: Creating a slab structure](/tutorials/i/)<br/>
+[Tutorial II: Calculating the UBER of Mg](/tutorials/i/)<br/>
+[Tutorial III: A $$\gamma$$-surface for Mg]()<br/>
+[Tutorial IV: A better $$\gamma$$-surface for Mg]()<br/>
