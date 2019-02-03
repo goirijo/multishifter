@@ -28,7 +28,7 @@ This is the slip plane we're interested in, and has miller indices $$(1,0,1)$$.
 | ![Primitive structure of Mg](mg.png){:height="100%" width="100%"} | ![Pyramidal slip plane in HCP](pyraslip.svg){:height="100%" width="100%"} |
 
 ## Settings
-In the same working directory where you saved `mg.vasp`, [save](pyramidal.json) the following settings as `pyramidal.json`:
+In the same working directory where you saved `mg.vasp`, [save the following](pyramidal.json) settings as `pyramidal.json`:
 
 ```json
 {
@@ -63,3 +63,26 @@ The ab-vectors are now both parallel to the slip plane.
 | ![Shift unit of Mg for plane 101](shift_unit.png){:height="100%" width="100%"} | ![Pyramidal slip plane in HCP](pyraslip_unit.svg){:height="100%" width="100%"} |
 
 ## Stack the slab
+The shift unit already has the slip plane exposed along the ab-vectors, so creating a thick slab with the same slip plane exposed is simply a matter of creating a supercell of the shift unit that repeats units only along the c-direction.
+This is where the "stack" entry of the settings comes into play.
+The shift unit has 2 atoms, so if we want a slab that's 12 atomic layers thick, it just has to be repeated 6 times.
+Edit the settings file to change the "stacks" value from 1 to 6:
+```json
+{
+    "name" : "pyramidal_tutorial",
+    "base":
+    {
+        "prim" : "./mg.vasp",
+        "millers" : [1,0,1],
+        "stacks" : 6
+    }
+}
+```
+Now that we know that we want 6 stacks, we can clear out the last output generated, and run `multishift-base` again:
+```bash
+rm -r pyramidal_tutorial.base
+multishift-base -s pyramidal.json
+```
+Examine `final_slab.vasp`.
+This is the unit cell for the slab structure, with the pyramidal slip plane spanned by the ab-vectors.
+You can use this slab as a starting point for UBER or $$\gamma$$-surface calculations.

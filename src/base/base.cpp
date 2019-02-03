@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
         const auto& base_settings = all_settings.base_settings();
         std::cout << "Search in " << base_settings.prim_path() << " for primitive structure." << std::endl;
-        std::cout << "Requested slcicing along the " << base_settings.millers().transpose() << " direction."
+        std::cout << "Requested slicing along the " << base_settings.millers().transpose() << " direction."
                   << std::endl;
         if (!base_settings.floor_slab_atom_index())
         {
