@@ -5,10 +5,10 @@
 namespace mush
 {
 BaseSettings::BaseSettings(const CASM::fs::path& init_prim_path, const Eigen::Vector3i& init_millers,
-                           int init_slab_floor_ix, int init_stacks)
+                           int init_floor_slab_ix, int init_stacks)
     : m_prim_path(init_prim_path),
       m_millers(init_millers),
-      m_floor_slab_atom_ix(init_slab_floor_ix),
+      m_floor_slab_atom_ix(init_floor_slab_ix),
       m_stacks(init_stacks)
 {
 }
@@ -18,8 +18,11 @@ BaseSettings BaseSettings::from_json(const CASM::jsonParser& init_settings)
     int floor_index = 0;
     if (init_settings.contains("floor_slab_index"))
     {
-        floor_index = init_settings["slab_floor_index"].get<int>();
+        floor_index = init_settings["floor_slab_index"].get<int>();
     }
+
+    //TODO: Make stacks default to 1, also who's going to be in charge of making sense
+    //the settings aren't ridiculous values?
 
     //TODO: Make exception safe. The CASM exceptions are way to generic to forward though.
 
@@ -35,7 +38,7 @@ CASM::jsonParser BaseSettings::to_json() const
     serialized["millers"] =
         std::vector<int>{m_millers(0), m_millers(1),
                          m_millers(2)}; // This is to avoid a really dumb bug in casm that writes Eigen stuff stupid
-    serialized["slab_floor_index"] = m_floor_slab_atom_ix;
+    serialized["floor_slab_index"] = m_floor_slab_atom_ix;
     serialized["stacks"] = m_stacks;
     return serialized;
 }

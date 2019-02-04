@@ -1,0 +1,9 @@
+{
+    "name" : "pyramidal_tutorial",
+    "base":
+    {
+        "prim" : "./mg.vasp",
+        "millers" : [1,0,1],
+        "stacks" : 1
+    }
+}

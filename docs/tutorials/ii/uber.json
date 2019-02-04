@@ -1,0 +1,15 @@
+{
+    "name" : "uber_tutorial",
+    "base":
+    {
+        "prim" : "./licoo2.vasp",
+        "millers" : [0,0,1],
+        "stacks" : 3,
+        "__floor_slab_index" : 4
+    },
+    "shift":
+    {
+        "slab": "./uber_tutorial.base/final_slab.vasp",
+        "cleavage": [-0.5, -0.3, -0.1, 0.0, 0.1, 0.3, 0.5, 1.0, 2.0]
+    }
+}
