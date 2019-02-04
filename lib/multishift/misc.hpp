@@ -26,7 +26,7 @@ void required_argument_notify(const ParseResult& result, const std::vector<std::
 namespace lazy
 {
     template<typename T>
-    T get_or_value(const jsonParser& json, const std::string& key, const T& default_value)
+    T get_or_value(const CASM::jsonParser& json, const std::string& key, const T& default_value)
     {
         if(json.contains(key))
         {

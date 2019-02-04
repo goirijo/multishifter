@@ -21,7 +21,7 @@ namespace mush
 class BaseSettings
 {
 public:
-    BaseSettings(const fs::path& init_prim_path, const Eigen::Vector3i& init_millers, int init_slab_floor_ix, int init_stacks);
+    BaseSettings(const fs::path& init_prim_path, const Eigen::Vector3i& init_millers, int init_floor_slab_ix, int init_stacks);
     static BaseSettings from_json(const CASM::jsonParser& init_settings);
     CASM::jsonParser to_json() const;
     /* static BaseSettings from_path(const fs::path& init_path); */

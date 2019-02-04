@@ -4,12 +4,12 @@ title: "Tutorial I: Creating a slab structure"
 {% include head.html %}
 
 # Tutorial I: Creating a slab structure
-In this tutorial we'll use `multishift-base` to create a superstructure of Mg with ab-vectors in the $$(1,0,1)$$ plane (pyramidal slip plane).
+In this tutorial we'll use `multishift-base` to create a superstructure of $$\mathrm{Mg}$$ with ab-vectors in the $$(1,0,1)$$ plane (pyramidal slip plane).
 We'll specify how long we want the c-vector to be, resulting in a slab structure that can be used as a starting point for UBER or $$\gamma$$-surface calculations.
 
 ## Mg primitive cell
 Current implementations of multishifter work exclusively with the [VASP](https://cms.mpi.univie.ac.at/vasp/guide/node59.html) structure format.
-Download the primitive cell for Mg [here](mg.vasp), or create a file called `mg.vasp` with the following crystallographic data:
+Download the primitive cell for $$\mathrm{Mg}$$ [here](mg.vasp), or create a file called `mg.vasp` with the following crystallographic data:
 
     multishifter tutorial i
     1.00000000
@@ -22,7 +22,7 @@ Download the primitive cell for Mg [here](mg.vasp), or create a file called `mg.
                    0.6666667    0.6666667    0.7500000 Mg
                    0.3333333    0.3333333    0.2500000 Mg
 
-The figure below on the left shows the primitive unit cell of Mg, while the one on the right highlights the prismatic plane.
+The figure below on the left shows the primitive unit cell of $$\mathrm{Mg}$$, while the one on the right highlights the prismatic plane.
 This is the slip plane we're interested in, and has miller indices $$(1,0,1)$$.
 
 | ![Primitive structure of Mg](mg.png){:height="100%" width="100%"} | ![Pyramidal slip plane in HCP](pyraslip.svg){:height="100%" width="100%"} |
@@ -57,7 +57,7 @@ multishift-base -s pyramidal.json
 ## Output
 You will now have a directory named `pyramidal_tutorial.base`.
 `prim.vasp` is a copy of `mg.vasp`, and `base.json` is a copy of the "base" entry in `pyramidal.json`.
-If you open `shift_unit.vasp` you'll see that it's the same Mg structure, with a newly defined lattice.
+If you open `shift_unit.vasp` you'll see that it's the same $$\mathrm{Mg}$$ structure, with a newly defined lattice.
 The ab-vectors are now both parallel to the slip plane.
 
 | ![Shift unit of Mg for plane 101](shift_unit.png){:height="100%" width="100%"} | ![Pyramidal slip plane in HCP](pyraslip_unit.svg){:height="100%" width="100%"} |
