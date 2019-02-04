@@ -1,0 +1,6 @@
+TESTS+=check_trivial
+check_PROGRAMS += check_trivial
+check_trivial_SOURCES = tests/trivial/trivial.cpp
+check_trivial_LDADD=libgtest.la
+check_trivial_LDFLAGS=-pthread
+check_trivial_CPPFLAGS = -I$(top_srcdir)/googletest/googletest/include -I$(top_srcdir)/googletest/googletest

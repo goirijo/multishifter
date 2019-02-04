@@ -1,6 +1,8 @@
 noinst_LTLIBRARIES += libmultishift.la
 
 libmultishift_la_SOURCES=\
+				   lib/multishift/misc.hpp\
+				   lib/multishift/misc.cxx\
 				   lib/multishift/base.hpp\
 				   lib/multishift/base.cxx\
 				   lib/multishift/define.hpp\

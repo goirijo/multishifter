@@ -1,3 +1,4 @@
+#include "./misc.hpp"
 #include "./base.hpp"
 #include "./exceptions.hpp"
 #include "casmutils/frankenstein.hpp"
@@ -11,23 +12,26 @@ BaseSettings::BaseSettings(const CASM::fs::path& init_prim_path, const Eigen::Ve
       m_floor_slab_atom_ix(init_floor_slab_ix),
       m_stacks(init_stacks)
 {
+    if(m_floor_slab_atom_ix<0)
+    {
+        throw except::SettingMustBeGreaterEqualThanZero("floor_slab_index");
+    }
+
+    if(m_stacks<1)
+    {
+        throw except::SettingMustBeGreaterThanZero("stacks");
+    }
 }
 
 BaseSettings BaseSettings::from_json(const CASM::jsonParser& init_settings)
 {
-    int floor_index = 0;
-    if (init_settings.contains("floor_slab_index"))
-    {
-        floor_index = init_settings["floor_slab_index"].get<int>();
-    }
-
-    //TODO: Make stacks default to 1, also who's going to be in charge of making sense
-    //the settings aren't ridiculous values?
+    auto floor_index = lazy::get_or_value<int>(init_settings,"floor_slab_index",0);
+    auto stacks = lazy::get_or_value<int>(init_settings,"stacks",1);
 
     //TODO: Make exception safe. The CASM exceptions are way to generic to forward though.
 
     return BaseSettings(init_settings["prim"].get<CASM::fs::path>(), init_settings["millers"].get<Eigen::Vector3i>(),
-                        floor_index, init_settings["stacks"].get<int>());
+                        floor_index, stacks);
 }
 
 CASM::jsonParser BaseSettings::to_json() const

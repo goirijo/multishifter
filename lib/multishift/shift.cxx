@@ -1,3 +1,4 @@
+#include "./misc.hpp"
 #include "./shift.hpp"
 #include "./exceptions.hpp"
 
@@ -10,35 +11,24 @@ ShiftSettings::ShiftSettings(const CASM::fs::path& init_slab_path, int init_a_po
       m_b_points(init_b_points),
       m_cleavage_values(init_cleavage)
 {
+    if(init_a_points<1)
+    {
+        throw except::SettingMustBeGreaterThanZero("a");
+    }
+
+    if(init_b_points<1)
+    {
+        throw except::SettingMustBeGreaterThanZero("b");
+    }
 }
 
 ShiftSettings ShiftSettings::from_json(const CASM::jsonParser& init_json)
 {
-    int aval = 1;
-    int bval = 1;
-    std::vector<double> cleave{0.0};
-
-    if (init_json.contains("a"))
-    {
-        aval = init_json["a"].get<int>();
-    }
-
-    if (init_json.contains("b"))
-    {
-        bval = init_json["b"].get<int>();
-    }
-
-    if (init_json.contains("cleavage"))
-    {
-        cleave = init_json["cleavage"].get<decltype(cleave)>();
-        std::sort(cleave.begin(), cleave.end());
-    }
+    auto aval=lazy::get_or_value<int>(init_json,"a",1);
+    auto bval=lazy::get_or_value<int>(init_json,"b",1);
+    auto cleave=lazy::get_or_value<std::vector<double>>(init_json,"cleavage",std::vector<double>{0.0});
 
     return ShiftSettings(init_json["slab"].get<CASM::fs::path>(), aval, bval, cleave);
-
-    /* return ShiftSettings(init_json["slab"].get<CASM::fs::path>(), init_json["a"].get<int>(),
-     * init_json["b"].get<int>(), */
-    /*                      init_json["cleavage"].get<std::vector<double>>()); */
 }
 
 CASM::jsonParser ShiftSettings::to_json() const

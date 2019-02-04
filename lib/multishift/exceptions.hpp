@@ -39,6 +39,25 @@ public:
     {
     }
 };
+
+class BadSetting : public std::runtime_error
+{
+public:
+    BadSetting(const std::string& key, const std::string& elaborate) : std::runtime_error("Bad settigs parameter for '"+key+"'\n"+elaborate) {}
+};
+
+class SettingMustBeGreaterThanZero : public BadSetting
+{
+    public:
+        SettingMustBeGreaterThanZero(const std::string& key) : BadSetting(key, "Value must be greater than zero"){}
+};
+
+class SettingMustBeGreaterEqualThanZero : public BadSetting
+{
+    public:
+        SettingMustBeGreaterEqualThanZero(const std::string& key) : BadSetting(key, "Value must be greater or equal to zero"){}
+};
+
 } // namespace except
 } // namespace mush
 
