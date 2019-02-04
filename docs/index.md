@@ -26,7 +26,7 @@ For example, a settings file that will be used for `multishift-base` and `multis
         "shift" :
         {
             "slab" : "Mg-pyramidal1.vasp",
-            "a" : 17,
+            "a" : 19,
             "b" : 21
         }
     }
@@ -58,7 +58,7 @@ Use **shift** as the settings key. Options are:
 - cleavage: List of values in $$\AA$$ of space that should be inserted between the slabs.
 
 # Tutorials
-[Tutorial I: Creating a slab structure](/tutorials/i/)<br/>
-[Tutorial II: UBER of a layered structure](/tutorials/ii/)<br/>
+[Tutorial I: Creating a slab structure](./tutorials/i/)<br/>
+[Tutorial II: UBER of a layered structure](./tutorials/ii/)<br/>
 [Tutorial III: A $$\gamma$$-surface for Mg]()<br/>
 [Tutorial IV: A better $$\gamma$$-surface for Mg]()<br/>

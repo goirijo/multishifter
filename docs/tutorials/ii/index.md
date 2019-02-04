@@ -9,7 +9,7 @@ In this tutorial we'll use `multishift-base` and `multishift-shift` to create a 
 We will also explore how the "floor_slab_index" setting can be used to alter the atomic layer exposed at the ab-plane.
 
 ## LiCoO<sub>2</sub> unit cell
-Download the primitive cell for $$\mathrm{LiCoO_2}$$ [here](licoo2.vasp), or create a file called `licoo2.vasp` with the following crystallographic data:
+Download the primitive cell for $$\mathrm{LiCoO_2}$$ [here](./licoo2.vasp), or create a file called `licoo2.vasp` with the following crystallographic data:
 
     multishifter tutorial ii
     1.00000000
@@ -28,10 +28,10 @@ As shown below, the structure is a layered material.
 The goal is to create a series of slabs of this material with varying amount of space inserted between the $$\mathrm{CoO_2}$$ layers.
 The surface of interest is therefore along the $$(0,0,1)$$ direction.
 
-| ![Single unit cell of LiCoO2](licoo2_single.png){:height="100%" width="100%"} | ![Layers of LiCoO2](licoo2.png){:height="100%" width="100%"} |
+| ![Single unit cell of LiCoO2](./licoo2_single.png){:height="100%" width="100%"} | ![Layers of LiCoO2](./licoo2.png){:height="100%" width="100%"} |
 
 ## Slab settings and flooring
-In the same working directory where you saved `licoo2.vasp`, [save the following](uber.json) settings as `uber.json`:
+In the same working directory where you saved `licoo2.vasp`, [save the following](./uber.json) settings as `uber.json`:
 ```json
 {
     "name" : "uber_tutorial",
@@ -80,7 +80,7 @@ multishift-base -s uber.json
 When flooring is requested, you will notice that the outputs of `raw_slab.vasp` and `final_slab.vasp` are different.
 `raw_slab.vasp` is the slab constructed directly from the primitive cell without basis translation (bottom left), while `final_slab.vasp` is the same structure as `raw_slab.vasp` after translating the basis (bottom right).
 
-| ![Raw slab for LiCoO2](raw_slab.png){:height="100%" width="100%"} | ![Final slab of LiCoO2](final_slab.png){:height="100%" width="100%"} |
+| ![Raw slab for LiCoO2](./raw_slab.png){:height="100%" width="100%"} | ![Final slab of LiCoO2](./final_slab.png){:height="100%" width="100%"} |
 
 ## Cleave the slab
 We now have a slab to give `multishift-shift`, which will create a set of structures with varying amounts of cleavage in them.
