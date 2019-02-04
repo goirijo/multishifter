@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
         {
             std::cout << "Will translate basis to bring atom " << base_settings.floor_slab_atom_index()
                       << " down (indexing starts at 1!)." << std::endl;
-            std::cout << "Stack sliced unit " << base_settings.stacks() << "times." << std::endl;
+            std::cout << "Stack sliced unit " << base_settings.stacks() << " times." << std::endl;
         }
 
         loggy::divider();
