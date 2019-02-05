@@ -38,7 +38,7 @@ CASM::jsonParser ShiftSettings::to_json() const
     /* serialized["millers"]=m_millers; */
     serialized["a"] = m_a_points;
     serialized["b"] = m_b_points;
-    serialized["cleavages"] = m_cleavage_values;
+    serialized["cleavage"] = m_cleavage_values;
     return serialized;
 }
 
