@@ -34,6 +34,7 @@ AM_LDFLAGS=$(BOOST_LDFLAGS)	#I hate you
 #You may comment out any of these lines to suppress parts of the installation process
 include $(srcdir)/lib/Makemodule.am    #this is where the casm, casm-utilities, and multishift libraries are (not installed, just convenience)
 include $(srcdir)/src/Makemodule.am    #this is where the actual executables are
+# include $(srcdir)/python/Makemodule.am #Some extra multishift tools written in python
 include $(srcdir)/tests/Makemodule.am
 
 #===========================================================================#

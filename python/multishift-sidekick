@@ -1,0 +1,48 @@
+import glob
+import numpy as np
+import pandas as pd
+import os.path
+
+def dumb_read(path):
+    return np.loadtxt(os.path.join(path,"energy.mush"))
+
+def oszicar_energy_read(path):
+    target=os.path.join(path,"OSZICAR")
+    with open(target,'rb') as fh:
+        for line in fh:
+            pass
+        last=line
+    return last.split()[4]
+
+def append_values(record,method):
+    """Given the json record of all the shifts, collect
+    the energy of each possible value using the provided method
+    (takes path as argument) and fill in a new column
+    with the desired values
+
+    Parameters
+    ----------
+    record : json dropped by multishift in shift directory
+    method : function that returns the energy of a calculation
+
+    Returns
+    -------
+    record with an extra column
+
+    """
+    paths=record["path"]
+    energies=[float(method(p)) for p in paths]
+    record["value"]=energies
+    return record
+
+def main():
+    name="testing"
+    target="energy.mush"
+
+    record=pd.read_json(os.path.join(name+".shift","record.json"))
+    record=append_values(record,oszicar_energy_read)
+
+    record.to_json(name+".values.json")
+
+if __name__=="__main__":
+    main()

@@ -1,0 +1,103 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+
+def digest_sorted_surface_data(a,b,x,y,z):
+    """Given sorted data with the a/b points and the x/y Cartesian coordinates,
+    return the x,y,z values with the correct mesh grid shape and make the z
+    values relative to he minimum.
+
+    Parameters
+    ----------
+    a : array
+    b: array
+    x: array
+    y: array
+    z : array
+
+    Returns
+    -------
+    X,Y,Z : 2d-array,2d-array,2d-array
+
+    """
+    amax=max(a)+1
+    bmax=max(b)+1
+
+    X=x.values.reshape(amax,bmax)
+    Y=y.values.reshape(amax,bmax)
+    Z=(z-min(z)).values.reshape(amax,bmax)
+
+    return X,Y,Z
+
+
+def plot_gamma_surface(ax,a,b,x,y,z):
+    """Given sorted data with the a/b points and the x/y Cartesian coordinates,
+    plot the gamma surface. This assumes you're passing one value per
+    grid point and that they're all organized the same way.
+
+    Parameters
+    ----------
+    ax : mpl ax with 3d projection
+    a : array
+    b: array
+    x: array
+    y: array
+    z : array
+
+    Returns
+    -------
+    ax
+
+    """
+    X,Y,Z=digest_sorted_surface_data(a,b,x,y,z)
+
+    ax.plot_surface(X,Y,Z,facecolors=cm.jet(Z/np.max(Z)),antialiased=False)
+    ax.set_aspect('equal')
+
+    return ax
+
+def plot_projected_gamma_surface(ax,a,b,x,y,z):
+    """Given sorted data with the a/b points and the x/y Cartesian coordinates,
+    plot the gamma surface. This assumes you're passing one value per
+    grid point and that they're all organized the same way.
+
+    Parameters
+    ----------
+    ax : mpl ax
+    a : array
+    b: array
+    x: array
+    y: array
+    z : array
+
+    Returns
+    -------
+    ax
+
+    """
+    X,Y,Z=digest_sorted_surface_data(a,b,x,y,z)
+
+    ax.pcolormesh(X,Y,Z)
+    ax.set_aspect('equal')
+
+    return ax
+
+def main():
+    dump=pd.read_json("./testing.values.json")
+    filtered=dump.loc[dump["cleavage"]==0.0]
+    filtered=filtered.sort_values(["a","b"])
+
+    fig=plt.figure()
+    ax=fig.add_subplot(111,projection='3d')
+    ax=plot_gamma_surface(ax,filtered["a"],filtered["b"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
+    plt.show()
+
+    fig=plt.figure()
+    ax=fig.add_subplot(111)
+    ax=plot_projected_gamma_surface(ax,filtered["a"],filtered["b"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
+    plt.show()
+
+if __name__=="__main__":
+    main()

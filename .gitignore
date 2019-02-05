@@ -52,6 +52,8 @@ config.h*
 #personal things
 .vimrc.local
 *.bak
+multishift-sidekick.py
+multishift-plot.py
 
 #jekyll
 _site
