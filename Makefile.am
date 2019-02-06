@@ -2,7 +2,12 @@
 CLOCAL_AMFLAGS = -I build-aux/m4
 
 #===========================================================================#
-EXTRA_DIST=
+#This is overkill but I want to distribute the copyright files
+EXTRA_DIST=\
+		   casm-utilities\
+		   cxxopts\
+		   googletest
+
 #Values are filled by Makemodue.am files
 # lib_LTLIBRARIES=
 # pyexec_LTLIBRARIES=
