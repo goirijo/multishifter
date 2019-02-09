@@ -2,6 +2,7 @@
 #define MULTISHIFTSHIFT_HH
 
 #include "./define.hpp"
+#include "./autodocs.hpp"
 #include "casmutils/structure.hpp"
 #include <tuple>
 #include <vector>
@@ -27,7 +28,8 @@ public:
     int b_points() const { return m_b_points; };
     const std::vector<double>& cleavage_values() const { return m_cleavage_values; };
 
-    static std::string tag() { return "shift"; };
+    ///Information about each of the settings entries required to construct *this
+    static const docs::SettingsInfo docs;
 
 private:
     /// Where to find the slab that's supposed to get shifted
@@ -41,6 +43,10 @@ private:
 
     /// cleavage values. These are the values for how much vacuum you want to insert between the slabs in Angstrom
     std::vector<double> m_cleavage_values;
+
+    /// Generate the documentation for the settings, used to construct static member
+    static docs::SettingsInfo _initialized_documentation();
+
 };
 
 /**
@@ -52,7 +58,7 @@ private:
 class SurfacePoint
 {
 public:
-    static std::vector<SurfacePoint> multishift_coordinates(const Structure& init_slab, int a_density, int b_density,
+    static std::vector<SurfacePoint> multishift_coordinates(const CASM::Lattice& surf_lattice, int a_density, int b_density,
                                                             const std::vector<double>& cleavage_values);
 
      const int a;

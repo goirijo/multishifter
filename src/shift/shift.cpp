@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
         mush::MultiIO writer(all_settings.name());
         writer.drop_shifts(shifter);
 
-        shift_settings.to_json().write(writer.shift_target() / (mush::ShiftSettings::tag() + ".json"));
+        shift_settings.to_json().write(writer.shift_target() / (mush::ShiftSettings::docs.tag() + ".json"));
         Simplicity::write_poscar(shifter.reference_slab(), writer.shift_target() / "slab.vasp");
 
         std::cout << "Structures written to " << writer.base_target()

@@ -2,6 +2,8 @@ import glob
 import numpy as np
 import pandas as pd
 import os.path
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 
 def dumb_read(path):
     return np.loadtxt(os.path.join(path,"energy.mush"))
@@ -35,12 +37,46 @@ def append_values(record,method):
     record["value"]=energies
     return record
 
+def evaluate_uber(x,e,g,l):
+    """Given the parameters for UBER and the cleavage value
+    x, return the predicted energy.
+
+    Parameters
+    ----------
+    x : float, cleavage value (zero at minimum)
+    e : float, energy at infinite separation
+    g : float, surface energy
+    l : float
+
+    Returns
+    -------
+    float
+
+    """
+    return e+2*g*(1-(1+x/l)*np.exp(-x/l))
+
 def main():
     name="testing"
     target="energy.mush"
 
     record=pd.read_json(os.path.join(name+".shift","record.json"))
     record=append_values(record,oszicar_energy_read)
+
+    uber=record.loc[(record["a"]==0) & (record["b"]==0)]
+    x=uber["cleavage"]
+    y=uber["value"]
+    y=y-min(y)
+    popt,pcov=curve_fit(evaluate_uber,x,y)
+    print popt
+    xfit=np.arange(min(x),5,0.001)
+    plt.plot(xfit,evaluate_uber(xfit,*popt))
+    plt.scatter(x,y)
+    plt.show()
+
+    # x=np.arange(-4,4,0.1)
+    # y=[evaluate_uber(val,0,-19,0.5,0.5) for val in x]
+    # plt.scatter(x,y)
+    # plt.show()
 
     record.to_json(name+".values.json")
 

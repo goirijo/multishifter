@@ -29,7 +29,7 @@ MultiIO::MultiIO(const std::string& init_name) : m_name(init_name) {}
 
 fs::path MultiIO::base_target() const
 {
-    auto target = io::prefixed_dirname(this->name(), BaseSettings::tag());
+    auto target = io::prefixed_dirname(this->name(), BaseSettings::docs.tag());
     return target;
 }
 
@@ -51,7 +51,7 @@ void MultiIO::drop_base(const MultiBase& preshift_structures)
 
 fs::path MultiIO::shift_target() const
 {
-    auto target = io::prefixed_dirname(this->name(), ShiftSettings::tag());
+    auto target = io::prefixed_dirname(this->name(), ShiftSettings::docs.tag());
     return target;
 }
 

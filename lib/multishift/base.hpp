@@ -2,6 +2,7 @@
 #define MULTIBUNDLE_HH
 
 #include "./define.hpp"
+#include "./autodocs.hpp"
 #include "casmutils/structure.hpp"
 
 namespace mush
@@ -31,7 +32,8 @@ public:
     const int& floor_slab_atom_index() const { return m_floor_slab_atom_ix; }
     const int& stacks() const { return m_stacks; }
 
-    static std::string tag() {return "base";};
+    ///Information about each of the settings entries required to construct *this
+    static const docs::SettingsInfo docs;
 
 private:
     /// The path to the primitive cell
@@ -47,6 +49,10 @@ private:
     /// Specifies how thick the slabs your shifting should be, i.e. how many times you want to
     /// stacl the shift unit
     int m_stacks;
+
+    /// Generate the documentation for the settings, used to construct static member
+    static docs::SettingsInfo _initialized_documentation();
+
 };
 
 

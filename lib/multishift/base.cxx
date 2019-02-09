@@ -1,6 +1,6 @@
-#include "./misc.hpp"
 #include "./base.hpp"
 #include "./exceptions.hpp"
+#include "./misc.hpp"
 #include "casmutils/frankenstein.hpp"
 
 namespace mush
@@ -12,23 +12,32 @@ BaseSettings::BaseSettings(const CASM::fs::path& init_prim_path, const Eigen::Ve
       m_floor_slab_atom_ix(init_floor_slab_ix),
       m_stacks(init_stacks)
 {
-    if(m_floor_slab_atom_ix<0)
+    if (m_floor_slab_atom_ix < 0)
     {
         throw except::SettingMustBeGreaterEqualThanZero("floor_slab_index");
     }
 
-    if(m_stacks<1)
+    if (m_stacks < 1)
     {
         throw except::SettingMustBeGreaterThanZero("stacks");
     }
 }
 
+docs::SettingsInfo BaseSettings::_initialized_documentation()
+{
+    docs::SettingsInfo docs("base");
+    // chain things here
+    return docs;
+}
+
+const docs::SettingsInfo BaseSettings::docs(BaseSettings::_initialized_documentation());
+
 BaseSettings BaseSettings::from_json(const CASM::jsonParser& init_settings)
 {
-    auto floor_index = lazy::get_or_value<int>(init_settings,"floor_slab_index",0);
-    auto stacks = lazy::get_or_value<int>(init_settings,"stacks",1);
+    auto floor_index = lazy::get_or_value<int>(init_settings, "floor_slab_index", 0);
+    auto stacks = lazy::get_or_value<int>(init_settings, "stacks", 1);
 
-    //TODO: Make exception safe. The CASM exceptions are way to generic to forward though.
+    // TODO: Make exception safe. The CASM exceptions are way to generic to forward though.
 
     return BaseSettings(init_settings["prim"].get<CASM::fs::path>(), init_settings["millers"].get<Eigen::Vector3i>(),
                         floor_index, stacks);

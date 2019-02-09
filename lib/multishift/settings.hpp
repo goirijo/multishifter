@@ -52,14 +52,14 @@ FullSettings FullSettings::from_json(const CASM::jsonParser& init_json)
         throw except::UnspecifiedSettings("name");
     }
 
-    if(init_json.contains(BaseSettings::tag()))
+    if(init_json.contains(BaseSettings::docs.tag()))
     {
-        base_settings_ptr=std::unique_ptr<BaseSettings>(new BaseSettings(BaseSettings::from_json(init_json[BaseSettings::tag()])));
+        base_settings_ptr=std::unique_ptr<BaseSettings>(new BaseSettings(BaseSettings::from_json(init_json[BaseSettings::docs.tag()])));
     }
 
-    if(init_json.contains(ShiftSettings::tag()))
+    if(init_json.contains(ShiftSettings::docs.tag()))
     {
-        shift_settings_ptr=std::unique_ptr<ShiftSettings>(new ShiftSettings(ShiftSettings::from_json(init_json[ShiftSettings::tag()])));
+        shift_settings_ptr=std::unique_ptr<ShiftSettings>(new ShiftSettings(ShiftSettings::from_json(init_json[ShiftSettings::docs.tag()])));
     }
 
     return FullSettings(init_json["name"].get<std::string>(), std::move(base_settings_ptr), std::move(shift_settings_ptr));
@@ -79,7 +79,7 @@ const BaseSettings& FullSettings::base_settings() const
     }
     else
     {
-        throw except::UnspecifiedSettings(BaseSettings::tag());
+        throw except::UnspecifiedSettings(BaseSettings::docs.tag());
     }
 }
 
@@ -91,7 +91,7 @@ const ShiftSettings& FullSettings::shift_settings() const
     }
     else
     {
-        throw except::UnspecifiedSettings(ShiftSettings::tag());
+        throw except::UnspecifiedSettings(ShiftSettings::docs.tag());
     }
 }
 } // namespace mush

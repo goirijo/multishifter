@@ -1,6 +1,6 @@
-#include "./misc.hpp"
 #include "./shift.hpp"
 #include "./exceptions.hpp"
+#include "./misc.hpp"
 
 namespace mush
 {
@@ -11,22 +11,31 @@ ShiftSettings::ShiftSettings(const CASM::fs::path& init_slab_path, int init_a_po
       m_b_points(init_b_points),
       m_cleavage_values(init_cleavage)
 {
-    if(init_a_points<1)
+    if (init_a_points < 1)
     {
         throw except::SettingMustBeGreaterThanZero("a");
     }
 
-    if(init_b_points<1)
+    if (init_b_points < 1)
     {
         throw except::SettingMustBeGreaterThanZero("b");
     }
 }
 
+docs::SettingsInfo ShiftSettings::_initialized_documentation()
+{
+    docs::SettingsInfo docs("shift");
+    // chain things here
+    return docs;
+}
+
+const docs::SettingsInfo ShiftSettings::docs(ShiftSettings::_initialized_documentation());
+
 ShiftSettings ShiftSettings::from_json(const CASM::jsonParser& init_json)
 {
-    auto aval=lazy::get_or_value<int>(init_json,"a",1);
-    auto bval=lazy::get_or_value<int>(init_json,"b",1);
-    auto cleave=lazy::get_or_value<std::vector<double>>(init_json,"cleavage",std::vector<double>{0.0});
+    auto aval = lazy::get_or_value<int>(init_json, "a", 1);
+    auto bval = lazy::get_or_value<int>(init_json, "b", 1);
+    auto cleave = lazy::get_or_value<std::vector<double>>(init_json, "cleavage", std::vector<double>{0.0});
 
     return ShiftSettings(init_json["slab"].get<CASM::fs::path>(), aval, bval, cleave);
 }
@@ -67,13 +76,16 @@ Eigen::Matrix3d SurfacePoint::_phony_lat_mat_reorient(const Eigen::Matrix3d& rea
     // b2b2=bb-b1b1
     phony_lat_mat(1, 1) = std::sqrt(bb - phony_lat_mat(0, 1) * phony_lat_mat(0, 1));
 
+    // Set the c-vector to just be a unit perpendicular to the ab-vectors
+    phony_lat_mat.col(2)=phony_lat_mat.col(0).cross(phony_lat_mat.col(1)).normalized();
     return phony_lat_mat;
 }
 
-std::vector<SurfacePoint> SurfacePoint::multishift_coordinates(const Structure& init_slab, int a_density, int b_density,
-                                                               const std::vector<double>& cleavage_values)
+    std::vector<SurfacePoint> SurfacePoint::multishift_coordinates(const CASM::Lattice& surf_lattice, int a_density, int b_density,
+                                                            const std::vector<double>& cleavage_values)
 {
-    auto phony_lat_mat = SurfacePoint::_phony_lat_mat_reorient(init_slab.lattice().lat_column_mat());
+    /* auto phony_lat_mat = SurfacePoint::_phony_lat_mat_reorient(init_slab.lattice().lat_column_mat()); */
+    auto phony_lat_mat = SurfacePoint::_phony_lat_mat_reorient(surf_lattice.lat_column_mat());
     auto oriented_a_vec = phony_lat_mat.col(0);
     auto oriented_b_vec = phony_lat_mat.col(1);
 
@@ -117,7 +129,7 @@ MultiShift::MultiShift(const Structure& init_slab, int a_density, int b_density,
         throw except::LeftHandedLattice();
     }
 
-    auto mush_coords = SurfacePoint::multishift_coordinates(init_slab, a_density, b_density, cleavage_values);
+    auto mush_coords = SurfacePoint::multishift_coordinates(init_slab.lattice(), a_density, b_density, cleavage_values);
 
     const auto a_vector = std::get<0>(this->m_reference_slab.lattice().vectors());
     const auto b_vector = std::get<1>(this->m_reference_slab.lattice().vectors());

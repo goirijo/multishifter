@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 
         writer.drop_base(base);
 
-        base_settings.to_json().write(writer.base_target() / (mush::BaseSettings::tag() + ".json"));
+        base_settings.to_json().write(writer.base_target() / (mush::BaseSettings::docs.tag() + ".json"));
 
         loggy::divider();
 
