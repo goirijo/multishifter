@@ -1,2 +1,3 @@
 include src/base/Makemodule.am
 include src/shift/Makemodule.am
+include src/fourier/Makemodule.am

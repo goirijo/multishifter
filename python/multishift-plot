@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -98,6 +99,8 @@ def main():
     ax=fig.add_subplot(111)
     ax=plot_projected_gamma_surface(ax,filtered["a"],filtered["b"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
     plt.show()
+
+    print json.dumps({key : filtered[key].tolist() for key in filtered})
 
 if __name__=="__main__":
     main()

@@ -12,7 +12,7 @@ class UnspecifiedSettings : public std::runtime_error
 {
 public:
     UnspecifiedSettings(const std::string& entry)
-        : std::runtime_error("The settings entry '" + entry+"' was not specified.")
+        : std::runtime_error("The settings entry '" + entry + "' was not specified.")
     {
     }
 };
@@ -40,22 +40,47 @@ public:
     }
 };
 
+class DimensionalMismatch : public std::runtime_error
+{
+public:
+    DimensionalMismatch(int expected, int got, const std::string& elaborate)
+        : std::runtime_error("Expected dimension to be " + std::to_string(expected) + " but got " +
+                             std::to_string(got) + " instead.\n" + elaborate)
+    {
+    }
+};
+
+class BadData : public std::runtime_error
+{
+public:
+    BadData(const std::string& elaborate)
+        : std::runtime_error("Bad input data.\n" + elaborate)
+    {
+    }
+};
+
 class BadSetting : public std::runtime_error
 {
 public:
-    BadSetting(const std::string& key, const std::string& elaborate) : std::runtime_error("Bad settigs parameter for '"+key+"'\n"+elaborate) {}
+    BadSetting(const std::string& key, const std::string& elaborate)
+        : std::runtime_error("Bad settigs parameter for '" + key + "'\n" + elaborate)
+    {
+    }
 };
 
 class SettingMustBeGreaterThanZero : public BadSetting
 {
-    public:
-        SettingMustBeGreaterThanZero(const std::string& key) : BadSetting(key, "Value must be greater than zero"){}
+public:
+    SettingMustBeGreaterThanZero(const std::string& key) : BadSetting(key, "Value must be greater than zero") {}
 };
 
 class SettingMustBeGreaterEqualThanZero : public BadSetting
 {
-    public:
-        SettingMustBeGreaterEqualThanZero(const std::string& key) : BadSetting(key, "Value must be greater or equal to zero"){}
+public:
+    SettingMustBeGreaterEqualThanZero(const std::string& key)
+        : BadSetting(key, "Value must be greater or equal to zero")
+    {
+    }
 };
 
 } // namespace except

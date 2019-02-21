@@ -1,6 +1,10 @@
 noinst_LTLIBRARIES += libmultishift.la
 
 libmultishift_la_SOURCES=\
+				   lib/multishift/surf.hpp\
+				   lib/multishift/surf.cxx\
+				   lib/multishift/fourier.hpp\
+				   lib/multishift/fourier.cxx\
 				   lib/multishift/misc.hpp\
 				   lib/multishift/misc.cxx\
 				   lib/multishift/autodocs.hpp\

@@ -1,4 +1,5 @@
 import glob
+import json
 import numpy as np
 import pandas as pd
 import os.path
@@ -67,18 +68,21 @@ def main():
     y=uber["value"]
     y=y-min(y)
     popt,pcov=curve_fit(evaluate_uber,x,y)
-    print popt
-    xfit=np.arange(min(x),5,0.001)
-    plt.plot(xfit,evaluate_uber(xfit,*popt))
-    plt.scatter(x,y)
-    plt.show()
+    # print popt
+    # xfit=np.arange(min(x),5,0.001)
+    # plt.plot(xfit,evaluate_uber(xfit,*popt))
+    # plt.scatter(x,y)
+    # plt.show()
 
     # x=np.arange(-4,4,0.1)
     # y=[evaluate_uber(val,0,-19,0.5,0.5) for val in x]
     # plt.scatter(x,y)
     # plt.show()
 
-    record.to_json(name+".values.json")
+    # record.to_json(name+".values.json",orient='records')
+    # print record
+    # print json.dumps(json.loads(record.to_json(orient='table')),indent=4)
+    print json.dumps({key : record[key].tolist() for key in record})
 
 if __name__=="__main__":
     main()

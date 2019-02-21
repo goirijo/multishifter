@@ -3,6 +3,7 @@
 
 #include "./define.hpp"
 #include "./autodocs.hpp"
+#include "./surf.hpp"
 #include "casmutils/structure.hpp"
 #include <tuple>
 #include <vector>
@@ -47,36 +48,6 @@ private:
     /// Generate the documentation for the settings, used to construct static member
     static docs::SettingsInfo _initialized_documentation();
 
-};
-
-/**
- * Just a collection of variables:
- * the integer shift values for a and b, along with the associated lattice
- * vector fraction of a and b. Also the cleavage value.
- */
-
-class SurfacePoint
-{
-public:
-    static std::vector<SurfacePoint> multishift_coordinates(const CASM::Lattice& surf_lattice, int a_density, int b_density,
-                                                            const std::vector<double>& cleavage_values);
-
-     const int a;
-     const int b;
-     const double a_frac;
-     const double b_frac;
-     const double x_cart;
-     const double y_cart;
-     const double cleavage;
-
-private:
-    SurfacePoint(int a, int b, double a_frac, double b_frac, double x_cart, double y_cart, double cleavage)
-        : a(a), b(b), a_frac(a_frac), b_frac(b_frac), x_cart(x_cart), y_cart(y_cart), cleavage(cleavage){};
-
-    ///Given a lattice column matrix, return a lattice column matrix that has
-    ///rotated the values such that the a vector points along the x-axis,
-    ///axb points along the z axis, and information about the c vector is lost.
-    static Eigen::Matrix3d _phony_lat_mat_reorient(const Eigen::Matrix3d& real_lat_mat);
 };
 
 /**
