@@ -2,8 +2,8 @@
 #define MULTISHIFTMISC_HH
 
 #include "./exceptions.hpp"
-#include "cxxopts.hpp"
 #include "casm/casm_io/jsonParser.hh"
+#include "cxxopts.hpp"
 
 namespace cxxopts
 {
@@ -13,21 +13,31 @@ void required_argument_notify(const ParseResult& result, const std::vector<std::
 
 namespace lazy
 {
-    template<typename T>
-    T get_or_value(const CASM::jsonParser& json, const std::string& key, const T& default_value)
+template <typename T>
+T get_or_value(const CASM::jsonParser& json, const std::string& key, const T& default_value)
+{
+    if (json.contains(key))
     {
-        if(json.contains(key))
-        {
-            return json[key].get<T>();
-        }
-
-        return default_value;
+        return json[key].get<T>();
     }
+
+    return default_value;
 }
+} // namespace lazy
 
 namespace loggy
 {
 void divider();
 } // namespace loggy
+
+namespace hashing
+{
+template <typename T1, typename T2>
+struct pair_hash
+{
+    std::size_t operator()(const std::pair<T1, T2>& v) const { return v.first * 31 + v.second; }
+};
+
+} // namespace hashing
 
 #endif

@@ -113,4 +113,18 @@ void MultiIO::drop_shifts(const MultiShift& shifted_structures) {
     return;
 }
 
+std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> MultiIO::unrolled_frac_grid_data_from_json(const CASM::jsonParser& json_data)
+{
+        // I hate jsonParser
+        std::vector<double> as;
+        CASM::from_json(as, json_data["a_frac"]);
+        /* auto as=json_data.get<std::vector<double>>(); */
+        std::vector<double> bs;
+        CASM::from_json(bs, json_data["b_frac"]);
+        std::vector<double> vals;
+        CASM::from_json(vals, json_data["value"]);
+
+        return std::make_tuple(as,bs,vals);
+}
+
 } // namespace mush

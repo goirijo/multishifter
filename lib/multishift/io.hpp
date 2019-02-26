@@ -3,14 +3,20 @@
 
 #include "./define.hpp"
 #include <string>
+#include <tuple>
+
+namespace CASM
+{
+class jsonParser;
+}
 
 namespace mush
 {
 
-
 class MultiBase;
 class MultiShift;
-struct SurfacePoint;
+class SurfacePoint;
+class InterPoint;
 
 /**
  * Given classes defined in the mush namespace, this class
@@ -23,7 +29,7 @@ class MultiIO
 public:
     MultiIO(const std::string& init_name);
 
-    std::string name() const {return m_name;}
+    std::string name() const { return m_name; }
 
     /// Target directory for the base files
     fs::path base_target() const;
@@ -39,13 +45,16 @@ public:
     /// Writes out all the shifted slabs in nested directories
     void drop_shifts(const MultiShift& shifted_structures);
 
+    /// Extract the fractional coordinates and values from a json file, where value is a real number
+    static std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
+    unrolled_frac_grid_data_from_json(const CASM::jsonParser& json_data);
+
 private:
     /// Name of the calculations directories
     std::string m_name;
 
     /// Directory path for a particular Surface coordinate
     fs::path _surface_point_path(const SurfacePoint& point) const;
-
 };
 
 } // namespace mush

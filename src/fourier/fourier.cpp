@@ -1,75 +1,33 @@
 #include "multishift/fourier.hpp"
-#include "multishift/define.hpp"
-#include "multishift/misc.hpp"
+#include "multishift/io.hpp"
 #include "casm/casm_io/json_io/container.hh"
+#include "casmutils/structure.hpp"
 #include "cxxopts.hpp"
 #include "multishift/define.hpp"
 #include "multishift/exceptions.hpp"
+#include "multishift/misc.hpp"
 #include <iostream>
 #include <unordered_set>
-#include "casmutils/structure.hpp"
 
-struct pair_hash {
-    inline std::size_t operator()(const std::pair<long,long> & v) const {
-        return v.first*31+v.second;
-    }
-};
+/* mush::Interpolator::InterGrid best_reshaped(const std::vector<mush::InterPoint>& unrolled_data, double ka_dim, */
+/*                                             double kb_dim) */
+/* { */
+/*     std::vector<std::pair<int, int>> kratio_candidates; */
+/*     for (int i = 1; i < unrolled_data.size() + 1; ++i) */
+/*     { */
+/*         if (unrolled_data.size() % i == 0) */
+/*         { */
+/*             kratio_candidates.emplace_back(i, unrolled_data.size() / i); */
+/*         } */
+/*     } */
 
-void sanity_check(const std::vector<mush::InterPoint>& unrolled_data)
-{
-    long prec=1e8;
-    std::unordered_set<std::pair<long,long>,pair_hash> unique_values;
-    for(const auto& p : unrolled_data)
-    {
-        unique_values.insert(std::make_pair(static_cast<long>(p.a_frac*prec+0.5),static_cast<long>(p.b_frac*prec+0.5)));
-    }
+/*     auto best = kratio_candidates[0]; */
+/*     for (const auto& candidate : kratio_candidates) */
+/*     { */
+/*     } */
+/*     assert(false); */
+/* } */
 
-    if(unique_values.size()!=unrolled_data.size())
-    {
-        throw mush::except::BadData("There are multiple values defined per grid point!");
-    }
-
-    return;
-}
-
-mush::Interpolator::InterGrid direct_reshape(const std::vector<mush::InterPoint>& unrolled_data, int ka_dim, int kb_dim)
-{
-    if(ka_dim*kb_dim!=unrolled_data.size())
-    {
-        throw mush::except::DimensionalMismatch(ka_dim*kb_dim,unrolled_data.size(),"Cannot reshape vector to the specified grid.");
-    }
-
-    int i=0;
-    mush::Interpolator::InterGrid final_grid;
-    for(int ka=0; ka<ka_dim; ++ka)
-    {
-        mush::Interpolator::InterGrid::value_type kb_row;
-        for(int kb=0; kb<kb_dim; ++kb, ++i)
-        {
-            kb_row.push_back(unrolled_data[i]);
-        }
-        final_grid.emplace_back(std::move(kb_row));
-    }
-
-    return final_grid;
-}
-
-mush::Interpolator::InterGrid best_reshaped(const std::vector<mush::InterPoint>& unrolled_data, double ka_dim, double kb_dim)
-{
-    std::vector<std::pair<int,int>> kratio_candidates;
-    for(int i=1; i<unrolled_data.size()+1; ++i)
-    {
-        if(unrolled_data.size()%i==0)
-        {
-            kratio_candidates.emplace_back(i,unrolled_data.size()/i);
-        }
-    }
-
-    auto best=kratio_candidates[0];
-    for(const auto& candidate : kratio_candidates)
-    {
-    }
-}
 
 /**
  * multishift-fourier reads up a slab structure and a regular
@@ -81,60 +39,69 @@ mush::Interpolator::InterGrid best_reshaped(const std::vector<mush::InterPoint>&
 
 int main(int argc, char* argv[])
 {
-    mush::fs::path test_path("./dumb.json");
-    CASM::jsonParser test_json(test_path);
+    using mush::fs::path;
 
-    // I hate jsonParser
-    std::vector<double> as;
-    CASM::from_json(as, test_json["a_frac"]);
-    /* auto as=test_json.get<std::vector<double>>(); */
-    std::vector<double> bs;
-    CASM::from_json(bs, test_json["b_frac"]);
-    std::vector<double> vals;
-    CASM::from_json(vals, test_json["value"]);
+    cxxopts::Options options("multishift-fourier", "Interpolate a periodic surface.");
 
-    if (as.size() != bs.size())
+    // clang-format off
+    options.add_options()
+        ("d,data","Path to the data file (json).",cxxopts::value<path>())
+        ("l,lattice","Path to the structure whose ab-vectors the data is relative to (poscar).",cxxopts::value<path>())
+        ("h,help","Print available options.");
+    // clang-format on
+
+    try
     {
-        throw mush::except::DimensionalMismatch(
-            as.size(), bs.size(), "Cannot create a mesh grid with the provided data points along a and b.");
+        auto result = options.parse(argc, argv);
+
+        if (result.count("help"))
+        {
+            std::cout << options.help() << std::endl;
+            return 0;
+        }
+
+        else
+        {
+            cxxopts::required_argument_notify(result, std::vector<std::string>{"data"});
+            cxxopts::required_argument_notify(result, std::vector<std::string>{"lattice"});
+        }
+
+
+        const auto& data_path=result["data"].as<path>();
+        const auto& lat_path=result["lattice"].as<path>();
+        //**************************************************************************//
+
+        CASM::jsonParser test_json(data_path);
+
+        //save me c++17
+        std::vector<double> as,bs,vals;
+        std::tie(as,bs,vals)=mush::MultiIO::unrolled_frac_grid_data_from_json(test_json);
+
+        auto slab = Rewrap::Structure::from_poscar(lat_path);
+        const CASM::Lattice& slab_lat = slab.lattice();
+        mush::Interpolator ipolator(slab_lat, as, bs, vals);
+
+        const auto& real_lat=ipolator.real_lattice();
+        const auto& real_vals=ipolator.sampled_values();
+        auto real_dump=mush::Interpolator::grid_to_json(real_lat,real_vals);
+        real_dump.write(mush::fs::path("./real.json"));
+
+        const auto& rcal_lat=ipolator.reciprocal_lattice();
+        const auto& rcal_vals=ipolator.k_values();
+        auto rcal_dump=mush::Interpolator::grid_to_json(rcal_lat,rcal_vals);
+        rcal_dump.write(mush::fs::path("./rcal.json"));
+
+        auto recover=ipolator.interpolate(50,50);
+        auto ipol_dump=mush::Interpolator::grid_to_json(recover.first,recover.second);
+        ipol_dump.write(mush::fs::path("./ipol.json"));
+
     }
-    if (as.size() != vals.size())
+
+    catch(const std::exception& e)
     {
-        throw mush::except::DimensionalMismatch(
-            as.size(), vals.size(), "The number of grid points does not match the number of values to fit to.");
+        std::cout<<e.what()<<std::endl;
+        throw e;
     }
-    
-    // You have to ensure there's only a single data point per grid point
-    std::vector<mush::InterPoint> unrolled_data;
-    for(int i=0; i<vals.size(); ++i)
-    {
-        unrolled_data.emplace_back(as[i],bs[i],vals[i]);
-    }
-
-    sanity_check(unrolled_data);
-
-
-    for (auto a : as)
-    {
-        std::cout << a << " ";
-    }
-    std::cout << std::endl << std::endl;
-    ;
-    for (auto b : bs)
-    {
-        std::cout << b << " ";
-    }
-    std::cout << std::endl;
-    loggy::divider();
-
-    auto slab=Rewrap::Structure::from_poscar("./slab.vasp");
-    const CASM::Lattice& slab_lat=slab.lattice();
-    auto reshaped=direct_reshape(unrolled_data,25,25);
-
-    mush::Interpolator(slab_lat,reshaped);
-
-
-
 
     return 0;
 }

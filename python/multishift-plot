@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
 def digest_sorted_surface_data(a,b,x,y,z):
-    """Given sorted data with the a/b points and the x/y Cartesian coordinates,
+    """Given sorted data with the a/b fractional points and the x/y Cartesian coordinates,
     return the x,y,z values with the correct mesh grid shape and make the z
     values relative to he minimum.
 
@@ -23,8 +23,11 @@ def digest_sorted_surface_data(a,b,x,y,z):
     X,Y,Z : 2d-array,2d-array,2d-array
 
     """
-    amax=max(a)+1
-    bmax=max(b)+1
+    afloats={int(val*1e8+0.5) for val in a}
+    bfloats={int(val*1e8+0.5) for val in b}
+
+    amax=len(afloats)
+    bmax=len(bfloats)
 
     X=x.values.reshape(amax,bmax)
     Y=y.values.reshape(amax,bmax)
@@ -92,15 +95,15 @@ def main():
 
     fig=plt.figure()
     ax=fig.add_subplot(111,projection='3d')
-    ax=plot_gamma_surface(ax,filtered["a"],filtered["b"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
+    ax=plot_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
     plt.show()
 
     fig=plt.figure()
     ax=fig.add_subplot(111)
-    ax=plot_projected_gamma_surface(ax,filtered["a"],filtered["b"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
+    ax=plot_projected_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
     plt.show()
 
-    print json.dumps({key : filtered[key].tolist() for key in filtered})
+    print json.dumps({key : filtered[key].tolist() for key in filtered},indent=4)
 
 if __name__=="__main__":
     main()

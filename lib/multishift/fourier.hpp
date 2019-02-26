@@ -7,60 +7,97 @@
 #include <complex>
 #include <vector>
 
+namespace CASM
+{
+    class jsonParser;
+}
+
 namespace mush
 {
-    /**
-     * Given a lattice (only ab-vectors matter) and a list of values
-     * and grid points, creates a reciprocal space from which to sample
-     * plane waves uniformly, and calculates coefficients to
-     * reproduce the given data.
-     *
-     * The reciprocal grid to sample in is determined by the shape of
-     * the 2d arrangement of the interpolated values.
-     */
+/**
+ * Given a lattice (only ab-vectors matter) and a list of values
+ * and grid points, creates a reciprocal space from which to sample
+ * plane waves uniformly, and calculates coefficients to
+ * reproduce the given data.
+ *
+ * The reciprocal grid to sample in is determined by the shape of
+ * the 2d arrangement of the interpolated values.
+ */
 
-    class Interpolator
-    {
-        public:
+class Interpolator
+{
+public:
+    typedef std::vector<std::vector<InterPoint>> InterGrid;
 
-            typedef std::vector<std::vector<InterPoint>> InterGrid;
+    Interpolator(const Lattice& init_lat, const std::vector<double>& a_fracs, const std::vector<double>& b_fracs, const std::vector<double>& vals);
 
-            Interpolator(const Lattice& init_lat, const InterGrid& init_values);
+    const InterGrid& sampled_values() const { return m_real_ipoints; }
 
-            ///Number of k-points/data points
-            int size() const;
+    const InterGrid& k_values() const { return m_k_values; }
 
-            /// Use the Fourier basis to reconstruct the signal at an arbitrary resolution
-            std::pair<Lattice, InterGrid> interpolate(int a_dim, int b_dim) const;
+    const Lattice& real_lattice() const { return m_real_lat; }
 
-        private:
+    const Lattice& reciprocal_lattice() const { return m_recip_lat; }
 
-            /// The real lattice where the gamma surface happened on the ab-plane
-            /// This is not the true lattice of the structure, just one with the
-            /// correct ab-vectors oriented along the xy-plane
-            Lattice m_real_lat;
+    /// Number of k-points/data points
+    int size() const;
 
-            /// The reciprocal lattice of the reduced real lattice
-            Lattice m_recip_lat;
+    /// Number of k-points/data points along each direction
+    std::pair<int,int> dims() const;
 
-            /// Holds initial values at the real interpolation points
-            InterGrid m_real_ipoints;
+    /// Use the Fourier basis to reconstruct the signal at an arbitrary resolution
+    std::pair<Lattice, InterGrid> interpolate(int a_dim, int b_dim) const;
 
-            /// Holds coefficients at each of the reciprocal k points
-            InterGrid m_k_values;
+    /// Store values of an InterGrid for a_frac, b_frac, x_cart, y_cart, and the complex value as
+    /// a json object
+    static CASM::jsonParser grid_to_json(const Lattice& ref_lat, const InterGrid& grid_values);
 
-            /// Constructs grid of k points, setting all coefficients to zero
-            static InterGrid _k_grid(const InterGrid& init_values, const Lattice& reciprocal_lattice);
+private:
 
-            /// Sets the coefficients for each of the k points
-            void _take_fourier_transform();
+    /// The InterGrid must have specific dimensions, which should not be determined by outside forces
+    Interpolator(const Lattice& init_lat, const InterGrid& init_values);
 
-            /// Helper to avoid so many loops. Unrolls 2d vector into a 1d vector.
-            static std::vector<InterPoint*> _unrolled_values(InterGrid* grid_values);
+    /// The real lattice where the gamma surface happened on the ab-plane
+    /// This is not the true lattice of the structure, just one with the
+    /// correct ab-vectors oriented along the xy-plane
+    Lattice m_real_lat;
 
-            /// Helper to avoid so many loops. Unrolls 2d vector into a 1d vector, put pointers are const.
-            static std::vector<const InterPoint*> _unrolled_values(const InterGrid& grid_values);
-    };
-}
+    /// The reciprocal lattice of the reduced real lattice
+    Lattice m_recip_lat;
+
+    /// Holds initial values at the real interpolation points
+    InterGrid m_real_ipoints;
+
+    /// Holds coefficients at each of the reciprocal k points
+    InterGrid m_k_values;
+
+    /// TODO: Places all the gridded up points within the weigner seitz cell
+    static InterGrid _r_weigner_seitz(const InterGrid& init_values, const Lattice& real_lattice);
+
+    /// Constructs grid of k points, setting all coefficients to zero
+    /// These k-points are integer multiples of the reciprocal lattice, because all
+    /// the information of a gamma surface falls within a single real space unit
+    /// cell (think about it, it's like the opposite of phonons, where you want 1st
+    /// Brillouin zone)
+    static InterGrid _k_grid(const InterGrid& init_values, const Lattice& reciprocal_lattice);
+
+    /// Sets the coefficients for each of the k points
+    void _take_fourier_transform();
+
+    /// Helper to avoid so many loops. Unrolls 2d vector into a 1d vector.
+    static std::vector<InterPoint*> _unrolled_values(InterGrid* grid_values);
+
+    /// Helper to avoid so many loops. Unrolls 2d vector into a 1d vector, put pointers are const.
+    static std::vector<const InterPoint*> _unrolled_values(const InterGrid& grid_values);
+
+    /// Given an unrolled vector of grid data, reshape it to the specified dimensions
+    static InterGrid _direct_reshape(const std::vector<mush::InterPoint>& unrolled_data, int ka_dim, int kb_dim);
+
+    /// Given unrolled data for ab-grid fractions and values, reshape the data into a 2d-grid,
+    /// making a few checks along the way to make sure it's even possible, given the data.
+    static InterGrid _grid_from_unrolled_data(const std::vector<double>& as, const std::vector<double>& bs, const std::vector<double>& vals);
+    
+};
+} // namespace mush
 
 #endif
