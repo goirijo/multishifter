@@ -3,17 +3,55 @@
 
 #include "./define.hpp"
 #include "./surf.hpp"
+#include "./autodocs.hpp"
 #include "casm/crystallography/Lattice.hh"
 #include <complex>
 #include <vector>
 
 namespace CASM
 {
-    class jsonParser;
+class jsonParser;
 }
 
 namespace mush
 {
+
+/**
+ * Settings for interpolating values on a grid. Holds a path
+ * to the data that should be interpolated.
+ */
+
+class FourierSettings
+{
+public:
+    FourierSettings(const fs::path& init_data_path, const fs::path& init_lattice_path,
+                    const std::vector<std::string>& init_value_tags);
+    static FourierSettings from_json(const CASM::jsonParser& init_json);
+    CASM::jsonParser to_json() const;
+
+    const fs::path& data_path() const {return m_data_path;};
+    const fs::path& lattice_path() const {return m_lattice_path;};
+    const std::vector<std::string>& values_to_interpolate() const {return m_value_tags;};
+    
+    ///Information about each of the settings entries required to construct *this
+    static const docs::SettingsInfo docs;
+
+private:
+    /// Path to json file that contains the data to interpolate. Each grid point
+    /// is defined by its fractional coordinates, and must appear exactly once.
+    fs::path m_data_path;
+
+    /// Path to the structure whose lattice is associated with the fractional coordinates
+    /// in the data file
+    fs::path m_lattice_path;
+
+    /// Fields in the data that should be interpolated
+    std::vector<std::string> m_value_tags;
+    
+    /// Generate the documentation for the settings, used to construct static member
+    static docs::SettingsInfo _initialized_documentation();
+};
+
 /**
  * Given a lattice (only ab-vectors matter) and a list of values
  * and grid points, creates a reciprocal space from which to sample
@@ -29,7 +67,8 @@ class Interpolator
 public:
     typedef std::vector<std::vector<InterPoint>> InterGrid;
 
-    Interpolator(const Lattice& init_lat, const std::vector<double>& a_fracs, const std::vector<double>& b_fracs, const std::vector<double>& vals);
+    Interpolator(const Lattice& init_lat, const std::vector<double>& a_fracs, const std::vector<double>& b_fracs,
+                 const std::vector<double>& vals);
 
     const InterGrid& sampled_values() const { return m_real_ipoints; }
 
@@ -43,7 +82,7 @@ public:
     int size() const;
 
     /// Number of k-points/data points along each direction
-    std::pair<int,int> dims() const;
+    std::pair<int, int> dims() const;
 
     /// Use the Fourier basis to reconstruct the signal at an arbitrary resolution
     std::pair<Lattice, InterGrid> interpolate(int a_dim, int b_dim) const;
@@ -52,10 +91,18 @@ public:
     /// a json object
     static CASM::jsonParser grid_to_json(const Lattice& ref_lat, const InterGrid& grid_values);
 
-private:
+    /// Serialize into a jsonParser for immediate reconstruction
+    CASM::jsonParser serialize() const;
 
+    /// Reconstruct from a serialized jsonParser
+    static Interpolator deserialize(const CASM::jsonParser& serialized);
+
+private:
     /// The InterGrid must have specific dimensions, which should not be determined by outside forces
     Interpolator(const Lattice& init_lat, const InterGrid& init_values);
+
+    /// This one is for when you call deserialize
+    Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&& init_rpoints, InterGrid&& init_kpoints);
 
     /// The real lattice where the gamma surface happened on the ab-plane
     /// This is not the true lattice of the structure, just one with the
@@ -95,8 +142,8 @@ private:
 
     /// Given unrolled data for ab-grid fractions and values, reshape the data into a 2d-grid,
     /// making a few checks along the way to make sure it's even possible, given the data.
-    static InterGrid _grid_from_unrolled_data(const std::vector<double>& as, const std::vector<double>& bs, const std::vector<double>& vals);
-    
+    static InterGrid _grid_from_unrolled_data(const std::vector<double>& as, const std::vector<double>& bs,
+                                              const std::vector<double>& vals);
 };
 } // namespace mush
 

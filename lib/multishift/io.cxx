@@ -66,7 +66,7 @@ fs::path MultiIO::_surface_point_path(const SurfacePoint& point) const
     return shift_dir / cleave_dir;
 }
 
-void MultiIO::drop_shifts(const MultiShift& shifted_structures) {
+void MultiIO::drop_shifts(const MultiShift& shifted_structures) const {
     std::vector<int> as;
     std::vector<int> bs;
     std::vector<double> a_fracs;

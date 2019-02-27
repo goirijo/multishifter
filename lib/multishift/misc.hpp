@@ -23,6 +23,13 @@ T get_or_value(const CASM::jsonParser& json, const std::string& key, const T& de
 
     return default_value;
 }
+
+template <typename T>
+bool almost_equal(T lhs, T rhs, T tol=1e-8)
+{
+    return std::abs(lhs-rhs)<tol;
+}
+
 } // namespace lazy
 
 namespace loggy

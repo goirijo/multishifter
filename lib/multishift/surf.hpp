@@ -8,6 +8,7 @@
 namespace CASM
 {
 class Lattice;
+class jsonParser;
 }
 
 namespace mush
@@ -64,6 +65,12 @@ public:
     /// This could probably just return a 2d-vector, since your lattice is probably oriented such that ab-vectors are on xy-plane, but
     /// just in case it isn't, it'll stay as a 3d-vector;
     Eigen::Vector3d cart(const CASM::Lattice& ref_lat) const;
+    
+    /// Serialize into a jsonParser for immediate reconstruction
+    CASM::jsonParser serialize() const;
+
+    /// Reconstruct from a serialized jsonParser
+    static InterPoint deserialize(const CASM::jsonParser& serialized);
 
 private:
 };

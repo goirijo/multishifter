@@ -17,6 +17,7 @@ class MultiBase;
 class MultiShift;
 class SurfacePoint;
 class InterPoint;
+class Interpolator;
 
 /**
  * Given classes defined in the mush namespace, this class
@@ -43,11 +44,14 @@ public:
     fs::path shift_target() const;
 
     /// Writes out all the shifted slabs in nested directories
-    void drop_shifts(const MultiShift& shifted_structures);
+    void drop_shifts(const MultiShift& shifted_structures) const;
 
     /// Extract the fractional coordinates and values from a json file, where value is a real number
     static std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
     unrolled_frac_grid_data_from_json(const CASM::jsonParser& json_data);
+
+    /// Writes out all the data associated with a particular interpolator
+    void drop_interpolator(const Interpolator& interpolated_data, const std::string& value_tag) const;
 
 private:
     /// Name of the calculations directories

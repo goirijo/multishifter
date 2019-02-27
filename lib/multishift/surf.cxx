@@ -72,4 +72,21 @@ Eigen::Vector3d InterPoint::cart(const CASM::Lattice& ref_lat) const
     return vec;
 }
 
+CASM::jsonParser InterPoint::serialize() const
+{
+    CASM::jsonParser serialized;
+    serialized["a_frac"] = this->a_frac;
+    serialized["b_frac"] = this->b_frac;
+    serialized["re(value)"] = this->value.real();
+    serialized["im(value)"] = this->value.imag();
+
+    return serialized;
+}
+
+InterPoint InterPoint::deserialize(const CASM::jsonParser& serialized)
+{
+    return InterPoint(serialized["a_frac"].get<double>(), serialized["b_frac"].get<double>(),
+                      std::complex<double>(serialized["re(value)"].get<double>(), serialized["im(value)"].get<double>()));
+}
+
 } // namespace mush

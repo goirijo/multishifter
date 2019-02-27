@@ -37,10 +37,60 @@ void sanity_check(const std::vector<mush::InterPoint>& unrolled_data)
     return;
 }
 
+/* CASM::jsonParser serialize(const mush::Lattice& lat) */
+/* { */
+/*     CASM::jsonParser serialized; */
+/*     std::vector<double> a{lat[0](0),lat[0](1),lat[0](2)}; */
+/*     std::vector<double> b{lat[1](0),lat[1](1),lat[1](2)}; */
+/*     std::vector<double> c{lat[2](0),lat[2](1),lat[2](2)}; */
+
+/*     serialized["a"]=a; */
+/*     serialized["b"]=b; */
+/*     serialized["c"]=c; */
+
+/*     return serialized; */
+/* } */
+
 } // namespace
 
 namespace mush
 {
+
+const docs::SettingsInfo FourierSettings::docs(FourierSettings::_initialized_documentation());
+
+docs::SettingsInfo FourierSettings::_initialized_documentation()
+{
+    docs::SettingsInfo docs("fourier");
+    // chain things here
+    return docs;
+}
+
+FourierSettings::FourierSettings(const fs::path& init_data_path, const fs::path& init_lattice_path,
+                                 const std::vector<std::string>& init_value_tags)
+    : m_data_path(init_data_path), m_lattice_path(init_lattice_path), m_value_tags(init_value_tags)
+{
+}
+
+FourierSettings FourierSettings::from_json(const CASM::jsonParser& init_json)
+{
+    auto data_path = init_json["data"].get<fs::path>();
+    auto lattice_path = init_json["lattice"].get<fs::path>();
+    auto value_tags = init_json["values"].get<std::vector<std::string>>();
+
+    return FourierSettings(data_path, lattice_path, value_tags);
+}
+
+CASM::jsonParser FourierSettings::to_json() const
+{
+    CASM::jsonParser serialized;
+    serialized["data"] = m_data_path.string();
+    serialized["lattice"] = m_lattice_path.string();
+    serialized["values"] = m_value_tags;
+    return serialized;
+}
+
+//********************************************************************************************
+
 Interpolator::InterGrid Interpolator::_r_weigner_seitz(const InterGrid& init_values, const Lattice& real_lattice)
 {
     InterGrid r_values;
@@ -67,14 +117,14 @@ Interpolator::InterGrid Interpolator::_k_grid(const InterGrid& init_values, cons
     auto num_as = init_values.size();
     auto num_bs = init_values[0].size();
 
-    //Yes, you want integers. Anything that doesn't fall on the reciprical lattice points is
-    //gonna mess your interpolation up.
-    //TODO: Should you worry about even grids? It could potentially cause trouble that the k-points
-    //on the edges don't have a "twin"
+    // Yes, you want integers. Anything that doesn't fall on the reciprical lattice points is
+    // gonna mess your interpolation up.
+    // TODO: Should you worry about even grids? It could potentially cause trouble that the k-points
+    // on the edges don't have a "twin"
     int ka_centrize = num_as / 2;
     int kb_centrize = num_bs / 2;
     CASM::Coordinate center_shift(ka_centrize, kb_centrize, 0.0, reciprocal_lattice, CASM::FRAC);
-    std::cout<<center_shift.const_frac().transpose()<<std::endl;
+    std::cout << center_shift.const_frac().transpose() << std::endl;
 
     for (int a = 0; a < init_values.size(); ++a)
     {
@@ -202,8 +252,8 @@ void Interpolator::_take_fourier_transform()
 }
 
 Interpolator::Interpolator(const Lattice& init_lat, const std::vector<double>& a_fracs,
-                           const std::vector<double>& b_fracs, const std::vector<double>& vals):
-    Interpolator(init_lat, Interpolator::_grid_from_unrolled_data(a_fracs,b_fracs,vals))
+                           const std::vector<double>& b_fracs, const std::vector<double>& vals)
+    : Interpolator(init_lat, Interpolator::_grid_from_unrolled_data(a_fracs, b_fracs, vals))
 {
 }
 
@@ -325,6 +375,68 @@ Interpolator::InterGrid Interpolator::_grid_from_unrolled_data(const std::vector
 
     sanity_check(unrolled_data);
     return Interpolator::_direct_reshape(unrolled_data, num_unique(as), num_unique(bs));
+}
+
+CASM::jsonParser Interpolator::serialize() const
+{
+    CASM::jsonParser serialized;
+
+    CASM::jsonParser rlat_serialized, klat_serialized;
+    CASM::to_json(this->m_real_lat, rlat_serialized);
+    CASM::to_json(this->m_recip_lat, klat_serialized);
+
+    serialized["r_lattice"] = rlat_serialized;
+    serialized["k_lattice"] = klat_serialized;
+
+    auto dims = this->dims();
+    serialized["a_dim"] = dims.first;
+    serialized["b_dim"] = dims.second;
+
+    std::vector<CASM::jsonParser> r_unroll, k_unroll;
+
+    for (int a = 0; a < dims.first; ++a)
+    {
+        for (int b = 0; b < dims.second; ++b)
+        {
+            r_unroll.push_back(this->sampled_values()[a][b].serialize());
+            k_unroll.push_back(this->k_values()[a][b].serialize());
+        }
+    }
+
+    serialized["r_unrolled"] = r_unroll;
+    serialized["k_unrolled"] = k_unroll;
+
+    return serialized;
+}
+
+Interpolator Interpolator::deserialize(const CASM::jsonParser& serialized)
+{
+    Lattice r_lat, k_lat;
+    CASM::from_json(r_lat, serialized["r_lattice"]);
+    CASM::from_json(k_lat, serialized["k_lattice"]);
+
+    int adim = serialized["a_dim"].get<int>();
+    int bdim = serialized["b_dim"].get<int>();
+
+    InterGrid r_grid, k_grid;
+    int i = 0;
+    for (int a = 0; a < adim; ++a)
+    {
+        r_grid.push_back(InterGrid::value_type());
+        k_grid.push_back(InterGrid::value_type());
+        for (int b = 0; b < bdim; ++b, ++i)
+        {
+            r_grid.back().emplace_back(InterPoint::deserialize(serialized["r_unrolled"][i]));
+            k_grid.back().emplace_back(InterPoint::deserialize(serialized["k_unrolled"][i]));
+        }
+    }
+
+    return Interpolator(std::move(r_lat), std::move(k_lat), std::move(r_grid), std::move(k_grid));
+}
+
+Interpolator::Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&& init_rpoints, InterGrid&& init_kpoints):
+    m_real_lat(std::move(init_real)), m_recip_lat(std::move(init_recip)), m_real_ipoints(std::move(init_rpoints)), m_k_values(std::move(init_kpoints))
+{
 }
 
 } // namespace mush
