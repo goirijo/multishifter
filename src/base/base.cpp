@@ -85,11 +85,11 @@ int main(int argc, char* argv[])
 
         writer.drop_base(base);
 
-        base_settings.to_json().write(writer.base_target() / (mush::BaseSettings::docs.tag() + ".json"));
+        base_settings.to_json().write(writer.target<mush::BaseSettings>() / (mush::BaseSettings::docs.tag() + ".json"));
 
         loggy::divider();
 
-        std::cout << "Structures written to " << writer.base_target() << " along with a backup of the settings used."
+        std::cout << "Structures written to " << writer.target<mush::BaseSettings>() << " along with a backup of the settings used."
                   << std::endl;
     }
 

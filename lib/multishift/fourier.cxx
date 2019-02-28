@@ -124,7 +124,6 @@ Interpolator::InterGrid Interpolator::_k_grid(const InterGrid& init_values, cons
     int ka_centrize = num_as / 2;
     int kb_centrize = num_bs / 2;
     CASM::Coordinate center_shift(ka_centrize, kb_centrize, 0.0, reciprocal_lattice, CASM::FRAC);
-    std::cout << center_shift.const_frac().transpose() << std::endl;
 
     for (int a = 0; a < init_values.size(); ++a)
     {

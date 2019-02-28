@@ -12,6 +12,11 @@ class jsonParser;
 
 namespace mush
 {
+namespace io
+{
+std::string prefixed_dirname(const std::string& prefix, const std::string& value);
+void doesnt_exist_or_throw(const fs::path& target);
+}
 
 class MultiBase;
 class MultiShift;
@@ -32,26 +37,28 @@ public:
 
     std::string name() const { return m_name; }
 
-    /// Target directory for the base files
-    fs::path base_target() const;
+    /// Target directory for the files related to the templated settings
+    template <typename SettingsType>
+    fs::path target() const
+    {
+        auto target = io::prefixed_dirname(this->name(), SettingsType::docs.tag());
+        return target;
+    }
 
     /// Writes out preliminary structures needed before the shifts are done:
     /// primitive, shift unit, raw slab (no translation), slab
     /// Pass the associated settings along with the structures
     void drop_base(const MultiBase& preshift_structures);
 
-    /// Target directory for the shift files
-    fs::path shift_target() const;
-
     /// Writes out all the shifted slabs in nested directories
     void drop_shifts(const MultiShift& shifted_structures) const;
 
     /// Extract the fractional coordinates and values from a json file, where value is a real number
-    static std::tuple<std::vector<double>, std::vector<double>, std::vector<double>>
-    unrolled_frac_grid_data_from_json(const CASM::jsonParser& json_data);
+    static std::tuple<std::vector<double>, std::vector<double>, std::vector<std::vector<double>>>
+    unrolled_frac_grid_data_from_json(const CASM::jsonParser& json_data, const std::vector<std::string>& value_tags);
 
     /// Writes out all the data associated with a particular interpolator
-    void drop_interpolator(const Interpolator& interpolated_data, const std::string& value_tag) const;
+    fs::path drop_interpolator(const Interpolator& interpolated_data, const std::string& value_tag) const;
 
 private:
     /// Name of the calculations directories

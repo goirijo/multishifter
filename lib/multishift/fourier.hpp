@@ -70,6 +70,9 @@ public:
     Interpolator(const Lattice& init_lat, const std::vector<double>& a_fracs, const std::vector<double>& b_fracs,
                  const std::vector<double>& vals);
 
+    /// Reconstruct from a serialized jsonParser
+    static Interpolator deserialize(const CASM::jsonParser& serialized);
+
     const InterGrid& sampled_values() const { return m_real_ipoints; }
 
     const InterGrid& k_values() const { return m_k_values; }
@@ -94,14 +97,11 @@ public:
     /// Serialize into a jsonParser for immediate reconstruction
     CASM::jsonParser serialize() const;
 
-    /// Reconstruct from a serialized jsonParser
-    static Interpolator deserialize(const CASM::jsonParser& serialized);
-
 private:
     /// The InterGrid must have specific dimensions, which should not be determined by outside forces
     Interpolator(const Lattice& init_lat, const InterGrid& init_values);
 
-    /// This one is for when you call deserialize
+    /// This one is for when you call deserialize, don't use it for other stuff
     Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&& init_rpoints, InterGrid&& init_kpoints);
 
     /// The real lattice where the gamma surface happened on the ab-plane
