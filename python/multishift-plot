@@ -4,6 +4,25 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+import argparse
+
+def _generate_parser():
+    parser = argparse.ArgumentParser(
+                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        "--data",
+        help="json file with data to plot.",
+        type=str,
+        required=True)
+    parser.add_argument(
+        "--value",
+        help="Field in the data file that should be plotted along the z-axis",
+        type=str,
+        required=True)
+
+    # argcomplete.autocomplete(parser)
+    return parser
+
 
 def digest_sorted_surface_data(a,b,x,y,z):
     """Given sorted data with the a/b fractional points and the x/y Cartesian coordinates,
@@ -89,21 +108,21 @@ def plot_projected_gamma_surface(ax,a,b,x,y,z):
     return ax
 
 def main():
-    dump=pd.read_json("./testing.values.json")
-    filtered=dump.loc[dump["cleavage"]==0.0]
-    filtered=filtered.sort_values(["a","b"])
+    parser = _generate_parser()
+    args=parser.parse_args()
+
+    filtered=pd.read_json(args.data)
+    filtered=filtered.sort_values(["a_frac","b_frac"])
 
     fig=plt.figure()
     ax=fig.add_subplot(111,projection='3d')
-    ax=plot_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
+    ax=plot_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered[args.value])
     plt.show()
 
     fig=plt.figure()
     ax=fig.add_subplot(111)
-    ax=plot_projected_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered["value"])
+    ax=plot_projected_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered[args.value])
     plt.show()
-
-    print json.dumps({key : filtered[key].tolist() for key in filtered},indent=4)
 
 if __name__=="__main__":
     main()
