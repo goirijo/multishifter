@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
         std::cout << "Search in " << shift_settings.slab_path() << " for slab structure." << std::endl;
 
         std::cout << "Grid density will be ";
-        std::cout << shift_settings.a_points() << "x" << shift_settings.b_points() << "("
+        std::cout << shift_settings.a_points() << "x" << shift_settings.b_points() << " ("
                   << shift_settings.a_points() * shift_settings.b_points() << " grid points)." << std::endl;
 
         std::cout << "Cleavage values at each shift point will be:" << std::endl;

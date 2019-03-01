@@ -5,6 +5,19 @@ import pandas as pd
 import os.path
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+import argparse
+
+def _generate_parser():
+    parser = argparse.ArgumentParser(
+                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        "--name",
+        help="The name field in the settings file used to generate shifted structures.",
+        type=str,
+        required=True)
+
+    # argcomplete.autocomplete(parser)
+    return parser
 
 def dumb_read(path):
     return np.loadtxt(os.path.join(path,"energy.mush"))
@@ -35,7 +48,7 @@ def append_values(record,method):
     """
     paths=record["path"]
     energies=[float(method(p)) for p in paths]
-    record["value"]=energies
+    record["energy"]=energies
     return record
 
 def evaluate_uber(x,e,g,l):
@@ -57,7 +70,10 @@ def evaluate_uber(x,e,g,l):
     return e+2*g*(1-(1+x/l)*np.exp(-x/l))
 
 def main():
-    name="testing"
+    parser = _generate_parser()
+    args=parser.parse_args()
+
+    name=args.name
     target="energy.mush"
 
     record=pd.read_json(os.path.join(name+".shift","record.json"))
@@ -65,14 +81,14 @@ def main():
 
     uber=record.loc[(record["a"]==0) & (record["b"]==0)]
     x=uber["cleavage"]
-    y=uber["value"]
+    y=uber["energy"]
     y=y-min(y)
     popt,pcov=curve_fit(evaluate_uber,x,y)
     # print popt
-    # xfit=np.arange(min(x),5,0.001)
-    # plt.plot(xfit,evaluate_uber(xfit,*popt))
-    # plt.scatter(x,y)
-    # plt.show()
+    xfit=np.arange(min(x),max(x),0.001)
+    plt.plot(xfit,evaluate_uber(xfit,*popt))
+    plt.scatter(x,y)
+    plt.show()
 
     # x=np.arange(-4,4,0.1)
     # y=[evaluate_uber(val,0,-19,0.5,0.5) for val in x]
@@ -82,7 +98,12 @@ def main():
     # record.to_json(name+".values.json",orient='records')
     # print record
     # print json.dumps(json.loads(record.to_json(orient='table')),indent=4)
-    print json.dumps({key : record[key].tolist() for key in record})
+    with open("full_record.json",'w') as outfile:
+        json.dump({key : record[key].tolist() for key in record}, outfile)
+
+    reduced=record.loc[record["cleavage"]==0.0]
+    with open("no_cleave.json",'w') as outfile:
+        json.dump({key : reduced[key].tolist() for key in reduced}, outfile)
 
 if __name__=="__main__":
     main()
