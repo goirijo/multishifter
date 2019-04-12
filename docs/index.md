@@ -60,5 +60,5 @@ Use **shift** as the settings key. Options are:
 # Tutorials
 [Tutorial I: Creating a slab structure](./tutorials/i/)<br/>
 [Tutorial II: UBER of a layered structure](./tutorials/ii/)<br/>
-[Tutorial III: A $$\gamma$$-surface for Mg]()<br/>
+[Tutorial III: A $$\gamma$$-surface for Li](./tutorials/iii)<br/>
 [Tutorial IV: A better $$\gamma$$-surface for Mg]()<br/>

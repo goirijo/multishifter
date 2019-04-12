@@ -15,6 +15,14 @@ def _generate_parser():
         help="The name field in the settings file used to generate shifted structures.",
         type=str,
         required=True)
+    parser.add_argument(
+        "--full-record",
+        help="Reads the records.json file in the appropriate shift directory, and augments it with all energies."
+        "Argument determines method to read DFT energy values.",
+        type=str,
+        # choices=["mush","oszicar"],
+        choices=["oszicar"],
+        required=False)
 
     # argcomplete.autocomplete(parser)
     return parser
@@ -69,7 +77,25 @@ def evaluate_uber(x,e,g,l):
     """
     return e+2*g*(1-(1+x/l)*np.exp(-x/l))
 
-def main():
+def formatted_write(data,target):
+    """Write a pandas DataFrame to a file in the correct
+    format multishift wants
+
+    Parameters
+    ----------
+    data : pandas df
+    target : path
+
+    Returns
+    -------
+    void
+
+    """
+    with open(target,'w') as outfile:
+        json.dump({key : data[key].tolist() for key in data}, outfile)
+    return
+
+def debug():
     parser = _generate_parser()
     args=parser.parse_args()
 
@@ -86,9 +112,9 @@ def main():
     popt,pcov=curve_fit(evaluate_uber,x,y)
     # print popt
     xfit=np.arange(min(x),max(x),0.001)
-    plt.plot(xfit,evaluate_uber(xfit,*popt))
-    plt.scatter(x,y)
-    plt.show()
+    # plt.plot(xfit,evaluate_uber(xfit,*popt))
+    # plt.scatter(x,y)
+    # plt.show()
 
     # x=np.arange(-4,4,0.1)
     # y=[evaluate_uber(val,0,-19,0.5,0.5) for val in x]
@@ -104,6 +130,26 @@ def main():
     reduced=record.loc[record["cleavage"]==0.0]
     with open("no_cleave.json",'w') as outfile:
         json.dump({key : reduced[key].tolist() for key in reduced}, outfile)
+
+def main():
+    parser = _generate_parser()
+    args=parser.parse_args()
+
+    name=args.name
+
+    if args.full_record is not None:
+        method_dict={"oszicar":oszicar_energy_read}
+
+        record=pd.read_json(os.path.join(name+".shift","record.json"))
+        full_record=append_values(record,method_dict[args.full_record])
+        formatted_write(full_record,os.path.join(name+".shift","full_record.json"))
+
+    full_record=pd.read_json(os.path.join(name+".shift","full_record.json"))
+    full_record=full_record.set_index(["a","b","energy"])
+    full_record=full_record.sort_index(level=["a","b","energy"])
+    min_record=full_record.reset_index(level="energy").groupby(level=["a","b"]).first()
+
+    formatted_write(min_record,"./test.json")
 
 if __name__=="__main__":
     main()
