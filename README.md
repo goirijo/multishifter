@@ -2,6 +2,8 @@
 `mulstishift` is a [casm](https://github.com/prisms-center/CASMcode) powered utility to create gamma surfaces along arbitrary crystallographic planes.
 This repository remains under heavy development.
 Documentation and features are being continually added.
+For a more or less complete tutorial on the features and workflow see the official [pages](https://goirijo.github.io/multishifter).
+
 
 # Prerequisites
 `multishift` requires a c++ compiler with c++11 support. Because it relies heavily on [casm](https://github.com/prisms-center/CASMcode), you will also need to have [boost](https://www.boost.org/doc/libs/1_66_0/more/getting_started/unix-variants.html) installed on your system.
@@ -47,7 +49,4 @@ The `bootstrap.sh` script introduces additional dependencies, as it uses autotoo
 - libtool
 - autoconf-archive
 
-# Usage
-For a more or less complete tutorial on the features and workflow see the official [pages](https://goirijo.github.io/multishifter).
-
-Acknowledgements
+# Acknowledgements

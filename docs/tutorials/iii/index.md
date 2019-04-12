@@ -67,7 +67,7 @@ For the slab we created, this gives a square unit cell along which to shift the 
 We will grid up this surface into a $$9\times 9$$ grid, where each point represents a sliding vector relative to the unperturbed slab at the origin.
 Additionally, for each of these shifts, we will insert varying amounts of cleavage between the slabs themselves, as covered in [Tutorial II](../ii).
 
-| ![Possible shift](./shift_example.png){:height="100%" width="100%"} | ![Possible cleavage](./cleavage_example.png){:height="100%" width="100%"} |
+| ![Possible shift](./shift_example.png){:width="100%"} | ![Possible cleavage](./cleavage_example.png){:width="100%"} |
 
 In order to create the structures, update the `mush.json` settings file to specify the following:
 ```json
@@ -109,7 +109,7 @@ You can download a `full_record.json` file (calculated with VASP) and the corres
 
 You can now visualize the $$\gamma$$-surface by plotting the values `x_cart` and `y_cart` vs `energy` in the `reduced_record.json`.
 
-| ![Gamma surface](./gamma3d.png){:height="100%" width="100%"} | ![Projected gamma surface](./gamma2d.png){:height="70%" width="70%"} |
+| ![Gamma surface](./gamma3d.png){:width="100%"} | ![Projected gamma surface](./gamma2d.png){:width="70%"} |
 
 ## Apply Fourier interpolation
 You can smoothen out your data by reconstructing the $$\gamma$$-surface in terms of plane waves.
@@ -159,4 +159,4 @@ multishift-fourier --interpolate 50x50 --interpolator gamma.fourier/energy.inter
 ```
 The output is saved to the file specified in the last argument `ipol.json`, which can be plotted to visualize a smooth $$\gamma$$-surface.
 
-| ![Gamma interpolated surface](./gammaipol3d.png){:height="100%" width="100%"} | ![Projected interpolated gamma surface](./gammaipol2d.png){:height="70%" width="70%"} |
+| ![Gamma interpolated surface](./gammaipol3d.png){:width="100%"} | ![Projected interpolated gamma surface](./gammaipol2d.png){:width="70%"} |
