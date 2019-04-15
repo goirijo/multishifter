@@ -1,7 +1,11 @@
 ---
-title: "Tutorial II: UBER of a layered structure"
+title: "Tutorial III: A gamma-surface for Li"
 ---
 {% include head.html %}
+
+<style type="text/css">
+{% include warning.css %}
+</style>
 
 # Tutorial III: A $$\gamma$$-surface for Li
 $$\gamma$$-surfaces are constructing by sliding slabs of Li along a slip plane.
@@ -72,7 +76,7 @@ Additionally, for each of these shifts, we will insert varying amounts of cleava
 In order to create the structures, update the `mush.json` settings file to specify the following:
 ```json
 {
-    "name" : "demo",
+    "name" : "gamma",
     "base":
     {
         "prim" : "./li.vasp",
@@ -82,10 +86,10 @@ In order to create the structures, update the `mush.json` settings file to speci
     },
     "shift":
     {
-        "slab" : "./demo.base/final_slab.vasp",
-        "a" : 9,
-        "b" : 9,
-        "cleavage" : [-0.5, -0.3, -0.1, 0.0, 0.1, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0]
+        "slab" : "./gamma.base/final_slab.vasp",
+        "a" : 10,
+        "b" : 10,
+        "cleavage" : [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
     }
 }
 ```
@@ -97,6 +101,16 @@ multishift-shift -s mush.json
 This will create a directory named `gamma.shift`, where all of the shifted slab structures are located.
 The directories naming indicates how much shift and cleavage was applied to the original slab structure, where `shift_0.0/cleave_0.000000` corresponds to the unperturbed slab.
 Exact values of the shift vector in Cartesian coordinates are stored in `record.json`, along with other relevant data, and a backup of the settings and starting slab structure are stored in `shift.json` and `slab.vasp` respectively.
+
+<div class="note">
+<b>Pro tip:</b>
+<br>When selecting the density of the shift grid, you probably want to use even numbers.
+Maxima and minima of the energy surface will likely land at the center of the unit cell, and specifying a grid with odd numbers won't capture it.
+</div>
+
+<div>
+<br>
+</div>
 
 ## Gather DFT results
 Once you've calculated DFT energies of every structure, you are ready to collect the data to create the $$\gamma$$-surface.
@@ -127,9 +141,9 @@ In order to do this, update `mush.json` to contain the following:
     "shift":
     {
         "slab" : "./gamma.base/final_slab.vasp",
-        "a" : 9,
-        "b" : 9,
-        "cleavage" : [-0.5, -0.3, -0.1, 0.0, 0.1, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0]
+        "a" : 10,
+        "b" : 10,
+        "cleavage" : [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
     },
     "fourier":
     {
