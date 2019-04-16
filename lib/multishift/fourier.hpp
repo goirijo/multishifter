@@ -134,7 +134,7 @@ private:
     /// Helper to avoid so many loops. Unrolls 2d vector into a 1d vector.
     static std::vector<InterPoint*> _unrolled_values(InterGrid* grid_values);
 
-    /// Helper to avoid so many loops. Unrolls 2d vector into a 1d vector, put pointers are const.
+    /// Helper to avoid so many loops. Unrolls 2d vector into a 1d vector, but pointers are const.
     static std::vector<const InterPoint*> _unrolled_values(const InterGrid& grid_values);
 
     /// Given an unrolled vector of grid data, reshape it to the specified dimensions
@@ -153,6 +153,25 @@ private:
     /// Even dimensions are made odd by repeating the boundary values on the opposite side.
     static void _make_unrolled_data_odd(std::vector<mush::InterPoint>* unrolled_data, int* final_adim, int* final_bdim);
 };
+
+/**
+ * Given an interpolator object, this class will express the plane waves of the
+ * Fourier transform as an analytical formula
+ */
+
+class Analytiker
+{
+    public:
+
+        ///Initialize with an interpolator
+        Analytiker(const Interpolator& init_ipolator);
+
+    private:
+
+        ///The interpolator we want analytical formulas for
+        Interpolator m_ipolator;
+};
+
 } // namespace mush
 
 #endif

@@ -50,3 +50,4 @@ The `bootstrap.sh` script introduces additional dependencies, as it uses autotoo
 - autoconf-archive
 
 # Acknowledgements
+Development of this software package was possible thanks to the financial support from NSF DMREF program under grant DMR-1534264.

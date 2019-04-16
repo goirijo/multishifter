@@ -106,6 +106,11 @@ Exact values of the shift vector in Cartesian coordinates are stored in `record.
 <b>Pro tip:</b>
 <br>When selecting the density of the shift grid, you probably want to use even numbers.
 Maxima and minima of the energy surface will likely land at the center of the unit cell, and specifying a grid with odd numbers won't capture it.
+<br>
+<br>
+Note that even when using even dimensions, <code>multishift</code> will always enforce odd dimensions on your data.
+When even dimensions are detected on the shift grid, values on the periodic boundary are repeated on the opposite side, to end up with odd values.
+This is done to properly center the grid when taking Fourier transforms.
 </div>
 
 <div>
