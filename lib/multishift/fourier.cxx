@@ -119,8 +119,10 @@ Interpolator::InterGrid Interpolator::_k_grid(const InterGrid& init_values, cons
 
     // Yes, you want integers. Anything that doesn't fall on the reciprical lattice points is
     // gonna mess your interpolation up.
-    // TODO: Should you worry about even grids? It could potentially cause trouble that the k-points
-    // on the edges don't have a "twin"
+    // At this point grids are always even, because when you made the grid from the data, you
+    // enforced periodicity by "repeating" the values at the edges.
+    assert(num_as % 2 == 1);
+    assert(num_bs % 2 == 1);
     int ka_centrize = num_as / 2;
     int kb_centrize = num_bs / 2;
     CASM::Coordinate center_shift(ka_centrize, kb_centrize, 0.0, reciprocal_lattice, CASM::FRAC);
@@ -197,7 +199,7 @@ std::pair<Lattice, Interpolator::InterGrid> Interpolator::interpolate(int a_dim,
             for (const auto& k_val : k_vals)
             {
                 auto k_vec = k_val->cart(m_recip_lat);
-                ipoint.value += k_val->value * std::exp(im * r_vec.dot(k_vec));
+                ipoint.value += k_val->value * k_val->weight * std::exp(im * r_vec.dot(k_vec));
             }
             inter_row.emplace_back(std::move(ipoint));
         }
@@ -240,7 +242,7 @@ void Interpolator::_take_fourier_transform()
                 for (const auto& r_val : r_row)
                 {
                     auto r_vec = r_val.cart(this->m_real_lat);
-                    k_val.value += normalization * r_val.value * std::exp(-im * k_vec.dot(r_vec));
+                    k_val.value += normalization * r_val.value * r_val.weight * std::exp(-im * k_vec.dot(r_vec));
                 }
             }
             /* std::cout << k_val.value << "    " << k_vec.transpose() << std::endl; */
@@ -350,6 +352,44 @@ Interpolator::InterGrid Interpolator::_direct_reshape(const std::vector<mush::In
     return final_grid;
 }
 
+void Interpolator::_make_unrolled_data_odd(std::vector<mush::InterPoint>* unrolled_data, int* final_adim, int* final_bdim)
+{
+    if (*final_adim % 2 == 0)
+    {
+        auto size = unrolled_data->size();
+        for (int i = 0; i < size; ++i)
+        {
+            if (lazy::almost_equal(unrolled_data->operator[](i).a_frac, 0.0))
+            {
+                unrolled_data->operator[](i).weight /= 2.0;
+                auto new_point = unrolled_data->operator[](i);
+                new_point.a_frac = 1.0;
+                unrolled_data->emplace_back(std::move(new_point));
+            }
+        }
+
+        ++(*final_adim);
+    }
+
+    if (*final_bdim % 2 == 0)
+    {
+        auto size = unrolled_data->size();
+        for (int i = 0; i < size; ++i)
+        {
+            if (lazy::almost_equal(unrolled_data->operator[](i).b_frac, 0.0))
+            {
+                unrolled_data->operator[](i).weight /= 2.0;
+                auto new_point = unrolled_data->operator[](i);
+                new_point.b_frac = 1.0;
+                unrolled_data->emplace_back(std::move(new_point));
+            }
+        }
+
+        ++(*final_bdim);
+    }
+    return;
+}
+
 Interpolator::InterGrid Interpolator::_grid_from_unrolled_data(const std::vector<double>& as,
                                                                const std::vector<double>& bs,
                                                                const std::vector<double>& vals)
@@ -365,15 +405,23 @@ Interpolator::InterGrid Interpolator::_grid_from_unrolled_data(const std::vector
             as.size(), vals.size(), "The number of grid points does not match the number of values to fit to.");
     }
 
-    // You have to ensure there's only a single data point per grid point
+    // Start by storing the measured grid point values
     std::vector<mush::InterPoint> unrolled_data;
     for (int i = 0; i < vals.size(); ++i)
     {
         unrolled_data.emplace_back(as[i], bs[i], vals[i]);
     }
 
+    int final_adim = num_unique(as);
+    int final_bdim = num_unique(bs);
+
+    // In the case of even grids, you need to repeat values at the edges, so that you
+    // can properly center the k-point grid later on
+    Interpolator::_make_unrolled_data_odd(&unrolled_data, &final_adim, &final_bdim);
+
     sanity_check(unrolled_data);
-    return Interpolator::_direct_reshape(unrolled_data, num_unique(as), num_unique(bs));
+    std::sort(unrolled_data.begin(), unrolled_data.end());
+    return Interpolator::_direct_reshape(unrolled_data, final_adim, final_bdim);
 }
 
 CASM::jsonParser Interpolator::serialize() const
@@ -433,8 +481,12 @@ Interpolator Interpolator::deserialize(const CASM::jsonParser& serialized)
     return Interpolator(std::move(r_lat), std::move(k_lat), std::move(r_grid), std::move(k_grid));
 }
 
-Interpolator::Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&& init_rpoints, InterGrid&& init_kpoints):
-    m_real_lat(std::move(init_real)), m_recip_lat(std::move(init_recip)), m_real_ipoints(std::move(init_rpoints)), m_k_values(std::move(init_kpoints))
+Interpolator::Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&& init_rpoints,
+                           InterGrid&& init_kpoints)
+    : m_real_lat(std::move(init_real)),
+      m_recip_lat(std::move(init_recip)),
+      m_real_ipoints(std::move(init_rpoints)),
+      m_k_values(std::move(init_kpoints))
 {
 }
 

@@ -53,13 +53,14 @@ class InterPoint
 {
 public:
     InterPoint(double init_a_frac, double init_b_frac, std::complex<double> init_value)
-        : a_frac(init_a_frac), b_frac(init_b_frac), value(init_value)
+        : a_frac(init_a_frac), b_frac(init_b_frac), value(init_value), weight(1.0)
     {
     }
 
     double a_frac;
     double b_frac;
     std::complex<double> value;
+    double weight;
 
     /// Return the cartesian coordinate relative to the given lattice. Position will land on the ab-plane, since there is no c-vector component.
     /// This could probably just return a 2d-vector, since your lattice is probably oriented such that ab-vectors are on xy-plane, but
@@ -71,6 +72,9 @@ public:
 
     /// Reconstruct from a serialized jsonParser
     static InterPoint deserialize(const CASM::jsonParser& serialized);
+
+    /// Priority is a fraction, then b fraction. Value is not considered.
+    bool operator<(const InterPoint& rhs) const;
 
 private:
 };

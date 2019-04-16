@@ -1,4 +1,5 @@
 #include "./surf.hpp"
+#include "./misc.hpp"
 #include "casm/crystallography/Lattice.hh"
 
 namespace mush
@@ -85,8 +86,20 @@ CASM::jsonParser InterPoint::serialize() const
 
 InterPoint InterPoint::deserialize(const CASM::jsonParser& serialized)
 {
-    return InterPoint(serialized["a_frac"].get<double>(), serialized["b_frac"].get<double>(),
-                      std::complex<double>(serialized["re(value)"].get<double>(), serialized["im(value)"].get<double>()));
+    return InterPoint(
+        serialized["a_frac"].get<double>(), serialized["b_frac"].get<double>(),
+        std::complex<double>(serialized["re(value)"].get<double>(), serialized["im(value)"].get<double>()));
+}
+
+bool InterPoint::operator<(const InterPoint& rhs) const 
+{
+    //If a-fraction is the same, consider b-fraction
+    if(lazy::almost_equal(this->a_frac,rhs.a_frac))
+    {
+        return this->b_frac<rhs.b_frac;
+    }
+
+    return this->a_frac<rhs.a_frac;
 }
 
 } // namespace mush

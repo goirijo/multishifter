@@ -77,6 +77,7 @@ def plot_gamma_surface(ax,a,b,x,y,z):
     X,Y,Z=digest_sorted_surface_data(a,b,x,y,z)
 
     ax.plot_surface(X,Y,Z,facecolors=cm.jet(Z/np.max(Z)),antialiased=False)
+    # ax.scatter(X,Y,Z)
     ax.set_aspect('equal')
 
     return ax

@@ -142,8 +142,16 @@ private:
 
     /// Given unrolled data for ab-grid fractions and values, reshape the data into a 2d-grid,
     /// making a few checks along the way to make sure it's even possible, given the data.
+    /// The resulting grid always has odd dimensions. In the case of an even input, values at the
+    /// periodic boundary are duplicated on the opposite edge in order for the Fourier transform
+    /// to properly work.
     static InterGrid _grid_from_unrolled_data(const std::vector<double>& as, const std::vector<double>& bs,
                                               const std::vector<double>& vals);
+
+    /// Given unrolled data for ab-grid fractions and values, append additional values such that
+    /// reshaping the grid results in odd dimensions along both a and b.
+    /// Even dimensions are made odd by repeating the boundary values on the opposite side.
+    static void _make_unrolled_data_odd(std::vector<mush::InterPoint>* unrolled_data, int* final_adim, int* final_bdim);
 };
 } // namespace mush
 
