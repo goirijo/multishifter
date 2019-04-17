@@ -25,13 +25,13 @@ T get_or_value(const CASM::jsonParser& json, const std::string& key, const T& de
 }
 
 template <typename T>
-bool almost_equal(T lhs, T rhs, T tol=1e-8)
+bool almost_equal(T lhs, T rhs, T tol=1e-12)
 {
     return std::abs(lhs-rhs)<tol;
 }
 
 template <typename T>
-bool almost_zero(T val, T tol=1e-8)
+bool almost_zero(T val, T tol=1e-12)
 {
     return almost_equal(val, 0.0, tol);
 }

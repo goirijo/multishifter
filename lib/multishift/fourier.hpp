@@ -178,18 +178,18 @@ public:
     typedef std::tuple<double, FormulaBitBasis, std::shared_ptr<const InterPoint>> FormulaBit;
 
     /// Initialize with an interpolator
-    Analytiker(const Interpolator::InterGrid& k_values);
+    Analytiker(const Interpolator& init_ipolator);
 
     /// Print the analytical expression in a Python compatible format, where the
     /// expected input are numpy like arrays for the x and y coordinates
-    std::string python_cart(std::string x_var, std::string y_var) const;
+    /// The first entry in the pair is made up of the real basis functions, while the
+    /// second one has the imaginary ones (which are probably zero)
+    std::pair<std::string,std::string> python_cart(std::string x_var, std::string y_var, std::string numpy) const;
 
 private:
-    /// Ensure that the imaginary coefficients would all cancel out.
-    /// exp(ix)=cox(x)+i*sin(x)
-    /// Since sin(-x)=-sin(x), then pairing up k coefficients by their inverion
-    /// should yield pairs with the same coefficient.
-    /* static bool _can_ignore_imaginary(const Interpolator::InterGrid& k_values); */
+    /// Checks that the imaginary coefficients cancelled out when creating
+    /// the formula bits
+    bool _can_ignore_imaginary() const;
 
     /// Run through an entire k-point grid, and express the complex coefficients
     /// into individual coefficients for sin/cos.
@@ -200,6 +200,9 @@ private:
 
     /// Contains coefficients for each fo the basis functions
     std::vector<FormulaBit> m_formula_bits;
+
+    /// Reciprocal lattice of the interpolator that *this was constructed with
+    Lattice m_recip_lat;
 };
 
 } // namespace mush

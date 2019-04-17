@@ -493,29 +493,16 @@ Interpolator::Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&
 
 //********************************************************************************************
 
-Analytiker::Analytiker(const Interpolator::InterGrid& k_values) : m_formula_bits(this->_formula_bits(k_values)) 
+Analytiker::Analytiker(const Interpolator& init_ipolator)
+    : m_formula_bits(this->_formula_bits(init_ipolator.k_values())), m_recip_lat(init_ipolator.reciprocal_lattice())
 {
-    for(const auto& bit : m_formula_bits)
-    {
-        std::cout<<std::get<0>(bit)<<"    ";
-
-        switch(std::get<1>(bit))
-        {
-            case FormulaBitBasis::RECOS:
-                std::cout<<"re(cos)"<<std::endl;
-                break;
-            case FormulaBitBasis::IMSIN:
-                std::cout<<"im(sin)"<<std::endl;
-                break;
-            case FormulaBitBasis::IMCOS:
-                std::cout<<"im(cos)"<<std::endl;
-                break;
-            case FormulaBitBasis::RESIN:
-                std::cout<<"re(sin)"<<std::endl;
-                break;
-        }
-
-    }
+    //Default tolerance too strict
+    /* assert(lazy::almost_zero(m_recip_lat[0](1))); */
+    /* assert(lazy::almost_zero(m_recip_lat[0](2))); */
+    /* assert(lazy::almost_zero(m_recip_lat[1](1))); */
+    /* assert(lazy::almost_zero(m_recip_lat[2](0))); */
+    /* assert(lazy::almost_zero(m_recip_lat[2](1))); */
+    /* assert(lazy::almost_equal(m_recip_lat[2](2),1.0)); */
 }
 
 std::vector<Analytiker::FormulaBit> Analytiker::_formula_bits(const Interpolator::InterGrid& k_values)
@@ -539,14 +526,17 @@ std::vector<Analytiker::FormulaBit> Analytiker::_formula_bits(const Interpolator
     assert(lazy::almost_zero(gamma_ptr->a_frac));
     assert(lazy::almost_zero(gamma_ptr->b_frac));
 
-    formula_bits.emplace_back(gamma_ptr->value.real(), FormulaBitBasis::RECOS, gamma_ptr);
+    formula_bits.emplace_back(gamma_ptr->value.real() * gamma_ptr->weight, FormulaBitBasis::RECOS, gamma_ptr);
     formula_bits.emplace_back(0.0, FormulaBitBasis::IMSIN, gamma_ptr);
-    formula_bits.emplace_back(gamma_ptr->value.imag(), FormulaBitBasis::IMCOS, gamma_ptr);
+    formula_bits.emplace_back(gamma_ptr->value.imag() * gamma_ptr->weight, FormulaBitBasis::IMCOS, gamma_ptr);
     formula_bits.emplace_back(0.0, FormulaBitBasis::RESIN, gamma_ptr);
 
     visited[acex][bcex] = true;
 
     // You only need to loop over half
+    // We're pairing up k-points together because we can reduce the number
+    // of functions if we remember that sin(-k)=-sin(k) and
+    // cos(-k)=cos(k)
     for (int a = 0; a <= acex; ++a)
     {
         for (int b = -bcex; b <= bcex; ++b)
@@ -565,26 +555,102 @@ std::vector<Analytiker::FormulaBit> Analytiker::_formula_bits(const Interpolator
             const auto& invk = k_values[inva][invb];
             auto curk_ptr = std::make_shared<const InterPoint>(curk);
 
-            /* formula_bits.emplace_back(curk.value.real() + invk.value.real(), curk.value.real() - invk.value.real(), */
-            /*                           curk.value.imag() + invk.value.imag(), -curk.value.imag() + invk.value.imag(), */
-            /*                           curk); */
-
-            formula_bits.emplace_back(curk.value.real() + invk.value.real(), FormulaBitBasis::RECOS, curk_ptr);
-            formula_bits.emplace_back(curk.value.real() - invk.value.real(), FormulaBitBasis::IMSIN, curk_ptr);
-            formula_bits.emplace_back(curk.value.imag() + invk.value.imag(), FormulaBitBasis::IMCOS, curk_ptr);
-            formula_bits.emplace_back(-curk.value.imag() + invk.value.imag(), FormulaBitBasis::RESIN, curk_ptr);
-
-            /* std::cout << k_values.at(acex + a).at(bcex + b).value << "    " << k_values.at(acex - a).at(bcex -
-             * b).value */
+            // clang-format off
+            formula_bits.emplace_back( curk.value.real() * curk.weight + invk.value.real() * invk.weight,FormulaBitBasis::RECOS, curk_ptr);
+            formula_bits.emplace_back( curk.value.real() * curk.weight - invk.value.real() * invk.weight,FormulaBitBasis::IMSIN, curk_ptr);
+            formula_bits.emplace_back( curk.value.imag() * curk.weight + invk.value.imag() * invk.weight,FormulaBitBasis::IMCOS, curk_ptr);
+            formula_bits.emplace_back(-curk.value.imag() * curk.weight + invk.value.imag() * invk.weight,FormulaBitBasis::RESIN, curk_ptr);
+            // clang-format on
 
             visited[cura][curb] = true;
             visited[inva][invb] = true;
         }
     }
 
+    assert(formula_bits.size() == 4 * (adim * bdim + 1) / 2);
     return formula_bits;
 }
 
-std::string Analytiker::python_cart(std::string x_var, std::string y_var) const {}
+bool Analytiker::_can_ignore_imaginary() const
+{
+    for (const auto& bit : m_formula_bits)
+    {
+        switch (std::get<1>(bit))
+        {
+        case FormulaBitBasis::IMSIN:
+            if (!lazy::almost_zero(std::get<0>(bit)))
+            {
+                return false;
+            }
+            break;
+
+        case FormulaBitBasis::IMCOS:
+            if (!lazy::almost_zero(std::get<0>(bit)))
+            {
+                return false;
+            }
+            break;
+        }
+    }
+
+    return true;
+}
+
+std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, std::string y_var,
+                                                            std::string numpy) const
+{
+    std::string real_formula("0"), imag_formula("0");
+
+    for (const auto& bit : m_formula_bits)
+    {
+        auto value = std::get<0>(bit);
+        const auto& kpoint = *std::get<2>(bit).get();
+        auto kcart = kpoint.cart(m_recip_lat);
+        assert(lazy::almost_zero(kcart(2)));
+
+        if (lazy::almost_zero(value))
+        {
+            continue;
+        }
+
+        // There's three parts to each entry :
+        // VALUE*FUNCTION(X1*K1+X2*K2)
+        // First convert the value to a string
+        std::string value_str;
+        if (value > 0)
+        {
+            value_str.push_back('+');
+        }
+        value_str += std::to_string(value);
+
+        // Next work on the first entry within the function
+        std::string dots = "(" + std::to_string(kcart(0)) + "*" + x_var;
+
+        // Then work on the second entry within the function
+        if (kcart(1) >= 0)
+        {
+            dots.push_back('+');
+        }
+        dots += std::to_string(kcart(1)) + "*" + y_var + ")";
+
+        switch (std::get<1>(bit))
+        {
+        case FormulaBitBasis::RECOS:
+            real_formula += value_str + "*" + numpy + ".cos" + dots;
+            break;
+        case FormulaBitBasis::IMSIN:
+            imag_formula += value_str + "*" + numpy + ".sin" + dots;
+            break;
+        case FormulaBitBasis::IMCOS:
+            imag_formula += value_str + "*" + numpy + ".cos" + dots;
+            break;
+        case FormulaBitBasis::RESIN:
+            real_formula += value_str + "*" + numpy + ".sin" + dots;
+            break;
+        }
+    }
+
+    return std::make_pair(std::move(real_formula), std::move(imag_formula));
+}
 
 } // namespace mush

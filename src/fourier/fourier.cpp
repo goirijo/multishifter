@@ -110,7 +110,12 @@ int main(int argc, char* argv[])
             CASM::jsonParser ipol_dump(ipol_path);
             auto ipolator=mush::Interpolator::deserialize(ipol_dump);
 
-            mush::Analytiker anal(ipolator.k_values());
+            mush::Analytiker anal(ipolator);
+            std::string real_f,imag_f;
+            std::tie(real_f,imag_f)=anal.python_cart("xx","yy","np");
+
+            std::cout<<"REAL\n"<<real_f<<std::endl;
+            std::cout<<"IMAG\n"<<imag_f<<std::endl;
         }
 
         else
