@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
         else
         {
-            cxxopts::required_argument_notify(result, std::vector<std::string>{"settings"});
+            cxxopts::required_option_notify(result, std::vector<std::string>{"settings"});
         }
 
         const auto& settings_path = result["settings"].as<path>();
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    catch (const mush::except::RequiredArgumentMissing& e)
+    catch (const mush::except::RequiredOptionMissing& e)
     {
         std::cerr << e.what() << std::endl;
         std::cerr << "Use '--help' to see options" << std::endl;

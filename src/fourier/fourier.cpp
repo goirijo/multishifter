@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
         ("i,interpolate","Give a grid density to calculate values for (e.g. '13x23'). Also requires --interpolator and --output.",cxxopts::value<std::string>())
         ("p,interpolator","Path to the file with the interpolation data that was generated when using --settings.",cxxopts::value<path>())
         ("o,output","Path to the file where interpolation should be written to.",cxxopts::value<path>())
+        ("a,analytic","Print an analytic expression for the surface in terms of sin/cos in the specified format (python-cart,python-frac,latex).",cxxopts::value<std::string>())
         ("h,help","Print available options.");
     // clang-format on
 
@@ -85,7 +86,7 @@ int main(int argc, char* argv[])
 
         else if(result.count("interpolate"))
         {
-            cxxopts::required_argument_notify(result, std::vector<std::string>{"interpolator","output"});
+            cxxopts::required_option_notify(result, std::vector<std::string>{"interpolator","output"});
             auto dims=parse_grid_argument(result["interpolate"].as<std::string>());
             auto ipol_path=result["interpolator"].as<path>();
             auto target=result["output"].as<path>();
@@ -100,9 +101,21 @@ int main(int argc, char* argv[])
             ipolated_dump.write(target);
         }
 
+        else if(result.count("analytic"))
+        {
+            cxxopts::required_option_notify(result, std::vector<std::string>{"interpolator"});
+            cxxopts::invalid_parameter_notify(result, "analytic", std::vector<std::string>{"python-cart"});
+
+            auto ipol_path=result["interpolator"].as<path>();
+            CASM::jsonParser ipol_dump(ipol_path);
+            auto ipolator=mush::Interpolator::deserialize(ipol_dump);
+
+            mush::Analytiker anal(ipolator.k_values());
+        }
+
         else
         {
-            cxxopts::required_argument_notify(result, std::vector<std::string>{"settings"});
+            cxxopts::required_option_notify(result, std::vector<std::string>{"settings"});
 
             const auto& settings_path=result["settings"].as<path>();
 
@@ -166,7 +179,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    catch (const mush::except::RequiredArgumentMissing& e)
+    catch (const mush::except::RequiredOptionMissing& e)
     {
         std::cerr << e.what() << std::endl;
         std::cerr << "Use '--help' to see options" << std::endl;
@@ -185,6 +198,12 @@ int main(int argc, char* argv[])
         std::cerr << e.what() << std::endl;
         std::cerr << "Rename it or delete it if you don't need it." << std::endl;
         return 4;
+    }
+
+    catch (const mush::except::InvalidParameter& e)
+    {
+        std::cerr << e.what() << std::endl;
+        return 5;
     }
 
 

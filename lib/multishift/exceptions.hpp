@@ -3,6 +3,26 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
+
+namespace
+{
+    std::string commatize(const std::vector<std::string>& words)
+    {
+        std::string commatized;
+        for(const auto& w : words)
+        {
+            commatized+="'";
+            commatized+=w;
+            commatized+="', ";
+        }
+
+        commatized.pop_back();
+        commatized.pop_back();
+
+        return commatized;
+    }
+}
 
 namespace mush
 {
@@ -16,11 +36,20 @@ public:
     {
     }
 };
-class RequiredArgumentMissing : public std::runtime_error
+class RequiredOptionMissing : public std::runtime_error
 {
 public:
-    RequiredArgumentMissing(const std::string& argument)
-        : std::runtime_error("Expected argument '" + argument + "' from command line.")
+    RequiredOptionMissing(const std::string& option)
+        : std::runtime_error("Expected option '--" + option + "' from command line.")
+    {
+    }
+};
+
+class InvalidParameter : public std::runtime_error
+{
+public:
+    InvalidParameter(const std::string& option, const std::string& parameter, const std::vector<std::string>& available_parameters)
+        : std::runtime_error("Bad parameter '"+parameter+"' for option '--"+option+"'. Available parameters are: "+commatize(available_parameters)+".")
     {
     }
 };

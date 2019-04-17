@@ -1,9 +1,9 @@
 #ifndef MULTISHIFTFOURIER_HH
 #define MULTISHIFTFOURIER_HH
 
+#include "./autodocs.hpp"
 #include "./define.hpp"
 #include "./surf.hpp"
-#include "./autodocs.hpp"
 #include "casm/crystallography/Lattice.hh"
 #include <complex>
 #include <vector>
@@ -29,11 +29,11 @@ public:
     static FourierSettings from_json(const CASM::jsonParser& init_json);
     CASM::jsonParser to_json() const;
 
-    const fs::path& data_path() const {return m_data_path;};
-    const fs::path& lattice_path() const {return m_lattice_path;};
-    const std::vector<std::string>& values_to_interpolate() const {return m_value_tags;};
-    
-    ///Information about each of the settings entries required to construct *this
+    const fs::path& data_path() const { return m_data_path; };
+    const fs::path& lattice_path() const { return m_lattice_path; };
+    const std::vector<std::string>& values_to_interpolate() const { return m_value_tags; };
+
+    /// Information about each of the settings entries required to construct *this
     static const docs::SettingsInfo docs;
 
 private:
@@ -47,7 +47,7 @@ private:
 
     /// Fields in the data that should be interpolated
     std::vector<std::string> m_value_tags;
-    
+
     /// Generate the documentation for the settings, used to construct static member
     static docs::SettingsInfo _initialized_documentation();
 };
@@ -161,15 +161,45 @@ private:
 
 class Analytiker
 {
-    public:
+public:
 
-        ///Initialize with an interpolator
-        Analytiker(const Interpolator& init_ipolator);
+    ///Used in the FormulaBit to assiciate a coefficient with the appropriate basis function
+    /// Individual sin/cos basis in the following order:
+    /// re(cos), im(sin), im(cos), re(sin), InterPoint
+    enum class FormulaBitBasis
+    {
+        RECOS,
+        IMSIN,
+        IMCOS,
+        RESIN,
+    };
 
-    private:
+    /// Couples an InterPoint (k-point coefficient) with decomposed coefficients
+    typedef std::tuple<double, FormulaBitBasis, std::shared_ptr<const InterPoint>> FormulaBit;
 
-        ///The interpolator we want analytical formulas for
-        Interpolator m_ipolator;
+    /// Initialize with an interpolator
+    Analytiker(const Interpolator::InterGrid& k_values);
+
+    /// Print the analytical expression in a Python compatible format, where the
+    /// expected input are numpy like arrays for the x and y coordinates
+    std::string python_cart(std::string x_var, std::string y_var) const;
+
+private:
+    /// Ensure that the imaginary coefficients would all cancel out.
+    /// exp(ix)=cox(x)+i*sin(x)
+    /// Since sin(-x)=-sin(x), then pairing up k coefficients by their inverion
+    /// should yield pairs with the same coefficient.
+    /* static bool _can_ignore_imaginary(const Interpolator::InterGrid& k_values); */
+
+    /// Run through an entire k-point grid, and express the complex coefficients
+    /// into individual coefficients for sin/cos.
+    /// All the imaginary sin/cos terms will presumably be zero, but this routine does't
+    /// check for that. The number of formula bits will be half of the k-point grid,
+    /// since the terms can be halved by taking inversion symmetry of sin/cos into account.
+    static std::vector<FormulaBit> _formula_bits(const Interpolator::InterGrid& k_values);
+
+    /// Contains coefficients for each fo the basis functions
+    std::vector<FormulaBit> m_formula_bits;
 };
 
 } // namespace mush

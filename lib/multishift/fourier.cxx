@@ -352,7 +352,8 @@ Interpolator::InterGrid Interpolator::_direct_reshape(const std::vector<mush::In
     return final_grid;
 }
 
-void Interpolator::_make_unrolled_data_odd(std::vector<mush::InterPoint>* unrolled_data, int* final_adim, int* final_bdim)
+void Interpolator::_make_unrolled_data_odd(std::vector<mush::InterPoint>* unrolled_data, int* final_adim,
+                                           int* final_bdim)
 {
     if (*final_adim % 2 == 0)
     {
@@ -489,5 +490,101 @@ Interpolator::Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&
       m_k_values(std::move(init_kpoints))
 {
 }
+
+//********************************************************************************************
+
+Analytiker::Analytiker(const Interpolator::InterGrid& k_values) : m_formula_bits(this->_formula_bits(k_values)) 
+{
+    for(const auto& bit : m_formula_bits)
+    {
+        std::cout<<std::get<0>(bit)<<"    ";
+
+        switch(std::get<1>(bit))
+        {
+            case FormulaBitBasis::RECOS:
+                std::cout<<"re(cos)"<<std::endl;
+                break;
+            case FormulaBitBasis::IMSIN:
+                std::cout<<"im(sin)"<<std::endl;
+                break;
+            case FormulaBitBasis::IMCOS:
+                std::cout<<"im(cos)"<<std::endl;
+                break;
+            case FormulaBitBasis::RESIN:
+                std::cout<<"re(sin)"<<std::endl;
+                break;
+        }
+
+    }
+}
+
+std::vector<Analytiker::FormulaBit> Analytiker::_formula_bits(const Interpolator::InterGrid& k_values)
+{
+    std::vector<FormulaBit> formula_bits;
+
+    int adim = k_values.size();
+    int bdim = k_values[0].size();
+
+    // Keep track of which points you visited via inversion
+    std::vector<std::vector<bool>> visited(bdim, std::vector<bool>(adim, false));
+
+    assert(adim % 2 == 1);
+    assert(bdim % 2 == 1);
+
+    int acex = adim / 2;
+    int bcex = bdim / 2;
+
+    // First deal with the gamma point, which is the center of the grid, and has no inversion "twin"
+    auto gamma_ptr = std::make_shared<const InterPoint>(k_values[acex][bcex]);
+    assert(lazy::almost_zero(gamma_ptr->a_frac));
+    assert(lazy::almost_zero(gamma_ptr->b_frac));
+
+    formula_bits.emplace_back(gamma_ptr->value.real(), FormulaBitBasis::RECOS, gamma_ptr);
+    formula_bits.emplace_back(0.0, FormulaBitBasis::IMSIN, gamma_ptr);
+    formula_bits.emplace_back(gamma_ptr->value.imag(), FormulaBitBasis::IMCOS, gamma_ptr);
+    formula_bits.emplace_back(0.0, FormulaBitBasis::RESIN, gamma_ptr);
+
+    visited[acex][bcex] = true;
+
+    // You only need to loop over half
+    for (int a = 0; a <= acex; ++a)
+    {
+        for (int b = -bcex; b <= bcex; ++b)
+        {
+            int cura = acex + a;
+            int curb = bcex + b;
+            int inva = acex - a;
+            int invb = bcex - b;
+
+            if (visited[cura][curb])
+            {
+                continue;
+            }
+
+            const auto& curk = k_values[cura][curb];
+            const auto& invk = k_values[inva][invb];
+            auto curk_ptr = std::make_shared<const InterPoint>(curk);
+
+            /* formula_bits.emplace_back(curk.value.real() + invk.value.real(), curk.value.real() - invk.value.real(), */
+            /*                           curk.value.imag() + invk.value.imag(), -curk.value.imag() + invk.value.imag(), */
+            /*                           curk); */
+
+            formula_bits.emplace_back(curk.value.real() + invk.value.real(), FormulaBitBasis::RECOS, curk_ptr);
+            formula_bits.emplace_back(curk.value.real() - invk.value.real(), FormulaBitBasis::IMSIN, curk_ptr);
+            formula_bits.emplace_back(curk.value.imag() + invk.value.imag(), FormulaBitBasis::IMCOS, curk_ptr);
+            formula_bits.emplace_back(-curk.value.imag() + invk.value.imag(), FormulaBitBasis::RESIN, curk_ptr);
+
+            /* std::cout << k_values.at(acex + a).at(bcex + b).value << "    " << k_values.at(acex - a).at(bcex -
+             * b).value */
+
+            visited[cura][curb] = true;
+            visited[inva][invb] = true;
+        }
+    }
+
+    return formula_bits;
+}
+
+std::string Analytiker::python_cart(std::string x_var, std::string y_var) const {}
 
 } // namespace mush

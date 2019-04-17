@@ -7,8 +7,8 @@
 
 namespace cxxopts
 {
-// TODO: split into cxx someday
-void required_argument_notify(const ParseResult& result, const std::vector<std::string>& required_arguments);
+void required_option_notify(const ParseResult& result, const std::vector<std::string>& required_options);
+void invalid_parameter_notify(const ParseResult& result, const std::string& option, const std::vector<std::string>& available_parameters);
 } // namespace cxxopts
 
 namespace lazy
@@ -28,6 +28,12 @@ template <typename T>
 bool almost_equal(T lhs, T rhs, T tol=1e-8)
 {
     return std::abs(lhs-rhs)<tol;
+}
+
+template <typename T>
+bool almost_zero(T val, T tol=1e-8)
+{
+    return almost_equal(val, 0.0, tol);
 }
 
 } // namespace lazy
