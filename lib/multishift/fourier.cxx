@@ -496,7 +496,7 @@ Interpolator::Interpolator(Lattice&& init_real, Lattice&& init_recip, InterGrid&
 Analytiker::Analytiker(const Interpolator& init_ipolator)
     : m_formula_bits(this->_formula_bits(init_ipolator.k_values())), m_recip_lat(init_ipolator.reciprocal_lattice())
 {
-    //Default tolerance too strict
+    // Default tolerance too strict
     /* assert(lazy::almost_zero(m_recip_lat[0](1))); */
     /* assert(lazy::almost_zero(m_recip_lat[0](2))); */
     /* assert(lazy::almost_zero(m_recip_lat[1](1))); */
@@ -568,6 +568,10 @@ std::vector<Analytiker::FormulaBit> Analytiker::_formula_bits(const Interpolator
     }
 
     assert(formula_bits.size() == 4 * (adim * bdim + 1) / 2);
+    // TODO: Sort by magnitude
+    std::sort(formula_bits.begin(), formula_bits.end(), [](const FormulaBit& lhs, const FormulaBit& rhs) -> bool {
+        return std::abs(std::get<0>(lhs)) < std::abs(std::get<0>(rhs));
+    });
     return formula_bits;
 }
 
@@ -596,8 +600,25 @@ bool Analytiker::_can_ignore_imaginary() const
     return true;
 }
 
+std::string Analytiker::_to_string_formatted(double value, double precision)
+{
+    std::stringstream sstr;
+    if(precision<1e-8)
+    {
+        sstr<<std::scientific<<value;
+    }
+
+    else
+    {
+        sstr<<std::fixed<<std::setprecision(static_cast<int>(-std::log10(precision)))<<value;
+    }
+
+    /* sstr<<value; */
+    return sstr.str();
+}
+
 std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, std::string y_var,
-                                                            std::string numpy) const
+                                                            std::string numpy, double precision) const
 {
     std::string real_formula("0"), imag_formula("0");
 
@@ -608,7 +629,7 @@ std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, s
         auto kcart = kpoint.cart(m_recip_lat);
         assert(lazy::almost_zero(kcart(2)));
 
-        if (lazy::almost_zero(value))
+        if (lazy::almost_zero(value,precision))
         {
             continue;
         }
@@ -621,17 +642,17 @@ std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, s
         {
             value_str.push_back('+');
         }
-        value_str += std::to_string(value);
+        value_str += _to_string_formatted(value,precision);
 
         // Next work on the first entry within the function
-        std::string dots = "(" + std::to_string(kcart(0)) + "*" + x_var;
+        std::string dots = "(" + _to_string_formatted(kcart(0),precision) + "*" + x_var;
 
         // Then work on the second entry within the function
         if (kcart(1) >= 0)
         {
             dots.push_back('+');
         }
-        dots += std::to_string(kcart(1)) + "*" + y_var + ")";
+        dots += _to_string_formatted(kcart(1),precision) + "*" + y_var + ")";
 
         switch (std::get<1>(bit))
         {

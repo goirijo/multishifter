@@ -184,7 +184,7 @@ public:
     /// expected input are numpy like arrays for the x and y coordinates
     /// The first entry in the pair is made up of the real basis functions, while the
     /// second one has the imaginary ones (which are probably zero)
-    std::pair<std::string,std::string> python_cart(std::string x_var, std::string y_var, std::string numpy) const;
+    std::pair<std::string,std::string> python_cart(std::string x_var, std::string y_var, std::string numpy, double precision) const;
 
 private:
     /// Checks that the imaginary coefficients cancelled out when creating
@@ -203,6 +203,9 @@ private:
 
     /// Reciprocal lattice of the interpolator that *this was constructed with
     Lattice m_recip_lat;
+
+    /// Turn a double into a string. If the precision is small enough, use scientific notation
+    static std::string _to_string_formatted(double value, double precision);
 };
 
 } // namespace mush

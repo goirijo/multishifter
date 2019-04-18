@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 
             mush::Analytiker anal(ipolator);
             std::string real_f,imag_f;
-            std::tie(real_f,imag_f)=anal.python_cart("xx","yy","np");
+            std::tie(real_f,imag_f)=anal.python_cart("xx","yy","np",1e-12);
 
             std::cout<<"REAL\n"<<real_f<<std::endl;
             std::cout<<"IMAG\n"<<imag_f<<std::endl;
