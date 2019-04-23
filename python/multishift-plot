@@ -19,6 +19,12 @@ def _generate_parser():
         help="Field in the data file that should be plotted along the z-axis",
         type=str,
         required=True)
+    parser.add_argument(
+        "--plot",
+        help="Type of plot you want to visualize",
+        type=str,
+        choices=["surface", "uber"],
+        required=True)
 
     # argcomplete.autocomplete(parser)
     return parser
@@ -115,15 +121,22 @@ def main():
     filtered=pd.read_json(args.data)
     filtered=filtered.sort_values(["a_frac","b_frac"])
 
-    fig=plt.figure()
-    ax=fig.add_subplot(111,projection='3d')
-    ax=plot_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered[args.value])
-    plt.show()
+    if args.plot=="surface": 
+        fig=plt.figure()
+        ax=fig.add_subplot(111,projection='3d')
+        ax=plot_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered[args.value])
+        plt.show()
 
-    fig=plt.figure()
-    ax=fig.add_subplot(111)
-    ax=plot_projected_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered[args.value])
-    plt.show()
+        fig=plt.figure()
+        ax=fig.add_subplot(111)
+        ax=plot_projected_gamma_surface(ax,filtered["a_frac"],filtered["b_frac"],filtered["x_cart"],filtered["y_cart"],filtered[args.value])
+        plt.show()
+
+    elif args.plot=="uber":
+        print("Not yet implemented")
+
+    else:
+        print("How did you even get here???")
 
 if __name__=="__main__":
     main()

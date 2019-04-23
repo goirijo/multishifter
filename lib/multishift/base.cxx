@@ -2,6 +2,26 @@
 #include "./exceptions.hpp"
 #include "./misc.hpp"
 #include "casmutils/frankenstein.hpp"
+#include "casm/container/LinearAlgebra.hh"
+
+namespace
+{
+    ///Ensure that both lattices have parallel vectors axb
+    bool ab_plane_conserved(const mush::Lattice& lhs, const mush::Lattice& rhs)
+    {
+        auto lhs_norm=lhs[0].cross(lhs[1]).normalized();
+        auto rhs_norm=rhs[0].cross(rhs[1]).normalized();
+
+        double norm_dot=lhs_norm.dot(rhs_norm);
+        if(lazy::almost_equal(norm_dot,1.0) || lazy::almost_equal(norm_dot,-1.0))
+        {
+            return true;
+        }
+
+        return false;
+    }
+}
+
 
 namespace mush
 {
@@ -87,8 +107,35 @@ Structure MultiBase::_shift_unit_from_primitive(const Structure& init_prim, cons
 {
     // The 0 means "get the smallest cell possible", and I wish it was the default
     auto shift_lattice = init_prim.lattice().get_lattice_in_plane(init_millers, 0);
-    CASM::Structure raw_shift_unit(shift_lattice);
+
+    auto best_lat_mat = shift_lattice.lat_column_mat();
+    double orthoscore=std::abs(best_lat_mat.col(0).normalized().dot(best_lat_mat.col(1).normalized()));
+    auto uni_mats=CASM::unimodular_matrices();
+    for(const auto& mat : uni_mats)
+    {
+        //discard any transformation on the a or b vector that isn't a linear combination of a and b
+        //discard any transformation that modifies c
+        if(mat(0,2)!=0 || mat(1,2)!=0 || mat(2,0)!=0 || mat(2,1)!=0 || mat(2,2)!=1)
+        {
+            continue;
+        }
+
+        auto candidate_lat_mat=shift_lattice.lat_column_mat()*mat.cast<double>();
+        double new_orthoscore=std::abs(candidate_lat_mat.col(0).normalized().dot(candidate_lat_mat.col(1).normalized()));
+
+        if(new_orthoscore<orthoscore)
+        {
+            best_lat_mat=candidate_lat_mat;
+            orthoscore=new_orthoscore;
+        }
+    }
+
+    Lattice best_lattice(best_lat_mat);
+    CASM::Structure raw_shift_unit(best_lattice);
     raw_shift_unit.fill_supercell(init_prim);
+
+    assert(::ab_plane_conserved(best_lattice,shift_lattice));
+
     return Structure(raw_shift_unit);
 }
 

@@ -21,13 +21,13 @@ def _generate_parser():
         "Argument determines method to read DFT energy values.",
         type=str,
         # choices=["mush","oszicar"],
-        choices=["oszicar"],
+        choices=["oszicar", "mush"],
         required=False)
 
     # argcomplete.autocomplete(parser)
     return parser
 
-def dumb_read(path):
+def mush_read(path):
     return np.loadtxt(os.path.join(path,"energy.mush"))
 
 def oszicar_energy_read(path):
@@ -138,18 +138,21 @@ def main():
     name=args.name
 
     if args.full_record is not None:
-        method_dict={"oszicar":oszicar_energy_read}
+        method_dict={"oszicar":oszicar_energy_read, "mush" : mush_read}
 
         record=pd.read_json(os.path.join(name+".shift","record.json"))
         full_record=append_values(record,method_dict[args.full_record])
         formatted_write(full_record,os.path.join(name+".shift","full_record.json"))
 
-    full_record=pd.read_json(os.path.join(name+".shift","full_record.json"))
-    full_record=full_record.set_index(["a","b","energy"])
-    full_record=full_record.sort_index(level=["a","b","energy"])
-    min_record=full_record.reset_index(level="energy").groupby(level=["a","b"]).first()
+        full_record=pd.read_json(os.path.join(name+".shift","full_record.json"))
+        full_record=full_record.set_index(["a","b","energy"])
+        full_record=full_record.sort_index(level=["a","b","energy"])
+        min_record=full_record.reset_index(level="energy").groupby(level=["a","b"]).first()
 
-    formatted_write(min_record,"./test.json")
+        formatted_write(min_record,"./test.json")
+
+    else:
+        print("Nothing to do!")
 
 if __name__=="__main__":
     main()
