@@ -110,12 +110,34 @@ int main(int argc, char* argv[])
             CASM::jsonParser ipol_dump(ipol_path);
             auto ipolator=mush::Interpolator::deserialize(ipol_dump);
 
+            auto anal_settings=mush::FourierAnalyticalSettings::from_json(CASM::jsonParser());
+
+            if(result.count("settings"))
+            {
+                const auto& settings_path=result["settings"].as<path>();
+                auto all_settings = mush::FullSettings::from_path(settings_path);
+                anal_settings=all_settings.fourier_settings().analytic_settings();
+            }
+
+            std::cout<<"Preparing analytic expression for real and imaginary parts of interpolator."<<std::endl;
             mush::Analytiker anal(ipolator);
             std::string real_f,imag_f;
-            std::tie(real_f,imag_f)=anal.python_cart("xx","yy","np",1e-12);
+            std::tie(real_f,imag_f)=anal.python_cart(anal_settings.x(),anal_settings.y(),anal_settings.math_library(),anal_settings.min_magnitude());
 
-            std::cout<<"REAL\n"<<real_f<<std::endl;
-            std::cout<<"IMAG\n"<<imag_f<<std::endl;
+            std::cout<<"Mesh grid x variable: "<<anal_settings.x()<<std::endl;
+            std::cout<<"Mesh grid y variable: "<<anal_settings.y()<<std::endl;
+            std::cout<<"Math library: "<<anal_settings.math_library()<<std::endl;
+            std::cout<<"Coefficients smaller than "<<anal_settings.min_magnitude()<<" will be omitted."<<std::endl;
+
+            loggy::divider();
+
+            std::cout<<"Formla for real component:"<<std::endl;
+            std::cout<<real_f<<std::endl;
+
+            loggy::divider();
+
+            std::cout<<"Formula for imaginary component:"<<std::endl;
+            std::cout<<imag_f<<std::endl;
         }
 
         else
@@ -166,8 +188,6 @@ int main(int argc, char* argv[])
             std::cout<<"Saving data and lattice structure..."<<std::endl;
             fourier_data.write(writer.target<mush::FourierSettings>()/"data.json");
             Simplicity::write_poscar(slab,writer.target<mush::FourierSettings>()/"lattice.vasp");
-
-
 
             loggy::divider();
             std::cout<<"All fourier coefficients have been saved."<<std::endl;

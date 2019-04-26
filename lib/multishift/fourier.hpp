@@ -16,6 +16,46 @@ class jsonParser;
 namespace mush
 {
 
+    /**
+     * These settings contain string values that determine how the
+     * analytical formula for the Fourier interpolated surface
+     * get printed
+     */
+
+class FourierAnalyticalSettings
+{
+    public:
+
+        FourierAnalyticalSettings(const std::string& init_x, const std::string& init_y, const std::string& init_lib, double init_mag);
+        static FourierAnalyticalSettings from_json(const CASM::jsonParser& init_json);
+        CASM::jsonParser to_json() const;
+
+        std::string x() const {return m_x_name;};
+        std::string y() const {return m_y_name;};
+        std::string math_library() const {return m_trig_lib_name;};
+        double min_magnitude() const {return m_min_magnitude;};
+
+        ///Information on each of the settings
+        static const docs::SettingsInfo docs;
+
+    private:
+
+        ///Name of x variable
+        std::string m_x_name;
+
+        ///Name of y variable;
+        std::string m_y_name;
+
+        ///Name of the python library to call sin/cos from
+        std::string m_trig_lib_name;
+
+        ///Cutoff value of minimum coefficient, anything smaller won't get printed
+        double m_min_magnitude;
+        
+    /// Generate the documentation for the settings, used to construct static member
+    static docs::SettingsInfo _initialized_documentation();
+};
+
 /**
  * Settings for interpolating values on a grid. Holds a path
  * to the data that should be interpolated.
@@ -25,13 +65,14 @@ class FourierSettings
 {
 public:
     FourierSettings(const fs::path& init_data_path, const fs::path& init_lattice_path,
-                    const std::vector<std::string>& init_value_tags);
+                    const std::vector<std::string>& init_value_tags, const FourierAnalyticalSettings& init_analytic_settings);
     static FourierSettings from_json(const CASM::jsonParser& init_json);
     CASM::jsonParser to_json() const;
 
     const fs::path& data_path() const { return m_data_path; };
     const fs::path& lattice_path() const { return m_lattice_path; };
     const std::vector<std::string>& values_to_interpolate() const { return m_value_tags; };
+    const FourierAnalyticalSettings& analytic_settings() const { return m_analytic_settings; };
 
     /// Information about each of the settings entries required to construct *this
     static const docs::SettingsInfo docs;
@@ -47,6 +88,9 @@ private:
 
     /// Fields in the data that should be interpolated
     std::vector<std::string> m_value_tags;
+
+    /// Nested settings for the analytic expression of the energy surface
+    FourierAnalyticalSettings m_analytic_settings;
 
     /// Generate the documentation for the settings, used to construct static member
     static docs::SettingsInfo _initialized_documentation();

@@ -7,4 +7,5 @@ libgtest_la_LDFLAGS = -pthread
 include tests/trivial/Makemodule.am
 include tests/base_settings/Makemodule.am
 include tests/shift_settings/Makemodule.am
+include tests/fourier_settings/Makemodule.am
 include tests/serialize/Makemodule.am

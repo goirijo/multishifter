@@ -55,6 +55,41 @@ void sanity_check(const std::vector<mush::InterPoint>& unrolled_data)
 
 namespace mush
 {
+const docs::SettingsInfo FourierAnalyticalSettings::docs(FourierAnalyticalSettings::_initialized_documentation());
+
+docs::SettingsInfo FourierAnalyticalSettings::_initialized_documentation()
+{
+    docs::SettingsInfo docs("analytical");
+    // chain things here (if it ever gets implemented...)
+    return docs;
+}
+
+FourierAnalyticalSettings::FourierAnalyticalSettings(const std::string& init_x, const std::string& init_y,
+                                                     const std::string& init_lib, double init_mag)
+    : m_x_name(init_x), m_y_name(init_y), m_trig_lib_name(init_lib), m_min_magnitude(init_mag)
+{
+}
+
+FourierAnalyticalSettings FourierAnalyticalSettings::from_json(const CASM::jsonParser& init_json)
+{
+    auto x=lazy::get_or_value<std::string>(init_json, "x", "xx");
+    auto y=lazy::get_or_value<std::string>(init_json, "y", "yy");
+    auto lib=lazy::get_or_value<std::string>(init_json, "library", "np");
+    auto mag=lazy::get_or_value<double>(init_json, "minimum_magnitude", 1e-12);
+
+    return FourierAnalyticalSettings(x,y,lib,mag);
+}
+
+        CASM::jsonParser FourierAnalyticalSettings::to_json() const
+{
+    CASM::jsonParser serialized;
+    serialized["x"]=m_x_name;
+    serialized["y"]=m_y_name;
+    serialized["library"]=m_trig_lib_name;
+    serialized["minimum_magnitude"]=m_min_magnitude;
+
+    return serialized;
+}
 
 const docs::SettingsInfo FourierSettings::docs(FourierSettings::_initialized_documentation());
 
@@ -66,8 +101,8 @@ docs::SettingsInfo FourierSettings::_initialized_documentation()
 }
 
 FourierSettings::FourierSettings(const fs::path& init_data_path, const fs::path& init_lattice_path,
-                                 const std::vector<std::string>& init_value_tags)
-    : m_data_path(init_data_path), m_lattice_path(init_lattice_path), m_value_tags(init_value_tags)
+                                 const std::vector<std::string>& init_value_tags, const FourierAnalyticalSettings& init_analytic_settings)
+    : m_data_path(init_data_path), m_lattice_path(init_lattice_path), m_value_tags(init_value_tags), m_analytic_settings(init_analytic_settings)
 {
 }
 
@@ -77,7 +112,13 @@ FourierSettings FourierSettings::from_json(const CASM::jsonParser& init_json)
     auto lattice_path = init_json["lattice"].get<fs::path>();
     auto value_tags = init_json["values"].get<std::vector<std::string>>();
 
-    return FourierSettings(data_path, lattice_path, value_tags);
+    CASM::jsonParser anal_settings_json;
+    if(init_json.contains("analytic"))
+    {
+        anal_settings_json=init_json["analytic"];
+    }
+
+    return FourierSettings(data_path, lattice_path, value_tags, FourierAnalyticalSettings::from_json(anal_settings_json));
 }
 
 CASM::jsonParser FourierSettings::to_json() const
@@ -603,22 +644,22 @@ bool Analytiker::_can_ignore_imaginary() const
 std::string Analytiker::_to_string_formatted(double value, double precision)
 {
     std::stringstream sstr;
-    if(precision<1e-8)
+    if (precision < 1e-8)
     {
-        sstr<<std::scientific<<value;
+        sstr << std::scientific << value;
     }
 
     else
     {
-        sstr<<std::fixed<<std::setprecision(static_cast<int>(-std::log10(precision)))<<value;
+        sstr << std::fixed << std::setprecision(static_cast<int>(-std::log10(precision))) << value;
     }
 
     /* sstr<<value; */
     return sstr.str();
 }
 
-std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, std::string y_var,
-                                                            std::string numpy, double precision) const
+std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, std::string y_var, std::string numpy,
+                                                            double precision) const
 {
     std::string real_formula("0"), imag_formula("0");
 
@@ -629,7 +670,7 @@ std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, s
         auto kcart = kpoint.cart(m_recip_lat);
         assert(lazy::almost_zero(kcart(2)));
 
-        if (lazy::almost_zero(value,precision))
+        if (lazy::almost_zero(value, precision))
         {
             continue;
         }
@@ -642,17 +683,17 @@ std::pair<std::string, std::string> Analytiker::python_cart(std::string x_var, s
         {
             value_str.push_back('+');
         }
-        value_str += _to_string_formatted(value,precision);
+        value_str += _to_string_formatted(value, precision);
 
         // Next work on the first entry within the function
-        std::string dots = "(" + _to_string_formatted(kcart(0),precision) + "*" + x_var;
+        std::string dots = "(" + _to_string_formatted(kcart(0), precision) + "*" + x_var;
 
         // Then work on the second entry within the function
         if (kcart(1) >= 0)
         {
             dots.push_back('+');
         }
-        dots += _to_string_formatted(kcart(1),precision) + "*" + y_var + ")";
+        dots += _to_string_formatted(kcart(1), precision) + "*" + y_var + ")";
 
         switch (std::get<1>(bit))
         {
