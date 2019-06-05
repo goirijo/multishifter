@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import glob
 import json
 import numpy as np
@@ -5,6 +7,7 @@ import pandas as pd
 import os.path
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from lmfit import Model
 import argparse
 
 def _generate_parser():
@@ -15,6 +18,11 @@ def _generate_parser():
         help="The name field in the settings file used to generate shifted structures.",
         type=str,
         required=True)
+    parser.add_argument(
+        "--fit-uber",
+        help="Split the data by shift vector, and fit each set to a UBER.",
+        type=str,
+        required=False)
     parser.add_argument(
         "--full-record",
         help="Reads the records.json file in the appropriate shift directory, and augments it with all energies."
@@ -147,9 +155,39 @@ def main():
         full_record=pd.read_json(os.path.join(name+".shift","full_record.json"))
         full_record=full_record.set_index(["a","b","energy"])
         full_record=full_record.sort_index(level=["a","b","energy"])
-        min_record=full_record.reset_index(level="energy").groupby(level=["a","b"]).first()
 
+        min_record=full_record.reset_index(level="energy").groupby(level=["a","b"]).first()
         formatted_write(min_record,"./test.json")
+
+    elif args.fit_uber is not None:
+        full_record=pd.read_json(os.path.join(name+".shift","filtered_record.json"))
+        full_record=full_record.reset_index().set_index(['a','b'])
+        full_record=full_record.loc[full_record["cleavage"]>-0.1]
+        shift_ixx=full_record.groupby(['a','b']).indices
+        print shift_ixx
+        for ix in shift_ixx:
+            shift_point=full_record.loc[ix].reset_index().sort_values("cleavage")
+            x=shift_point["cleavage"]
+            y=shift_point["energy"]
+
+            e_guess=shift_point.iloc[shift_point["cleavage"].abs().argsort()]["energy"].iloc[0]
+            g_guess=(shift_point["energy"].iloc[-1]-e_guess)/2
+            l_guess=0.7
+
+            # uber_model=Model(evaluate_uber)
+            # result=uber_model.fit(y,x=x,e=e_guess,g=g_guess,l=l_guess)
+
+            # print result.fit_report()
+
+            popt,pcov=curve_fit(evaluate_uber,x,y,p0=[e_guess,g_guess,l_guess])
+            print e_guess,g_guess,l_guess
+            print popt
+            xfit=np.arange(min(x),max(x),0.001)
+            plt.plot(xfit,evaluate_uber(xfit,*popt))
+            plt.scatter(x,y)
+            # plt.plot(x, result.init_fit, 'k--')
+            # plt.plot(x, result.best_fit, 'r-')
+            plt.show()
 
     else:
         print("Nothing to do!")
