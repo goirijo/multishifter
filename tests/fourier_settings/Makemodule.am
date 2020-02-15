@@ -4,5 +4,5 @@ check_fourier_settings_SOURCES = tests/fourier_settings/fourier_settings.cpp
 check_fourier_settings_LDADD=\
 					libgtest.la\
 					libmultishift.la
-check_fourier_settings_LDFLAGS=-pthread
+# check_fourier_settings_LDFLAGS=-pthread
 # check_fourier_settings_CPPFLAGS = -I$(top_srcdir)/googletest/googletest/include -I$(top_srcdir)/googletest/googletest
