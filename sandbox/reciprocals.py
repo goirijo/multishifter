@@ -199,17 +199,45 @@ def plot_lattice_unit_vectors(ax,lattice:Lattice,offset=[0,0],**kwargs):
 
     return ax
 
-def make_hcp_lattice():
+def make_hexagonal_lattice():
     a=np.array([0,3])
     R=make_rotation_matrix(60)
     b=R.dot(a)
     return Lattice(a,b)
 
+def make_square_lattice():
+    a=[3,0]
+    b=[0,3]
+    return Lattice(a,b)
+
 def main():
+    fig=plt.figure()
+    ax=fig.add_subplot('111')
+
+    x=np.arange(0,500,0.1)
+
+    kbig=0.9
+    ybig=np.sin(kbig*x)
+
+    ksmall=0.85
+    ysmall=np.sin(ksmall*x)
+    
+    kmoire=kbig-ksmall
+    ymoire=np.sin(kmoire*x)
+
+    ax.scatter(x,ybig,c='r')
+    ax.scatter(x,ysmall,c='g')
+    ax.scatter(x,ybig+ysmall,c='b')
+    ax.scatter(x,ymoire,c='k')
+
+    plt.show()
+
+
+def _main():
     a=[1,1]
     b=[-2,2]
     real_l=Lattice(a,b)
-    real_l=make_hcp_lattice()
+    real_l=make_hexagonal_lattice()
 
     fig=plt.figure()
     ax=fig.add_subplot('111')
@@ -225,6 +253,7 @@ def main():
 
     rot_m=make_rotation_matrix(180//3)
     rot_m=make_rotation_matrix(1)
+    rot_m=np.random.rand(2,2)*0.3+np.eye(2)
     # rot_m=np.eye(2)*0.8
     rot_l=real_l.transform(rot_m)
 
