@@ -1,8 +1,0 @@
-TESTS+=check_base_settings
-check_PROGRAMS += check_base_settings
-check_base_settings_SOURCES = tests/base_settings/base_settings.cpp
-check_base_settings_LDADD=\
-						  libgtest.la\
-						  libmultishift.la
-check_base_settings_LDFLAGS=-pthread
-# check_base_settings_CPPFLAGS = -I$(top_srcdir)/googletest/googletest/include -I$(top_srcdir)/googletest/googletest

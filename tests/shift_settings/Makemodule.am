@@ -1,8 +1,0 @@
-TESTS+=check_shift_settings
-check_PROGRAMS += check_shift_settings
-check_shift_settings_SOURCES = tests/shift_settings/shift_settings.cpp
-check_shift_settings_LDADD=\
-					libgtest.la\
-					libmultishift.la
-check_shift_settings_LDFLAGS=-pthread
-# check_shift_settings_CPPFLAGS = -I$(top_srcdir)/googletest/googletest/include -I$(top_srcdir)/googletest/googletest
