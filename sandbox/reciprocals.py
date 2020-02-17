@@ -112,6 +112,7 @@ class Lattice(object):
         transformed_column_matrix=T.dot(self.column_vector_matrix())
         return Lattice(transformed_column_matrix[:,0],transformed_column_matrix[:,1])
 
+
 def scatter_lattice_points(ax,lattice: Lattice,arad,brad,**kwargs):
     """Scatter a bunch of lattice points around the origin to visualize
     the grid
@@ -198,24 +199,32 @@ def plot_lattice_unit_vectors(ax,lattice:Lattice,offset=[0,0],**kwargs):
 
     return ax
 
+def make_hcp_lattice():
+    a=np.array([0,3])
+    R=make_rotation_matrix(60)
+    b=R.dot(a)
+    return Lattice(a,b)
+
 def main():
     a=[1,1]
     b=[-2,2]
     real_l=Lattice(a,b)
+    real_l=make_hcp_lattice()
 
     fig=plt.figure()
     ax=fig.add_subplot('111')
     ax.set_aspect("equal")
 
-    arad=70
-    brad=45
+    arad=140
+    brad=140
     oint_size=5
 
     # scatter_lattice_points(ax,real_l,arad,brad,c='red',s=point_size)
     plot_periodic_lattice_cells(ax,real_l,arad,brad,c='red')
     plot_lattice_unit_vectors(ax,real_l,width=0.1,color='red')
 
-    rot_m=make_rotation_matrix(180//2.1)
+    rot_m=make_rotation_matrix(180//3)
+    rot_m=make_rotation_matrix(1)
     # rot_m=np.eye(2)*0.8
     rot_l=real_l.transform(rot_m)
 
@@ -253,18 +262,21 @@ def main():
     P=np.linalg.inv((K-I).T)
     print("P\n",P)
     print(P-np.linalg.inv((K-I).T))
-    R_moire=np.linalg.inv(I-M).dot(M)
 
-    T=R_moire.dot(np.linalg.inv(R))
-    print("T\n",T)
 
     print("R\n",R)
     print("R'\n",rot_l.column_vector_matrix())
     print("M\n",rot_m)
     print("P\n",P)
-    print("Rm\n",R_moire)
 
     moire_l=Lattice(G_moire[:,0],G_moire[:,1]).reciprocal()
+    R_moire=moire_l.column_vector_matrix()
+    T=np.linalg.inv(R).dot(R_moire)
+
+    print("T\n",T)
+    print("T\n",np.round(T))
+    R_moire=R.dot(T)
+    moire_l=Lattice(R_moire[:,0],R_moire[:,1])
 
     plot_periodic_lattice_cells(ax,moire_l,3,3,c='k')
     plot_lattice_unit_vectors(ax,moire_l,width=0.1,color='black')
