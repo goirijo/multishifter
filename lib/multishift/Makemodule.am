@@ -1,31 +1,9 @@
 noinst_LTLIBRARIES += libmultishift.la
 
 libmultishift_la_SOURCES=\
-				   lib/multishift/surf.hpp\
-				   lib/multishift/surf.cxx\
-				   lib/multishift/fourier.hpp\
-				   lib/multishift/fourier.cxx\
-				   lib/multishift/misc.hpp\
-				   lib/multishift/misc.cxx\
-				   lib/multishift/autodocs.hpp\
-				   lib/multishift/autodocs.cxx\
-				   lib/multishift/base.hpp\
-				   lib/multishift/base.cxx\
-				   lib/multishift/define.hpp\
-				   lib/multishift/exceptions.hpp\
-				   lib/multishift/io.hpp\
-				   lib/multishift/io.cxx\
-				   lib/multishift/misc.hpp\
-				   lib/multishift/settings.hpp\
-				   lib/multishift/base.cxx\
-				   lib/multishift/shift.hpp\
-				   lib/multishift/shift.cxx
+				   lib/multishift/slab.hpp\
+				   lib/multishift/slab.cxx
 
 
 libmultishift_la_LIBADD=\
-				 libutiliblob.la\
-				 $(BOOST_SYSTEM_LIB)\
-				 $(BOOST_FILESYSTEM_LIB)\
-				 $(BOOST_CHRONO_LIB)\
-				 $(BOOST_REGEX_LIB)\
-				 $(BOOST_PROGRAM_OPTIONS_LIB)
+				 libutiliblob.la
