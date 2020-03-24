@@ -21,17 +21,18 @@ TESTS=
 
 AM_CXXFLAGS=
 
-AM_CPPFLAGS= -I$(srcdir)/lib\
+AM_CPPFLAGS= -I$(srcdir)/include\
 			 -I$(srcdir)/cxxopts/include\
 			 -I$(srcdir)/pybind11/include\
 			 -I$(srcdir)/json/include\
-			 -I$(srcdir)/googletest/googletest\
 			 -I$(srcdir)/googletest/googletest/include\
+			 -I$(srcdir)/googletest/googletest\
 			 -I$(srcdir)/casm-utilities/include\
-			 -I$(srcdir)/casm-utilities/CASMcode/include\
-			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external\
-			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external/qhull/libqhullcpp\
-			 -I$(srcdir)/casm-utilities/CASMcode/include/casm/external/qhull/libqhull_r
+			 -I$(srcdir)/CASMcode/include\
+			 -I$(srcdir)/CASMcode/include/casm/external\
+			 -I$(srcdir)/CASMcode/include/casm/external/gzstream\
+			 -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhullcpp\
+			 -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhull_r
 
 AM_LDFLAGS=$(BOOST_LDFLAGS)	#I hate you
 

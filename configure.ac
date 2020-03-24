@@ -10,6 +10,8 @@ AC_CONFIG_MACRO_DIR([build-aux/m4])
 #These nested directories are a PITA
 AM_INIT_AUTOMAKE([subdir-objects 1.9 tar-ustar])
 
+LT_INIT
+
 # Checks for programs.
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_17

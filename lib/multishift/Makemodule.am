@@ -6,4 +6,4 @@ libmultishift_la_SOURCES=\
 
 
 libmultishift_la_LIBADD=\
-				 libutiliblob.la
+				 libcasmutils.la
