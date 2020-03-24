@@ -1,0 +1,16 @@
+include lib/casmutils/xtal/Makemodule.am
+
+noinst_LTLIBRARIES += libcasmutils.la
+
+libcasmutils_la_SOURCES=
+libcasmutils_la_SOURCES+=\
+						 lib/casmutils/stage.cxx\
+						 include/casmutils/stage.hpp\
+						 lib/casmutils/misc.cxx\
+						 include/casmutils/misc.hpp\
+						 lib/casmutils/handlers.cxx\
+						 include/casmutils/handlers.hpp
+
+libcasmutils_la_LIBADD=\
+					   libcasmblob.la\
+					   libcasmutils-xtal.la

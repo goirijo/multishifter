@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([multishifter], [0.2.1], [jgg@ucsb.edu])
+AC_INIT([multishifter], [0.2.1], [jg.goiri@gmail.com])
 AC_CONFIG_SRCDIR([src/base/base.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -10,37 +10,45 @@ AC_CONFIG_MACRO_DIR([build-aux/m4])
 #These nested directories are a PITA
 AM_INIT_AUTOMAKE([subdir-objects 1.9 tar-ustar])
 
-#This is for dependent libraries that get compiled. You might be able to get rid of this though.
-LT_INIT
-
 # Checks for programs.
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX_11
+AX_CXX_COMPILE_STDCXX_17
 
-# Checks for libraries. There is no escaping boost. Boost was a mistake.
-BOOSTV=1.52
-AX_BOOST_BASE([$BOOSTV],[],[AC_MSG_ERROR(You need Boost $BOOSTV libraries or higher.)])
-AX_BOOST_SYSTEM
-AX_BOOST_FILESYSTEM
-AX_BOOST_PROGRAM_OPTIONS
-AX_BOOST_CHRONO
-AX_BOOST_REGEX
-# AX_BOOST_PYTHON
-AC_CHECK_LIB([dl], [dlopen], [], AC_MSG_ERROR(dlopen from dl library not found!))
+# Checks for libraries.
+AX_CHECK_ZLIB([],AC_MSG_ERROR(zlib library not found!))
+AX_PTHREAD([],AC_MSG_WARN(pthread is required to run tests!))
 
-# We won't depend on a library. Instead we'll stuff all the dependencies into the executable itself
-# AC_CHECK_LIB([casm],[main], [], [AC_MSG_ERROR(The CASM libraries are required!)])
+AC_SEARCH_LIBS(dlopen, dl, [], AC_MSG_ERROR(dl library not found!))
 
-#You will need pybind11 for this operation
-#Why won't it find the libraries???
-# AC_CHECK_HEADER([pybind11/pybind11.h],[],[AC_MSG_ERROR(Pybind11 is required for this operation)])
+# Why is this such a pain in the butt? I just want to -lstdc++fs, I could be doing this in the
+# Makefile, but instead I'm following this example:
+# https://github.com/LibreOffice/online/blob/master/configure.ac
+AC_MSG_CHECKING(for std::filesystem features in -lstdc++fs)
+STD_FILESYSTEM=
+    save_CXXFLAGS=$CXXFLAGS
+    CXXFLAGS="$CXXFLAGS -Werror"
+    save_LIBS=$LIBS
+    LIBS="$save_LIBS -lstdc++fs"
+    AC_LANG_PUSH([C++])
+    AC_LINK_IFELSE([AC_LANG_SOURCE([[
+            #include <filesystem>
+            int main()
+            {
+                if (!std::filesystem::temp_directory_path().empty())
+                    return 0;
+                return 1;
+            }
+            ]])],[STD_FILESYSTEM=TRUE], AC_MSG_ERROR(stdc++fs not found!))
+    AC_LANG_POP([C++])
+    CXXFLAGS=$save_CXXFLAGS
+    LIBS=$save_LIBS
 
-
-# Checks for header files.
-
-# Checks for typedefs, structures, and compiler characteristics.
-
-# Checks for library functions.
+if test -n "$STD_FILESYSTEM" ; then
+    LIBS="$LIBS -lstdc++fs"
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_ERROR("libstdc++fs library not found!)
+fi
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
