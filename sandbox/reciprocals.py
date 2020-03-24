@@ -210,7 +210,7 @@ def make_square_lattice():
     b=[0,3]
     return Lattice(a,b)
 
-def main():
+def _main():
     fig=plt.figure()
     ax=fig.add_subplot('111')
 
@@ -233,27 +233,27 @@ def main():
     plt.show()
 
 
-def _main():
+def main():
     a=[1,1]
     b=[-2,2]
     real_l=Lattice(a,b)
     real_l=make_hexagonal_lattice()
+    real_l=make_square_lattice()
 
-    fig=plt.figure()
+    fig=plt.figure(0)
     ax=fig.add_subplot('111')
     ax.set_aspect("equal")
 
-    arad=140
-    brad=140
-    oint_size=5
+    arad=150
+    brad=150
+    point_size=5
 
     # scatter_lattice_points(ax,real_l,arad,brad,c='red',s=point_size)
     plot_periodic_lattice_cells(ax,real_l,arad,brad,c='red')
     plot_lattice_unit_vectors(ax,real_l,width=0.1,color='red')
 
     rot_m=make_rotation_matrix(180//3)
-    rot_m=make_rotation_matrix(1)
-    rot_m=np.random.rand(2,2)*0.3+np.eye(2)
+    rot_m=make_rotation_matrix(2)
     # rot_m=np.eye(2)*0.8
     rot_l=real_l.transform(rot_m)
 
@@ -301,16 +301,72 @@ def _main():
     moire_l=Lattice(G_moire[:,0],G_moire[:,1]).reciprocal()
     R_moire=moire_l.column_vector_matrix()
     T=np.linalg.inv(R).dot(R_moire)
+    T_prime=np.linalg.inv(R_prime).dot(R_moire);
 
     print("T\n",T)
-    print("T\n",np.round(T))
+    print("T_prime\n",T_prime)
+
+    T=np.rint(T)
+    T_prime=np.rint(T_prime)
+
+    print("T\n",T)
+    print("T_prime\n",T_prime)
     R_moire=R.dot(T)
     moire_l=Lattice(R_moire[:,0],R_moire[:,1])
 
-    plot_periodic_lattice_cells(ax,moire_l,3,3,c='k')
-    plot_lattice_unit_vectors(ax,moire_l,width=0.1,color='black')
+    arad=3
+    brad=3
+
+    plot_periodic_lattice_cells(ax,moire_l,arad,brad,lw=3,c='k')
+    plot_lattice_unit_vectors(ax,moire_l,width=0.5,color='black')
+
+    #############################
+
+    # fig=plt.figure(1)
+    # ax=fig.add_subplot('111')
+    # ax.set_aspect("equal")
+
+    RR=R.dot(T)
+    RR_prime=R_prime.dot(T_prime)
 
 
+    Z=(RR+RR_prime)//2
+    Z_l=Lattice(Z[:,0],Z[:,1])
+    plot_lattice_unit_vectors(ax,Z_l,width=0.5,color="gray")
+    plot_periodic_lattice_cells(ax,Z_l,arad,brad,lw=3,c='gray')
+
+    # RR_l=Lattice(RR[:,0],RR[:,1])
+    # plot_lattice_unit_vectors(ax,RR_l,width=0.5,color="red")
+    # plot_periodic_lattice_cells(ax,RR_l,arad,brad,lw=3,c='k')
+
+    # RR_prime_l=Lattice(RR_prime[:,0],RR_prime[0:,1])
+    # plot_lattice_unit_vectors(ax,RR_prime_l,width=0.5,color='green')
+    # plot_periodic_lattice_cells(ax,RR_prime_l,arad,brad,lw=3,c='green')
+
+    fig=plt.figure(1)
+    ax=fig.add_subplot('111')
+    ax.set_aspect("equal")
+
+    arad=150
+    brad=150
+
+    T=Z.dot(np.linalg.inv(R))
+    T_prime=Z.dot(np.linalg.inv(R_prime))
+
+    T=np.rint(T)
+    T_prime=np.rint(T_prime)
+
+    R=np.linalg.inv(R)
+    R_prime=np.linalg.inv(T).dot(Z)
+
+    R_l=Lattice(R[:,0],R[:,1])
+    R_prime_l=Lattice(R[:,0],R[:,1])
+
+    plot_periodic_lattice_cells(ax,R_l,arad,brad,c='green')
+    plot_lattice_unit_vectors(ax,R_l,width=0.1,color='green')
+    plot_periodic_lattice_cells(ax,R_prime_l,arad,brad,c='red')
+    plot_lattice_unit_vectors(ax,R_prime_l,width=0.1,color='red')
+    
     plt.show()
     
 
