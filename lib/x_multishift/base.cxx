@@ -4,23 +4,6 @@
 #include "casmutils/frankenstein.hpp"
 #include "casm/container/LinearAlgebra.hh"
 
-namespace
-{
-    ///Ensure that both lattices have parallel vectors axb
-    bool ab_plane_conserved(const mush::Lattice& lhs, const mush::Lattice& rhs)
-    {
-        auto lhs_norm=lhs[0].cross(lhs[1]).normalized();
-        auto rhs_norm=rhs[0].cross(rhs[1]).normalized();
-
-        double norm_dot=lhs_norm.dot(rhs_norm);
-        if(lazy::almost_equal(norm_dot,1.0) || lazy::almost_equal(norm_dot,-1.0))
-        {
-            return true;
-        }
-
-        return false;
-    }
-}
 
 
 namespace mush
