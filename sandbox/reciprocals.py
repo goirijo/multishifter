@@ -233,7 +233,7 @@ def _main():
     plt.show()
 
 
-def main():
+def __main():
     a=[1,1]
     b=[-2,2]
     real_l=Lattice(a,b)
@@ -246,9 +246,7 @@ def main():
 
     arad=150
     brad=150
-    point_size=5
 
-    # scatter_lattice_points(ax,real_l,arad,brad,c='red',s=point_size)
     plot_periodic_lattice_cells(ax,real_l,arad,brad,c='red')
     plot_lattice_unit_vectors(ax,real_l,width=0.1,color='red')
 
@@ -264,7 +262,6 @@ def main():
     # plt.show()
     # return
 
-    # scatter_lattice_points(ax,rot_l,arad,brad,c='green',s=point_size)
     plot_periodic_lattice_cells(ax,rot_l,arad,brad,c='green')
     plot_lattice_unit_vectors(ax,rot_l,width=0.1,color='green')
 
@@ -335,9 +332,9 @@ def main():
     plot_lattice_unit_vectors(ax,Z_l,width=0.5,color="gray")
     plot_periodic_lattice_cells(ax,Z_l,arad,brad,lw=3,c='gray')
 
-    # RR_l=Lattice(RR[:,0],RR[:,1])
-    # plot_lattice_unit_vectors(ax,RR_l,width=0.5,color="red")
-    # plot_periodic_lattice_cells(ax,RR_l,arad,brad,lw=3,c='k')
+    RR_l=Lattice(RR[:,0],RR[:,1])
+    plot_lattice_unit_vectors(ax,RR_l,width=0.5,color="red")
+    plot_periodic_lattice_cells(ax,RR_l,arad,brad,lw=3,c='k')
 
     # RR_prime_l=Lattice(RR_prime[:,0],RR_prime[0:,1])
     # plot_lattice_unit_vectors(ax,RR_prime_l,width=0.5,color='green')
@@ -367,6 +364,96 @@ def main():
     plot_periodic_lattice_cells(ax,R_prime_l,arad,brad,c='red')
     plot_lattice_unit_vectors(ax,R_prime_l,width=0.1,color='red')
     
+    plt.show()
+
+def make_moire_lattice(lattice, rotated_lattice):
+    L=lattice
+    Lt=rotated_lattice
+
+    K=L.reciprocal()
+    Kt=Lt.reciprocal()
+    G_mat=Kt.column_vector_matrix()-K.column_vector_matrix()
+    G=Lattice(*G_mat.T)
+    M=G.reciprocal()
+
+    return M
+
+def make_rounded_transformation_matrix(tiling_unit,superlattice):
+    L=tiling_unit
+    M=superlattice
+
+    T=np.rint(np.dot(np.linalg.inv(L.column_vector_matrix()),M.column_vector_matrix()))
+    return T
+
+def plot_superposition(ax, lattice, rotated_lattice):
+    arad=150
+    brad=150
+
+    L=lattice
+    Lt=rotated_lattice
+
+    plot_periodic_lattice_cells(ax,L,arad,brad,c='red')
+    plot_lattice_unit_vectors(ax,L,width=0.1,color='red')
+
+    plot_periodic_lattice_cells(ax,Lt,arad,brad,c='green')
+    plot_lattice_unit_vectors(ax,Lt,width=0.1,color='green')
+
+    M=make_moire_lattice(L,Lt)
+
+    plot_lattice_unit_vectors(ax,M,width=0.5,color="gray")
+    plot_periodic_lattice_cells(ax,M,3,3,lw=3,c='gray')
+
+    T=make_rounded_transformation_matrix(L,M)
+    Tt=make_rounded_transformation_matrix(Lt,M)
+
+    S=L.transform(T)
+    St=Lt.transform(Tt)
+
+    plot_lattice_unit_vectors(ax,S,width=0.5,color="red")
+    plot_lattice_unit_vectors(ax,St,width=0.5,color="green")
+
+    return ax
+
+def main():
+    a=[1,1]
+    b=[-2,2]
+    L=Lattice(a,b)
+    L=make_hexagonal_lattice()
+    L=make_square_lattice()
+
+    fig=plt.figure(0)
+    ax=fig.add_subplot('111')
+    ax.set_aspect("equal")
+
+    rot_m=make_rotation_matrix(180//3)
+    rot_m=make_rotation_matrix(20)
+    Lt=L.transform(rot_m)
+
+    plot_superposition(ax, L, Lt)
+
+    #################################################
+
+    fig=plt.figure(1)
+    ax=fig.add_subplot('111')
+    ax.set_aspect("equal")
+
+    M=make_moire_lattice(L,Lt)
+    T=make_rounded_transformation_matrix(L,M)
+    Tt=make_rounded_transformation_matrix(Lt,M)
+
+    S=L.transform(T)
+    St=Lt.transform(Tt)
+
+    S_mat=(S.column_vector_matrix()+St.column_vector_matrix())/2.0
+    S=Lattice(*S_mat.T)
+
+    Lp_mat=np.dot(S.column_vector_matrix(),np.linalg.inv(T))
+    Lp=Lattice(*Lp_mat.T)
+    Ltp_mat=np.dot(S.column_vector_matrix(),np.linalg.inv(Tt))
+    Ltp=Lattice(*Ltp_mat.T)
+
+    plot_superposition(ax, Lp,Ltp)
+
     plt.show()
     
 
