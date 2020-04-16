@@ -1,10 +1,11 @@
-#include "casmutils/xtal/site.hpp"
+#include <casmutils/xtal/site.hpp>
 #include <casmutils/xtal/lattice.hpp>
 #include <casmutils/xtal/structure_tools.hpp>
-#include <multishift/slab.hpp>
+#include "./slab.hpp"
 
 // Extract to casm-utilities
 #include <casm/crystallography/Lattice.hh>
+#include <casm/crystallography/Superlattice.hh>
 
 namespace
 {
@@ -70,8 +71,6 @@ xtal::Lattice make_sliced_lattice(const xtal::Lattice& unit_lattice, const Eigen
     assert(::ab_plane_conserved(best_lattice,shift_lattice));
 
     return best_lattice;
-
-
 }
 
 xtal::Structure make_sliced_structure(const xtal::Structure& unit_structure, const Eigen::Vector3i& miller_indexes) {
@@ -84,7 +83,7 @@ xtal::Structure make_sliced_structure(const xtal::Structure& unit_structure, con
     Eigen::Matrix3i slice_transf_mat=slice_superlattice.transformation_matrix().cast<int>();
 
     Structure sliced_structure=make_superstructure(unit_structure,slice_transf_mat);
-    //TODO: The basis isn't within
+    sliced_structure.within();
     return sliced_structure;
 }
 } // namespace xtal

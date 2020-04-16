@@ -1,9 +1,9 @@
 #ifndef SLAB_HH
 #define SLAB_HH
 
-#include "casmutils/xtal/structure.hpp"
+#include <casmutils/xtal/structure.hpp>
 #include <casmutils/xtal/lattice.hpp>
-#include <multishift/definitions.hpp>
+#include "./definitions.hpp"
 
 namespace casmutils
 {

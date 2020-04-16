@@ -21,7 +21,7 @@ TESTS=
 
 AM_CXXFLAGS=
 
-AM_CPPFLAGS= -I$(srcdir)/include\
+AM_CPPFLAGS= -I$(srcdir)/lib\
 			 -I$(srcdir)/cxxopts/include\
 			 -I$(srcdir)/pybind11/include\
 			 -I$(srcdir)/json/include\

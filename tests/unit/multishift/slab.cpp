@@ -29,7 +29,8 @@ protected:
         cu::xtal::Site site0(cu::xtal::Coordinate::from_fractional(2.0 / 3, 2.0 / 3, 3.0 / 4, hcp_lat), "A");
         cu::xtal::Site site1(cu::xtal::Coordinate::from_fractional(1.0 / 3, 1.0 / 3, 1.0 / 4, hcp_lat), "A");
 
-        return cu::xtal::Structure(hcp_lat, std::vector<cu::xtal::Site>{site0, site1});
+        cu::xtal::Structure hcp_struc(hcp_lat, std::vector<cu::xtal::Site>{site0, site1});
+        return cu::xtal::make_niggli(hcp_struc);
     }
 
     static cu::xtal::Structure make_fcc_structure()
@@ -122,24 +123,30 @@ TEST_F(SlabTest, SliceLatticeConsistency)
 TEST_F(SlabTest, LatticeSlice001)
 {
     auto [hcp_lat, fcc_lat, b2_lat] = make_sliced_lattices(millers_001);
-    std::cout<<hcp_lat.column_vector_matrix()<<std::endl<<std::endl<<hcp_ptr->lattice().column_vector_matrix()<<std::endl<<std::endl;
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(hcp_lat, hcp_ptr->lattice(), 1e-5));
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(fcc_lat, fcc_ptr->lattice(), 1e-5));
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(b2_lat, b2_ptr->lattice(), 1e-5));
 }
 
+#include <casm/crystallography/Superlattice.hh>
+
 TEST_F(SlabTest, LatticeSlice_fcc_111)
 {
     cu::xtal::Lattice fcc_slice_lat = cu::xtal::make_sliced_lattice(fcc_ptr->lattice(), millers_111);
-    Eigen::Matrix3i prim_to_conventional_fcc_mat;
-    prim_to_conventional_fcc_mat << -1, 1, 1, 1, -1, 1, 1, 1, -1;
+    Eigen::Matrix3i prim_to_3layer_fcc_mat;
+    prim_to_3layer_fcc_mat << -1,0,1,1,-1,1,0,1,1;
 
-    cu::xtal::Structure test=cu::xtal::make_sliced_structure(*fcc_ptr,millers_111);
-    cu::xtal::print_poscar(test,std::cout);
+    cu::xtal::Structure sliced_struc = cu::xtal::make_sliced_structure(*fcc_ptr, millers_111);
+    cu::xtal::print_poscar(sliced_struc, std::cout);
+    cu::xtal::print_poscar(*this->fcc_ptr, std::cout);
 
-    cu::xtal::Lattice conventional_fcc = cu::xtal::make_superlattice(fcc_ptr->lattice(), prim_to_conventional_fcc_mat);
-    std::cout<<fcc_slice_lat.column_vector_matrix()<<std::endl<<std::endl<<conventional_fcc.column_vector_matrix()<<std::endl<<std::endl;
-    EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(fcc_slice_lat, conventional_fcc, 1e-5));
+    auto tmp=CASM::xtal::Superlattice::smooth_prim(fcc_ptr->lattice().__get(), sliced_struc.lattice().__get());
+    std::cout<<tmp.transformation_matrix()<<std::endl;
+
+    cu::xtal::Lattice fcc_3layer = cu::xtal::make_superlattice(fcc_ptr->lattice(), prim_to_3layer_fcc_mat);
+    /* std::cout<<fcc_slice_lat.column_vector_matrix()<<std::endl<<std::endl<<conventional_fcc.column_vector_matrix()<<std::endl<<std::endl;
+     */
+    EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(fcc_slice_lat, fcc_3layer, 1e-5));
 }
 
 TEST_F(SlabTest, StructureSlice_b2_101)
@@ -150,8 +157,6 @@ TEST_F(SlabTest, StructureSlice_b2_101)
 
     cu::xtal::Site site0(cu::xtal::Coordinate::from_fractional(0, 0, 0, b2_slice.lattice()), "A");
     cu::xtal::Site site1(cu::xtal::Coordinate::from_fractional(0.5, 0.5, 0, b2_slice.lattice()), "B");
-
-    cu::xtal::print_poscar(b2_slice,std::cout);
 
     cu::xtal::SiteEquals_f is_equal_site0(site0, 1e-5);
     EXPECT_TRUE(std::find_if(b2_slice.basis_sites().begin(), b2_slice.basis_sites().end(), is_equal_site0) != b2_slice.basis_sites().end());

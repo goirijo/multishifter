@@ -1,4 +1,6 @@
 include lib/casmutils/xtal/Makemodule.am
+include lib/casmutils/sym/Makemodule.am
+include lib/casmutils/mapping/Makemodule.am
 
 noinst_LTLIBRARIES += libcasmutils.la
 
@@ -13,4 +15,6 @@ libcasmutils_la_SOURCES+=\
 
 libcasmutils_la_LIBADD=\
 					   libcasmblob.la\
-					   libcasmutils-xtal.la
+					   libcasmutils-xtal.la\
+					   libcasmutils-sym.la\
+					   libcasmutils-mapping.la
