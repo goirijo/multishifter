@@ -1,4 +1,4 @@
-#include "casmutils/xtal/structure_tools.hpp"
+#include <casmutils/xtal/structure_tools.hpp>
 #include <algorithm>
 #include <casmutils/misc.hpp>
 #include <casmutils/xtal/coordinate.hpp>
@@ -9,68 +9,73 @@
 #include <memory>
 #include <multishift/slab.hpp>
 #include <tuple>
+#include "../../autotools.hh"
 
 namespace cu = casmutils;
 
-class SlabTest : public testing::Test
+class SlicingTest : public testing::Test
 {
 protected:
-    static cu::xtal::Structure make_hcp_structure()
-    {
-        Eigen::Matrix3d hcp_col_lat_mat;
-        // clang-format off
-        // pasted from a vasp file
-        hcp_col_lat_mat << 1.5960945300000000, 2.7645168299999998, 0.0000000000000000,
-                          -1.5960945300000000, 2.7645168299999998, 0.0000000000000000,
-                           0.0000000000000000, 0.0000000000000000, 5.1840195700000002;
-        // clang-format on
+    /* static cu::xtal::Structure make_hcp_structure() */
+    /* { */
+    /*     Eigen::Matrix3d hcp_col_lat_mat; */
+    /*     // clang-format off */
+    /*     // pasted from a vasp file */
+    /*     hcp_col_lat_mat << 1.5960945300000000, 2.7645168299999998, 0.0000000000000000, */
+    /*                       -1.5960945300000000, 2.7645168299999998, 0.0000000000000000, */
+    /*                        0.0000000000000000, 0.0000000000000000, 5.1840195700000002; */
+    /*     // clang-format on */
 
-        cu::xtal::Lattice hcp_lat(hcp_col_lat_mat.transpose());
-        cu::xtal::Site site0(cu::xtal::Coordinate::from_fractional(2.0 / 3, 2.0 / 3, 3.0 / 4, hcp_lat), "A");
-        cu::xtal::Site site1(cu::xtal::Coordinate::from_fractional(1.0 / 3, 1.0 / 3, 1.0 / 4, hcp_lat), "A");
+    /*     cu::xtal::Lattice hcp_lat(hcp_col_lat_mat.transpose()); */
+    /*     cu::xtal::Site site0(cu::xtal::Coordinate::from_fractional(2.0 / 3, 2.0 / 3, 3.0 / 4, hcp_lat), "A"); */
+    /*     cu::xtal::Site site1(cu::xtal::Coordinate::from_fractional(1.0 / 3, 1.0 / 3, 1.0 / 4, hcp_lat), "A"); */
 
-        cu::xtal::Structure hcp_struc(hcp_lat, std::vector<cu::xtal::Site>{site0, site1});
-        return cu::xtal::make_niggli(hcp_struc);
-    }
+    /*     cu::xtal::Structure hcp_struc(hcp_lat, std::vector<cu::xtal::Site>{site0, site1}); */
+    /*     return cu::xtal::make_niggli(hcp_struc); */
+    /* } */
 
-    static cu::xtal::Structure make_fcc_structure()
-    {
-        Eigen::Matrix3d fcc_col_lat_mat;
-        // clang-format off
-        // pasted from a vasp file
-        fcc_col_lat_mat << 0.000000000000, 1.754750223661, 1.754750223661,
-                           1.754750223661, 0.000000000000, 1.754750223661,
-                           1.754750223661, 1.754750223661, 0.000000000000;
-        // clang-format on
+    /* static cu::xtal::Structure make_fcc_structure() */
+    /* { */
+    /*     Eigen::Matrix3d fcc_col_lat_mat; */
+    /*     // clang-format off */
+    /*     // pasted from a vasp file */
+    /*     fcc_col_lat_mat << 0.000000000000, 1.754750223661, 1.754750223661, */
+    /*                        1.754750223661, 0.000000000000, 1.754750223661, */
+    /*                        1.754750223661, 1.754750223661, 0.000000000000; */
+    /*     // clang-format on */
 
-        cu::xtal::Lattice fcc_lat(fcc_col_lat_mat.transpose());
-        cu::xtal::Site site0(cu::xtal::Coordinate(0, 0, 0), "A");
+    /*     cu::xtal::Lattice fcc_lat(fcc_col_lat_mat.transpose()); */
+    /*     cu::xtal::Site site0(cu::xtal::Coordinate(0, 0, 0), "A"); */
 
-        return cu::xtal::Structure(fcc_lat, std::vector<cu::xtal::Site>{site0});
-    }
+    /*     return cu::xtal::Structure(fcc_lat, std::vector<cu::xtal::Site>{site0}); */
+    /* } */
 
-    static cu::xtal::Structure make_b2_structure()
-    {
-        Eigen::Matrix3d b2_col_lat_mat;
-        // clang-format off
-        // pasted from a vasp file
-        b2_col_lat_mat << 2.878939000000, 0.000000000000, 0.000000000000,
-                          0.000000000000, 2.878939000000, 0.000000000000,
-                          0.000000000000, 0.000000000000, 2.878939000000;
-        // clang-format on
+    /* static cu::xtal::Structure make_b2_structure() */
+    /* { */
+    /*     Eigen::Matrix3d b2_col_lat_mat; */
+    /*     // clang-format off */
+    /*     // pasted from a vasp file */
+    /*     b2_col_lat_mat << 2.878939000000, 0.000000000000, 0.000000000000, */
+    /*                       0.000000000000, 2.878939000000, 0.000000000000, */
+    /*                       0.000000000000, 0.000000000000, 2.878939000000; */
+    /*     // clang-format on */
 
-        cu::xtal::Lattice b2_lat(b2_col_lat_mat.transpose());
-        cu::xtal::Site site0(cu::xtal::Coordinate::from_fractional(0, 0, 0, b2_lat), "A");
-        cu::xtal::Site site1(cu::xtal::Coordinate::from_fractional(0.5, 0.5, 0.5, b2_lat), "B");
+    /*     cu::xtal::Lattice b2_lat(b2_col_lat_mat.transpose()); */
+    /*     cu::xtal::Site site0(cu::xtal::Coordinate::from_fractional(0, 0, 0, b2_lat), "A"); */
+    /*     cu::xtal::Site site1(cu::xtal::Coordinate::from_fractional(0.5, 0.5, 0.5, b2_lat), "B"); */
 
-        return cu::xtal::Structure(b2_lat, std::vector<cu::xtal::Site>{site0, site1});
-    }
+    /*     return cu::xtal::Structure(b2_lat, std::vector<cu::xtal::Site>{site0, site1}); */
+    /* } */
 
     void SetUp() override
     {
-        hcp_ptr.reset(new cu::xtal::Structure(SlabTest::make_hcp_structure()));
-        fcc_ptr.reset(new cu::xtal::Structure(SlabTest::make_fcc_structure()));
-        b2_ptr.reset(new cu::xtal::Structure(SlabTest::make_b2_structure()));
+        /* hcp_ptr.reset(new cu::xtal::Structure(SlicingTest::make_hcp_structure())); */
+        /* fcc_ptr.reset(new cu::xtal::Structure(SlicingTest::make_fcc_structure())); */
+        /* b2_ptr.reset(new cu::xtal::Structure(SlicingTest::make_b2_structure())); */
+
+        hcp_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir/"hcp.vasp")));
+        fcc_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir/"fcc.vasp")));
+        b2_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir/"b2.vasp")));
 
         millers_001 << 0, 0, 1;
         millers_010 << 0, 1, 0;
@@ -106,7 +111,7 @@ protected:
     Eigen::Vector3i millers_11bar1;
 };
 
-TEST_F(SlabTest, SliceLatticeConsistency)
+TEST_F(SlicingTest, SliceLatticeConsistency)
 {
     auto miller_set = {millers_001, millers_010, millers_101, millers_211, millers_111, millers_11bar1};
     for (const Eigen::Vector3i& millers : miller_set)
@@ -120,7 +125,7 @@ TEST_F(SlabTest, SliceLatticeConsistency)
     }
 }
 
-TEST_F(SlabTest, LatticeSlice001)
+TEST_F(SlicingTest, LatticeSlice001)
 {
     auto [hcp_lat, fcc_lat, b2_lat] = make_sliced_lattices(millers_001);
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(hcp_lat, hcp_ptr->lattice(), 1e-5));
@@ -128,30 +133,25 @@ TEST_F(SlabTest, LatticeSlice001)
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(b2_lat, b2_ptr->lattice(), 1e-5));
 }
 
-#include <casm/crystallography/Superlattice.hh>
-
-TEST_F(SlabTest, LatticeSlice_fcc_111)
+TEST_F(SlicingTest, LatticeSlice_fcc_111)
 {
     cu::xtal::Lattice fcc_slice_lat = cu::xtal::make_sliced_lattice(fcc_ptr->lattice(), millers_111);
     Eigen::Matrix3i prim_to_3layer_fcc_mat;
-    prim_to_3layer_fcc_mat << -1,0,1,1,-1,1,0,1,1;
+    prim_to_3layer_fcc_mat << -1, 0, 1, 1, -1, 1, 0, 1, 1;
 
     cu::xtal::Structure sliced_struc = cu::xtal::make_sliced_structure(*fcc_ptr, millers_111);
     cu::xtal::print_poscar(sliced_struc, std::cout);
     cu::xtal::print_poscar(*this->fcc_ptr, std::cout);
 
-    auto tmp=CASM::xtal::Superlattice::smooth_prim(fcc_ptr->lattice().__get(), sliced_struc.lattice().__get());
-    std::cout<<tmp.transformation_matrix()<<std::endl;
-
     cu::xtal::Lattice fcc_3layer = cu::xtal::make_superlattice(fcc_ptr->lattice(), prim_to_3layer_fcc_mat);
-    /* std::cout<<fcc_slice_lat.column_vector_matrix()<<std::endl<<std::endl<<conventional_fcc.column_vector_matrix()<<std::endl<<std::endl;
-     */
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(fcc_slice_lat, fcc_3layer, 1e-5));
 }
 
-TEST_F(SlabTest, StructureSlice_b2_101)
+TEST_F(SlicingTest, StructureSlice_b2_101)
 {
     cu::xtal::Structure b2_slice = cu::xtal::make_sliced_structure(*b2_ptr, millers_101);
+
+    cu::xtal::write_poscar(b2_slice,"./b2_101.vasp");
 
     EXPECT_EQ(b2_slice.basis_sites().size(), 4);
 
@@ -164,6 +164,33 @@ TEST_F(SlabTest, StructureSlice_b2_101)
     cu::xtal::SiteEquals_f is_equal_site1(site1, 1e-5);
     EXPECT_TRUE(std::find_if(b2_slice.basis_sites().begin(), b2_slice.basis_sites().end(), is_equal_site1) != b2_slice.basis_sites().end());
 }
+
+//******************************************************************************//
+
+class SlabTest : public testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        b2_101_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir/"b2_101.vasp")));
+        b2_101_stack5_ptr.reset(new cu::xtal::Structure(mush::make_stacked_slab(*b2_101_stack5_ptr,5)));
+    }
+
+    std::unique_ptr<cu::xtal::Structure> b2_101_ptr;
+    std::unique_ptr<cu::xtal::Structure> b2_101_stack5_ptr;
+};
+
+TEST_F(SlabTest, Consistent_AB_Vectors)
+{
+    EXPECT_EQ(b2_101_ptr->lattice().a(),b2_101_stack5_ptr->lattice().a());
+    EXPECT_EQ(b2_101_ptr->lattice().b(),b2_101_stack5_ptr->lattice().b());
+}
+
+TEST_F(SlabTest, Consistent_C_Vector)
+{
+    EXPECT_EQ(b2_101_ptr->lattice().c()*5,b2_101_stack5_ptr->lattice().c());
+}
+
 
 int main(int argc, char** argv)
 {

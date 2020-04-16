@@ -32,7 +32,9 @@ AM_CPPFLAGS= -I$(srcdir)/lib\
 			 -I$(srcdir)/CASMcode/include/casm/external\
 			 -I$(srcdir)/CASMcode/include/casm/external/gzstream\
 			 -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhullcpp\
-			 -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhull_r
+			 -I$(srcdir)/CASMcode/include/casm/external/qhull/libqhull_r\
+			 -DABS_SRCDIR=\"$(abs_srcdir)\"\
+			 -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
 
 AM_LDFLAGS=$(BOOST_LDFLAGS)	#I hate you
 

@@ -1,9 +1,9 @@
 #ifndef SLAB_HH
 #define SLAB_HH
 
-#include <casmutils/xtal/structure.hpp>
-#include <casmutils/xtal/lattice.hpp>
 #include "./definitions.hpp"
+#include <casmutils/xtal/lattice.hpp>
+#include <casmutils/xtal/structure.hpp>
 
 namespace casmutils
 {
@@ -24,6 +24,11 @@ xtal::Structure make_sliced_structure(const xtal::Structure& unit_structure, con
 
 namespace mush
 {
+namespace cu = casmutils;
+/// Given a slab, where the surface plane has already been exposed to the a-b vectors, create a
+/// superstructure by stacking units along the c direction
+cu::xtal::Structure make_stacked_slab(const cu::xtal::Structure& slab_unit, int stacks);
+
 } // namespace mush
 
 #endif
