@@ -140,8 +140,6 @@ TEST_F(SlicingTest, LatticeSlice_fcc_111)
     prim_to_3layer_fcc_mat << -1, 0, 1, 1, -1, 1, 0, 1, 1;
 
     cu::xtal::Structure sliced_struc = cu::xtal::make_sliced_structure(*fcc_ptr, millers_111);
-    cu::xtal::print_poscar(sliced_struc, std::cout);
-    cu::xtal::print_poscar(*this->fcc_ptr, std::cout);
 
     cu::xtal::Lattice fcc_3layer = cu::xtal::make_superlattice(fcc_ptr->lattice(), prim_to_3layer_fcc_mat);
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(fcc_slice_lat, fcc_3layer, 1e-5));
@@ -173,7 +171,10 @@ protected:
     void SetUp() override
     {
         b2_101_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir/"b2_101.vasp")));
-        b2_101_stack5_ptr.reset(new cu::xtal::Structure(mush::make_stacked_slab(*b2_101_stack5_ptr,5)));
+        b2_101_stack5_ptr.reset(new cu::xtal::Structure(mush::make_stacked_slab(*b2_101_ptr,5)));
+
+    cu::xtal::print_poscar(*b2_101_ptr,std::cout);
+    cu::xtal::print_poscar(*b2_101_stack5_ptr,std::cout);
     }
 
     std::unique_ptr<cu::xtal::Structure> b2_101_ptr;
@@ -182,6 +183,7 @@ protected:
 
 TEST_F(SlabTest, Consistent_AB_Vectors)
 {
+    
     EXPECT_EQ(b2_101_ptr->lattice().a(),b2_101_stack5_ptr->lattice().a());
     EXPECT_EQ(b2_101_ptr->lattice().b(),b2_101_stack5_ptr->lattice().b());
 }

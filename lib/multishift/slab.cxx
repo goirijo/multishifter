@@ -91,4 +91,12 @@ xtal::Structure make_sliced_structure(const xtal::Structure& unit_structure, con
 
 namespace mush
 {
+cu::xtal::Structure make_stacked_slab(const cu::xtal::Structure& slab_unit, int stacks)
+{
+    // Always stack along c-direction
+    Eigen::Matrix3i stack_mat;
+    stack_mat << 1, 0, 0, 0, 1, 0, 0, 0, stacks;
+
+    return cu::xtal::make_superstructure(slab_unit, stack_mat);
+}
 }

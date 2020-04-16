@@ -25,6 +25,10 @@ xtal::Structure make_sliced_structure(const xtal::Structure& unit_structure, con
 namespace mush
 {
 namespace cu = casmutils;
+/// Given the primitive structure, create the smallest unit possible that exposes the surface
+/// of the specified miller indices along the a-b vectors
+constexpr auto make_slab_unit=cu::xtal::make_sliced_structure;
+
 /// Given a slab, where the surface plane has already been exposed to the a-b vectors, create a
 /// superstructure by stacking units along the c direction
 cu::xtal::Structure make_stacked_slab(const cu::xtal::Structure& slab_unit, int stacks);
