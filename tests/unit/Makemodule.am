@@ -16,3 +16,13 @@ check_slab_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
+
+TESTS+=check_shift
+check_PROGRAMS += check_shift
+check_shift_SOURCES =\
+					   tests/unit/multishift/shift.cpp
+
+check_shift_LDADD=\
+					libgtest.la\
+					libmultishift.la
+

@@ -2,7 +2,9 @@ noinst_LTLIBRARIES += libmultishift.la
 
 libmultishift_la_SOURCES=\
 				   lib/multishift/slab.hpp\
-				   lib/multishift/slab.cxx
+				   lib/multishift/slab.cxx\
+				   lib/multishift/shift.hpp\
+				   lib/multishift/shift.cxx
 
 
 libmultishift_la_LIBADD=\

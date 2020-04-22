@@ -96,8 +96,6 @@ TEST_F(SlicingTest, StructureSlice_b2_101)
 {
     cu::xtal::Structure b2_slice = cu::xtal::make_sliced_structure(*b2_ptr, millers_101);
 
-    cu::xtal::write_poscar(b2_slice, "./b2_101.vasp");
-
     EXPECT_EQ(b2_slice.basis_sites().size(), 4);
 
     cu::xtal::Site site0(cu::xtal::Coordinate::from_fractional(0, 0, 0, b2_slice.lattice()), "A");
