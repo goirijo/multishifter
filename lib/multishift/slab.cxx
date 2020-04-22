@@ -1,7 +1,9 @@
 #include <casmutils/xtal/site.hpp>
+#include <casmutils/xtal/coordinate.hpp>
 #include <casmutils/xtal/lattice.hpp>
 #include <casmutils/xtal/structure_tools.hpp>
 #include "./slab.hpp"
+#include "casmutils/xtal/structure.hpp"
 
 // Extract to casm-utilities
 #include <casm/crystallography/Lattice.hh>
@@ -86,6 +88,17 @@ xtal::Structure make_sliced_structure(const xtal::Structure& unit_structure, con
     sliced_structure.within();
     return sliced_structure;
 }
+
+std::vector<xtal::Site> make_translated_basis(const std::vector<xtal::Site>& basis, const Eigen::Vector3d& shift)
+{
+    std::vector<xtal::Site> translated_basis;
+    for(const auto& site : basis)
+    {
+        translated_basis.emplace_back(Coordinate(site.cart()+shift),site.label());
+    }
+
+    return translated_basis;
+}
 } // namespace xtal
 } // namespace casmutils
 
@@ -98,5 +111,22 @@ cu::xtal::Structure make_stacked_slab(const cu::xtal::Structure& slab_unit, int 
     stack_mat << 1, 0, 0, 0, 1, 0, 0, 0, stacks;
 
     return cu::xtal::make_superstructure(slab_unit, stack_mat);
+}
+
+cu::xtal::Structure make_floored_structure(const cu::xtal::Structure& shiftable_struc, int floor_atom_ix)
+{
+    // Index 0 means no translation
+    if(floor_atom_ix<1)
+    {
+        return shiftable_struc;
+    }
+
+    const Eigen::Vector3d cart_shift=-shiftable_struc.basis_sites()[floor_atom_ix].cart();
+    auto translated_basis=cu::xtal::make_translated_basis(shiftable_struc.basis_sites(),cart_shift);
+
+    cu::xtal::Structure shifted_struc(shiftable_struc.lattice(),translated_basis);
+    shifted_struc.within();
+
+    return shifted_struc;
 }
 }
