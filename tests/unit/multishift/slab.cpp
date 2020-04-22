@@ -16,11 +16,12 @@ namespace cu = casmutils;
 class SlicingTest : public testing::Test
 {
 protected:
+    using Structure=cu::xtal::Structure;
     void SetUp() override
     {
-        hcp_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir / "hcp.vasp")));
-        fcc_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir / "fcc.vasp")));
-        b2_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir / "b2.vasp")));
+        hcp_ptr.reset(new Structure(Structure::from_poscar(mush::autotools::input_filesdir / "hcp.vasp")));
+        fcc_ptr.reset(new Structure(Structure::from_poscar(mush::autotools::input_filesdir / "fcc.vasp")));
+        b2_ptr.reset(new Structure(Structure::from_poscar(mush::autotools::input_filesdir / "b2.vasp")));
 
         millers_001 << 0, 0, 1;
         millers_010 << 0, 1, 0;
@@ -44,9 +45,9 @@ protected:
                                cu::xtal::make_sliced_lattice(b2_ptr->lattice(), miller_indexes));
     }
 
-    std::unique_ptr<cu::xtal::Structure> hcp_ptr;
-    std::unique_ptr<cu::xtal::Structure> fcc_ptr;
-    std::unique_ptr<cu::xtal::Structure> b2_ptr;
+    std::unique_ptr<Structure> hcp_ptr;
+    std::unique_ptr<Structure> fcc_ptr;
+    std::unique_ptr<Structure> b2_ptr;
 
     Eigen::Vector3i millers_001;
     Eigen::Vector3i millers_010;
@@ -86,7 +87,7 @@ TEST_F(SlicingTest, LatticeSlice_fcc_111)
     Eigen::Matrix3i prim_to_3layer_fcc_mat;
     prim_to_3layer_fcc_mat << -1, 0, 1, 1, -1, 1, 0, 1, 1;
 
-    cu::xtal::Structure sliced_struc = cu::xtal::make_sliced_structure(*fcc_ptr, millers_111);
+    Structure sliced_struc = cu::xtal::make_sliced_structure(*fcc_ptr, millers_111);
 
     cu::xtal::Lattice fcc_3layer = cu::xtal::make_superlattice(fcc_ptr->lattice(), prim_to_3layer_fcc_mat);
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(fcc_slice_lat, fcc_3layer, tol));
@@ -94,7 +95,7 @@ TEST_F(SlicingTest, LatticeSlice_fcc_111)
 
 TEST_F(SlicingTest, StructureSlice_b2_101)
 {
-    cu::xtal::Structure b2_slice = cu::xtal::make_sliced_structure(*b2_ptr, millers_101);
+    Structure b2_slice = cu::xtal::make_sliced_structure(*b2_ptr, millers_101);
 
     EXPECT_EQ(b2_slice.basis_sites().size(), 4);
 
@@ -113,17 +114,18 @@ TEST_F(SlicingTest, StructureSlice_b2_101)
 class SlabTest : public testing::Test
 {
 protected:
+    using Structure=cu::xtal::Structure;
     void SetUp() override
     {
-        b2_101_ptr.reset(new cu::xtal::Structure(cu::xtal::Structure::from_poscar(mush::autotools::input_filesdir / "b2_101.vasp")));
-        b2_101_stack5_ptr.reset(new cu::xtal::Structure(mush::make_stacked_slab(*b2_101_ptr, 5)));
+        b2_101_ptr.reset(new Structure(Structure::from_poscar(mush::autotools::input_filesdir / "b2_101.vasp")));
+        b2_101_stack5_ptr.reset(new Structure(mush::make_stacked_slab(*b2_101_ptr, 5)));
 
         cu::xtal::print_poscar(*b2_101_ptr, std::cout);
         cu::xtal::print_poscar(*b2_101_stack5_ptr, std::cout);
     }
 
-    std::unique_ptr<cu::xtal::Structure> b2_101_ptr;
-    std::unique_ptr<cu::xtal::Structure> b2_101_stack5_ptr;
+    std::unique_ptr<Structure> b2_101_ptr;
+    std::unique_ptr<Structure> b2_101_stack5_ptr;
 };
 
 TEST_F(SlabTest, Consistent_AB_Vectors)
@@ -158,7 +160,7 @@ TEST_F(SlabTest, FlooredStructure)
         }
     }
 
-    cu::xtal::Structure floored_structure = mush::make_floored_structure(*(this->b2_101_ptr), floor_ix);
+    Structure floored_structure = mush::make_floored_structure(*(this->b2_101_ptr), floor_ix);
     cu::xtal::print_poscar(floored_structure,std::cout);
     const auto& floored_basis=floored_structure.basis_sites();
     auto origin_site_it = std::find_if(floored_basis.begin(), floored_basis.end(), coord_is_origin);

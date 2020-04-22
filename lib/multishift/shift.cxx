@@ -1,30 +1,101 @@
-#include <casmutils/xtal/structure.hpp>
 #include "./shift.hpp"
-#include <casmutils/xtal/lattice.hpp>
+#include "casmutils/xtal/coordinate.hpp"
 #include <casmutils/definitions.hpp>
+#include <casmutils/xtal/coordinate.hpp>
+#include <casmutils/xtal/lattice.hpp>
+#include <casmutils/xtal/structure.hpp>
+#include <utility>
+#include <cassert>
 
 namespace casmutils
 {
-    namespace xtal
-    {
-    }
+namespace xtal
+{
+Eigen::Vector3d make_fractional(const Eigen::Vector3d& cart_coord, const xtal::Lattice& lat)
+{
+    return Coordinate::from_fractional(cart_coord, lat).cart();
 }
+
+Eigen::Vector3d bring_within(const Eigen::Vector3d cart_coord, const xtal::Lattice& unit_cell)
+{
+    const xtal::Coordinate casted_cart(cart_coord);
+    return casted_cart.bring_within(unit_cell).cart();
+}
+
+Eigen::Vector3d bring_within_wigner_seitz(const Eigen::Vector3d cart_coord, const xtal::Lattice& unit_cell)
+{
+    const xtal::Coordinate casted_cart(cart_coord);
+    return casted_cart.bring_within_wigner_seitz(unit_cell).cart();
+}
+} // namespace xtal
+} // namespace casmutils
 
 namespace mush
 {
-    std::vector<cu::xtal::Structure> make_cleaved_structures(const cu::xtal::Structure& slab, const std::vector<double>& cleavage_values)
-    {
-        //TODO: This could go astray if you get a left handed lattice
-        std::vector<cu::xtal::Structure> cleaved_structures;
-        
-        Eigen::Vector3d unit_normal=slab.lattice().a().cross(slab.lattice().b()).normalized();
-        for(double cleave : cleavage_values)
-        {
-            Eigen::Vector3d new_c_vector=slab.lattice().c()+cleave*unit_normal;
-            cu::xtal::Lattice cleaved_lattice(slab.lattice().a(),slab.lattice().b(),new_c_vector);
+std::vector<cu::xtal::Structure> make_cleaved_structures(const cu::xtal::Structure& slab, const std::vector<double>& cleavage_values)
+{
+    // TODO: This could go astray if you get a left handed lattice
+    std::vector<cu::xtal::Structure> cleaved_structures;
 
-            cleaved_structures.emplace_back(slab.set_lattice(cleaved_lattice,cu::xtal::CART));
-        }
-        return cleaved_structures;
+    Eigen::Vector3d unit_normal = slab.lattice().a().cross(slab.lattice().b()).normalized();
+    for (double cleave : cleavage_values)
+    {
+        Eigen::Vector3d new_c_vector = slab.lattice().c() + cleave * unit_normal;
+        cu::xtal::Lattice cleaved_lattice(slab.lattice().a(), slab.lattice().b(), new_c_vector);
+
+        cleaved_structures.emplace_back(slab.set_lattice(cleaved_lattice, cu::xtal::CART));
     }
+    return cleaved_structures;
 }
+
+std::pair<std::vector<Eigen::Vector3d>, std::vector<ShiftRecord>>
+make_uniform_in_plane_shift_vectors(const cu::xtal::Lattice& slab_lattice, int a_max, int b_max)
+{
+    std::vector<Eigen::Vector3d> shifts;
+    std::vector<ShiftRecord> records;
+    int ix = 0;
+    for (int a = 0; a < a_max; ++a)
+    {
+        for (int b = 0; b < b_max; ++b)
+        {
+            Eigen::Vector3d frac_coord(static_cast<double>(a) / a_max, static_cast<double>(b) / b_max, 0);
+            shifts.emplace_back(cu::xtal::make_fractional(frac_coord, slab_lattice));
+
+            records.emplace_back(a, b, ix);
+            ++ix;
+        }
+    }
+    return std::make_pair(std::move(shifts), std::move(records));
+}
+
+std::pair<std::vector<Eigen::Vector3d>, std::vector<ShiftRecord>>
+make_uniform_in_plane_wigner_seitz_shift_vectors(const cu::xtal::Lattice& slab_lattice, int a_max, int b_max)
+{
+    auto standard_shifts_and_records = make_uniform_in_plane_shift_vectors(slab_lattice, a_max, b_max);
+    const auto& standard_shifts = standard_shifts_and_records.first;
+
+    std::vector<Eigen::Vector3d> wigner_seitz_shifts;
+    for (const auto& standard_shift : standard_shifts)
+    {
+        wigner_seitz_shifts.emplace_back(cu::xtal::bring_within_wigner_seitz(standard_shift,slab_lattice));
+    }
+
+    return std::make_pair(wigner_seitz_shifts,std::move(standard_shifts_and_records.second));
+}
+
+std::vector<cu::xtal::Structure> make_shifted_structures(const cu::xtal::Structure& slab, std::vector<Eigen::Vector3d>& shifts)
+{
+    //for debugging:
+    Eigen::Vector3d plane_normal=slab.lattice().a().cross(slab.lattice().b());
+
+    std::vector<cu::xtal::Structure> shifted_structures;
+    for(const Eigen::Vector3d& shift : shifts)
+    {
+        assert(std::abs(shift.dot(plane_normal))<1e-10);
+        
+        cu::xtal::Lattice shifted_lat(slab.lattice().a(),slab.lattice().b(),slab.lattice().c()+shift);
+        shifted_structures.emplace_back(slab.set_lattice(shifted_lat,cu::xtal::CART));
+    }
+    return shifted_structures;
+}
+} // namespace mush
