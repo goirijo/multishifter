@@ -2,6 +2,7 @@
 #define SHIFT_HH
 
 #include "casmutils/xtal/lattice.hpp"
+#include <bits/c++config.h>
 #include <casmutils/xtal/structure.hpp>
 #include <utility>
 #include <vector>
@@ -83,6 +84,11 @@ make_uniform_in_plane_wigner_seitz_shift_vectors(const cu::xtal::Lattice& slab_l
 /// such that the periodic images along the vertical direction have been shifted by that amount.
 /// The resulting structre will be a series of staggered slabs
 std::vector<cu::xtal::Structure> make_shifted_structures(const cu::xtal::Structure& slab, std::vector<Eigen::Vector3d>& shifts);
+
+/// Given a list of slab structures with different shifts applied, return a list of indexes
+/// that describe which structures are equivalent to each other. The vector at index i contains
+/// a the indexes of the structures that are equivalent to the structure at index i.
+std::vector<std::vector<std::size_t>> categorize_equivalently_shifted_structures(const std::vector<cu::xtal::Structure>& shifted_structures);
 } // namespace mush
 
 #endif

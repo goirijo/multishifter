@@ -4,6 +4,7 @@
 #include <casmutils/xtal/coordinate.hpp>
 #include <casmutils/xtal/lattice.hpp>
 #include <casmutils/xtal/structure.hpp>
+#include <casmutils/mapping/structure_mapping.hpp>
 #include <utility>
 #include <cassert>
 
@@ -97,5 +98,35 @@ std::vector<cu::xtal::Structure> make_shifted_structures(const cu::xtal::Structu
         shifted_structures.emplace_back(slab.set_lattice(shifted_lat,cu::xtal::CART));
     }
     return shifted_structures;
+}
+
+cu::mapping::MappingInput make_shifted_structures_categorization_map_strategy()
+{
+    cu::mapping::MappingInput map_strategy;
+    map_strategy.k_best_maps=0;
+    map_strategy.min_cost=1e-8;
+    map_strategy.use_crystal_symmetry=true;
+
+    return map_strategy;
+}
+
+std::vector<std::vector<std::size_t>> categorize_equivalently_shifted_structures(const std::vector<cu::xtal::Structure>& shifted_structures)
+{
+    std::vector<std::vector<std::size_t>> index_map;
+    cu::mapping::MappingInput map_strategy=make_shifted_structures_categorization_map_strategy();
+    for(const auto shifted_structure : shifted_structures)
+    {
+        cu::mapping::StructureMapper_f map_to_shifted(shifted_structure,map_strategy);
+        index_map.push_back({});
+        for(int s_ix=0; s_ix<shifted_structures.size(); ++s_ix)
+        {
+            auto results=map_to_shifted(shifted_structures[s_ix]);
+            if(results.size()>0)
+            {
+                index_map.back().emplace_back(s_ix);
+            }
+        }
+    }
+return index_map;
 }
 } // namespace mush
