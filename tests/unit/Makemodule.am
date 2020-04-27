@@ -26,3 +26,13 @@ check_shift_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
+TESTS+=check_twist
+check_PROGRAMS += check_twist
+check_twist_SOURCES =\
+					   tests/unit/multishift/twist.cpp
+
+check_twist_LDADD=\
+					libgtest.la\
+					libmultishift.la
+
+

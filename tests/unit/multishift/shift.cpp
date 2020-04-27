@@ -4,7 +4,6 @@
 #include "casmutils/xtal/structure_tools.hpp"
 
 #include <algorithm>
-#include <bits/c++config.h>
 #include <gtest/gtest.h>
 #include <multishift/shift.hpp>
 #include <casmutils/mapping/structure_mapping.hpp>

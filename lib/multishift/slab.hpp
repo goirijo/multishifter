@@ -11,6 +11,10 @@ namespace casmutils
 {
 namespace xtal
 {
+        /// Invert the directions of the lattice vectors if necessary, such that
+        /// the column vector matrix has a positive determinant
+        Lattice make_right_handed(const Lattice& left_handed_lattice);
+
 /// Create a superlattice using the provided integer transformation matrix
 xtal::Lattice make_superlattice(const xtal::Lattice& tiling_unit, const Eigen::Matrix3i col_transf_mat);
 
