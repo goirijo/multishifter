@@ -22,9 +22,6 @@ protected:
         col_lat_mat << 3, 0, 0, 0, 4, 0, 0, 0, 8;
         Lattice ortho_lat(col_lat_mat.col(0), col_lat_mat.col(1), col_lat_mat.col(2));
 
-        sliced_lattices.emplace_back(cu::xtal::make_sliced_lattice(ortho_lat, Eigen::Vector3i(0, 0, 1)));
-        return;
-
         for (int i : {-1, 0, 2})
         {
             for (int j : {-2, 1, 3})
@@ -43,7 +40,7 @@ protected:
     std::vector<Lattice> sliced_lattices;
     double tol = 1e-10;
 
-    //TODO: Move this somewhere useful
+    // TODO: Move this somewhere useful
     static double degrees_between_vectors(const Eigen::Vector3d& a1, const Eigen::Vector3d& a2)
     {
         return 2 * std::atan2((a2.norm() * a1 - a1.norm() * a2).norm(), (a2.norm() * a1 + a1.norm() * a2).norm()) * 180 / M_PI;
@@ -88,7 +85,7 @@ TEST_F(TwistTest, TwistedLatticeAngles)
         {
             Lattice rotated_lat = make_twisted_lattice(start_lat, angle);
 
-            EXPECT_TRUE(almost_equal(normal, rotated_lat.a().cross(rotated_lat.b()),tol));
+            EXPECT_TRUE(almost_equal(normal, rotated_lat.a().cross(rotated_lat.b()), tol));
             EXPECT_TRUE(almost_equal(start_lat.c().dot(normal), rotated_lat.c().dot(normal), tol));
 
             double a_deg = signed_degrees_between_vectors(start_lat.a(), rotated_lat.a(), normal);
@@ -133,6 +130,38 @@ TEST_F(TwistTest, LessObviousTwistMatrix)
     exptected_rotate_90 << 1, 0, 0, 0, 0, -1, 0, 1, 0;
 
     EXPECT_TRUE(almost_equal(rotate_90, exptected_rotate_90, tol));
+}
+
+TEST_F(TwistTest, AlginLattice)
+{
+    for (const Lattice& start_lat : sliced_lattices)
+    {
+        Lattice aligned_lat = make_aligned_lattice(start_lat);
+        EXPECT_TRUE(almost_equal(aligned_lat.a()(1), 0.0, tol));
+        EXPECT_TRUE(almost_equal(aligned_lat.a()(2), 0.0, tol));
+        EXPECT_TRUE(almost_equal(aligned_lat.b()(2), 0.0, tol));
+
+        EXPECT_TRUE(almost_equal(start_lat.a().norm(), aligned_lat.a().norm(), tol));
+        EXPECT_TRUE(almost_equal(start_lat.b().norm(), aligned_lat.b().norm(), tol));
+        EXPECT_TRUE(almost_equal(start_lat.c().norm(), aligned_lat.c().norm(), tol));
+    }
+}
+
+TEST_F(TwistTest, MoireLattice)
+{
+    for (const Lattice& start_lat : sliced_lattices)
+    {
+        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00})
+
+        {
+            Lattice aligned_lat = make_aligned_lattice(start_lat);
+            Lattice rot_lat = make_twisted_lattice(aligned_lat, angle);
+            Lattice moire_lat = make_aligned_moire_lattice(start_lat, angle);
+
+            // TODO: How to test the moire lattice? Plotting the two lattices seems
+            // to give the correct results
+        }
+    }
 }
 
 int main(int argc, char** argv)

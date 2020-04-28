@@ -25,6 +25,18 @@ namespace mush
 
     ///Create a new lattice that has been rotated about the ab normal by the specified angle
     cu::xtal::Lattice make_twisted_lattice(const cu::xtal::Lattice& lat, double degrees);
+
+    ///Creates a lattice whose lattice points follow the Moire pattern that results from
+    ///twisting the given lattice by the specified angle. 
+    ///Because the lattice will be rotated in the ab plane, the resulting Moire lattice
+    ///will be two dimensional. The c vector of the returned lattice is therefore meaningless,
+    ///and the a and b vectors will be aligned along the xy plane
+    cu::xtal::Lattice make_aligned_moire_lattice(const cu::xtal::Lattice& lat, double degrees);
+
+    ///Returns the same lattice, but rotated such that the a vector points along the
+    ///Cartesian x direction, and the b vector is parallel to the xy plane.
+    cu::xtal::Lattice make_aligned_lattice(const cu::xtal::Lattice& lat);
+    
 }
 
 #endif
