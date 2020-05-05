@@ -112,6 +112,23 @@ class Lattice(object):
         transformed_column_matrix=T.dot(self.column_vector_matrix())
         return Lattice(transformed_column_matrix[:,0],transformed_column_matrix[:,1])
 
+    
+    def multiply(self,T):
+        """Create a superlattice by multiplying the transformation
+        matrix on the right of the lattice column vector matrix.
+
+        Parameters
+        ----------
+        T : 2x2 matrix (int)
+
+        Returns
+        -------
+        Lattice
+
+        """
+        transformed_column_matrix=self.column_vector_matrix().dot(T)
+        return Lattice(transformed_column_matrix[:,0],transformed_column_matrix[:,1])
+
 
 def scatter_lattice_points(ax,lattice: Lattice,arad,brad,**kwargs):
     """Scatter a bunch of lattice points around the origin to visualize
@@ -379,11 +396,16 @@ def make_moire_lattice(lattice, rotated_lattice):
     return M
 
 def make_rounded_transformation_matrix(tiling_unit,superlattice):
-    L=tiling_unit
-    M=superlattice
+    L=tiling_unit.column_vector_matrix()
+    Linv=np.linalg.inv(L)
+    M=superlattice.column_vector_matrix()
 
-    T=np.rint(np.dot(np.linalg.inv(L.column_vector_matrix()),M.column_vector_matrix()))
+    T=np.rint(Linv.dot(M))
     return T
+
+def round_to_nearest_superlattice(tiling_unit,superlattice):
+    T=make_rounded_transformation_matrix(tiling_unit,superlattice)
+    return tiling_unit.multiply(T)
 
 def plot_superposition(ax, lattice, rotated_lattice):
     arad=150
@@ -403,11 +425,8 @@ def plot_superposition(ax, lattice, rotated_lattice):
     plot_lattice_unit_vectors(ax,M,width=0.5,color="gray")
     plot_periodic_lattice_cells(ax,M,3,3,lw=3,c='gray')
 
-    T=make_rounded_transformation_matrix(L,M)
-    Tt=make_rounded_transformation_matrix(Lt,M)
-
-    S=L.transform(T)
-    St=Lt.transform(Tt)
+    S=round_to_nearest_superlattice(L,M)
+    St=round_to_nearest_superlattice(Lt,M)
 
     plot_lattice_unit_vectors(ax,S,width=0.5,color="red")
     plot_lattice_unit_vectors(ax,St,width=0.5,color="green")
@@ -418,15 +437,15 @@ def main():
     a=[1,1]
     b=[-2,2]
     L=Lattice(a,b)
-    L=make_hexagonal_lattice()
     L=make_square_lattice()
+    L=make_hexagonal_lattice()
 
     fig=plt.figure(0)
     ax=fig.add_subplot('111')
     ax.set_aspect("equal")
 
     rot_m=make_rotation_matrix(180//3)
-    rot_m=make_rotation_matrix(20)
+    rot_m=make_rotation_matrix(10)
     Lt=L.transform(rot_m)
 
     plot_superposition(ax, L, Lt)
@@ -441,8 +460,8 @@ def main():
     T=make_rounded_transformation_matrix(L,M)
     Tt=make_rounded_transformation_matrix(Lt,M)
 
-    S=L.transform(T)
-    St=Lt.transform(Tt)
+    S=L.multiply(T)
+    St=Lt.multiply(Tt)
 
     S_mat=(S.column_vector_matrix()+St.column_vector_matrix())/2.0
     S=Lattice(*S_mat.T)
