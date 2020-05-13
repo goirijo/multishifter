@@ -35,4 +35,12 @@ check_twist_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
+TESTS+=check_slice_settings
+check_PROGRAMS += check_slice_settings
+check_slice_settings_SOURCES =\
+					   tests/unit/multishift/slice_settings.cpp
+
+check_slice_settings_LDADD=\
+					libgtest.la\
+					libmultishift.la
 

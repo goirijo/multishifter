@@ -1,0 +1,4 @@
+{
+    "prim" : "./b2.vasp",
+    "miller_indexes" : [1,-1,2]
+}
