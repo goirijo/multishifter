@@ -26,6 +26,7 @@ namespace mush
         std::vector<Structure> floored_sliced_prims;
 
         private:
+        const Eigen::Vector3i miller_indexes;
         void generate_all_possible_floored_structures();
     };
 }

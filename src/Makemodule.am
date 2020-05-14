@@ -1,3 +1,12 @@
-include src/base/Makemodule.am
-# include src/shift/Makemodule.am
-# include src/fourier/Makemodule.am
+bin_PROGRAMS += multishift
+
+multishift_SOURCES =\
+					CLI11/include/CLI/CLI.hpp\
+					src/misc.cxx\
+					src/misc.hpp\
+					src/multishifter.cpp\
+					src/slice.cxx\
+					src/slice.hpp
+
+multishift_LDADD =\
+					libmultishift.la

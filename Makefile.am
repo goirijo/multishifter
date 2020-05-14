@@ -22,12 +22,12 @@ TESTS=
 AM_CXXFLAGS=
 
 AM_CPPFLAGS= -I$(srcdir)/lib\
-			 -I$(srcdir)/cxxopts/include\
 			 -I$(srcdir)/pybind11/include\
 			 -I$(srcdir)/json/include\
 			 -I$(srcdir)/googletest/googletest/include\
 			 -I$(srcdir)/googletest/googletest\
 			 -I$(srcdir)/casm-utilities/include\
+			 -I$(srcdir)/casm-utilities/CLI11/include\
 			 -I$(srcdir)/CASMcode/include\
 			 -I$(srcdir)/CASMcode/include/casm/external\
 			 -I$(srcdir)/CASMcode/include/casm/external/gzstream\
