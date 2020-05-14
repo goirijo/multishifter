@@ -44,3 +44,12 @@ check_slice_settings_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
+TESTS+=check_slicer
+check_PROGRAMS += check_slicer
+check_slicer_SOURCES =\
+					   tests/unit/multishift/slicer.cpp
+
+check_slicer_LDADD=\
+					libgtest.la\
+					libmultishift.la
+

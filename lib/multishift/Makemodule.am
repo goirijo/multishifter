@@ -5,6 +5,8 @@ libmultishift_la_SOURCES=\
 				   lib/multishift/slab.cxx\
 				   lib/multishift/slice_settings.hpp\
 				   lib/multishift/slice_settings.cxx\
+				   lib/multishift/slicer.hpp\
+				   lib/multishift/slicer.cxx\
 				   lib/multishift/twist.hpp\
 				   lib/multishift/twist.cxx\
 				   lib/multishift/shift.hpp\
