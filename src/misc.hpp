@@ -8,6 +8,25 @@
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
+
+/**
+ * Keeps all the info for a particular structure, cleavage,
+ * shifts, and twists.
+ */
+
+struct MultiRecord
+{
+    double cleavage=0.0;
+    int a_index=0;
+    int b_index=0;
+    /* double a_frac=0; */
+    /* double b_frac=0; */
+    /* double a_cart=0; */
+    /* double b_cart=0; */
+    double angle=0.0;
+};
+
 
 using json = nlohmann::json;
 using Structure=mush::cu::xtal::Structure;
@@ -19,6 +38,10 @@ void write_json(const json& json, const mush::fs::path& target);
 void cautious_create_directory(const mush::fs::path new_dir);
 
 std::string extract_name_from_settings(const json& settings);
-json extract_slice_subsettings(const json& settings);
+/* json extract_slice_subsettings(const json& settings); */
+
+///Converts map from path to MultiRecord into the final json format, which
+///might include more information than what's in the MultiRecord objects
+json record_to_json(const std::unordered_map<std::string,MultiRecord>& record);
 
 #endif
