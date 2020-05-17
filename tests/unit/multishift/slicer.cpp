@@ -22,8 +22,6 @@ class SlicerSimpleCounting : public testing::Test
         }
 };
 
-#include <casmutils/xtal/structure_tools.hpp>
-
 TEST_F(SlicerSimpleCounting, SlicedIsBigger)
 {
     EXPECT_TRUE(slicer_ptr->prim.basis_sites().size()<slicer_ptr->sliced_prim.basis_sites().size());

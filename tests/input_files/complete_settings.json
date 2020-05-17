@@ -1,0 +1,10 @@
+{
+    "prim" : "./b2.vasp",
+    "miller_indexes" : [1,-1,2],
+    "slab_unit": "./b2_floor0.vasp",
+    "stacks" : 6,
+    "cleave": [ -0.2, 0, 0.5, 1.0, 10.0],
+    "shift_grid" : [6,8],
+    "shift_points" : 110,
+    "execute" : ["shift", "cleave"]
+}
