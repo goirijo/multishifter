@@ -2,6 +2,7 @@
 #include <multishift/definitions.hpp>
 #include <multishift/slab.hpp>
 #include <multishift/slicer.hpp>
+#include <multishift/slice_settings.hpp>
 #include <casmutils/xtal/structure.hpp>
 #include <casmutils/xtal/structure_tools.hpp>
 #include <nlohmann/json.hpp>

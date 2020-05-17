@@ -53,3 +53,30 @@ check_slicer_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
+TESTS+=check_slaber
+check_PROGRAMS += check_slaber
+check_slaber_SOURCES =\
+					   tests/unit/multishift/slaber.cpp
+
+check_slaber_LDADD=\
+					libgtest.la\
+					libmultishift.la
+
+TESTS+=check_shifter
+check_PROGRAMS += check_shifter
+check_shifter_SOURCES =\
+					   tests/unit/multishift/shifter.cpp
+
+check_shifter_LDADD=\
+					libgtest.la\
+					libmultishift.la
+
+TESTS+=check_cleaver
+check_PROGRAMS += check_cleaver
+check_cleaver_SOURCES =\
+					   tests/unit/multishift/cleaver.cpp
+
+check_cleaver_LDADD=\
+					libgtest.la\
+					libmultishift.la
+

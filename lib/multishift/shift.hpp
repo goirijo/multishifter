@@ -35,9 +35,9 @@ struct ShiftRecord
 {
     ShiftRecord(int a, int b, int index) : a(a), b(b), index(index) {}
 
+    int index;
     int a;
     int b;
-    int index;
 
     bool operator==(const ShiftRecord& lhs) const
     {
