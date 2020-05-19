@@ -162,5 +162,18 @@ int main(int argc, char** argv)
         write_json(record_to_json(path_record), cleaved_path / "record.json");
     }
 
+    if (shift_sub->count("--settings"))
+    {
+        json settings = load_json(settings_path);
+        std::string project_name = extract_name_from_settings(settings);
+        mush::fs::path shifted_path(project_name + ".shift");
+
+        log << "Project name: " << project_name << std::endl;
+        log << "Save record of structures to " << shifted_path << "\n";
+        auto path_record = run<COMMAND::SHIFT>(settings, shifted_path, MultiRecord(), log);
+
+        write_json(record_to_json(path_record), shifted_path / "record.json");
+    }
+
     return 0;
 }

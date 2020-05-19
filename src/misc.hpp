@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 /**
  * Keeps all the info for a particular structure, cleavage,
@@ -25,6 +26,8 @@ struct MultiRecord
     /* double a_cart=0; */
     /* double b_cart=0; */
     double angle=0.0;
+    std::string id() const;
+    std::vector<std::string> equivalent_structures;
 };
 
 
