@@ -1,7 +1,11 @@
 #include "./slice.hpp"
+#include "./misc.hpp"
+#include "multishift/shift.hpp"
+#include <bits/c++config.h>
 #include <casmutils/xtal/structure_tools.hpp>
 #include <cassert>
 #include <filesystem>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -29,7 +33,12 @@ std::string make_cleave_dirname(double cleavage)
 {
     std::stringstream cleavestream;
     cleavestream << std::fixed << std::setprecision(6) << cleavage;
-    return "cleave__"+cleavestream.str();
+    return "cleave__" + cleavestream.str();
+}
+
+std::string make_shift_dirname(int a, int b)
+{
+    return "shift__" + std::to_string(a)+"."+std::to_string(b);
 }
 
 std::unordered_map<std::string, MultiRecord> write_cleaver_structures(const std::vector<Structure>& cleaved_structures,
@@ -48,11 +57,47 @@ std::unordered_map<std::string, MultiRecord> write_cleaver_structures(const std:
 
         mush::fs::path cleave_target = cleaved_root / make_cleave_dirname(cleavage_values[i]);
 
-        path_record[cleave_target]=cleaved_state;
+        path_record[cleave_target] = cleaved_state;
 
         cautious_create_directory(cleave_target);
-        mush::cu::xtal::write_poscar(cleaved_structures[i],cleave_target/"POSCAR");
-        std::cout<<"Wrote cleaved structure to "<<cleave_target<<"\n";
+        mush::cu::xtal::write_poscar(cleaved_structures[i], cleave_target / "POSCAR");
+        std::cout << "Wrote cleaved structure to " << cleave_target << "\n";
+    }
+
+    return path_record;
+}
+
+std::unordered_map<std::string, MultiRecord> write_shifter_structures(const std::vector<Structure>& shifted_structures,
+                                                                      const std::vector<mush::ShiftRecord>& shift_records,
+                                                                      const std::vector<std::vector<std::size_t>>& equivalence_map,
+                                                                      const mush::fs::path& shifted_root,
+                                                                      std::ostream& log,
+                                                                      const MultiRecord& starting_state)
+{
+    std::unordered_map<std::string, MultiRecord> path_record;
+    log << "Write cleaved structures to..." << shifted_root << std::endl;
+
+    for (int i = 0; i < shifted_structures.size(); ++i)
+    {
+        MultiRecord shifted_state = starting_state;
+        shifted_state.a_index = shift_records[i].a;
+        shifted_state.b_index = shift_records[i].b;
+
+        for(auto ix : equivalence_map[i])
+        {
+            MultiRecord equivalent_state=starting_state;
+            equivalent_state.a_index=shift_records[ix].a;
+            equivalent_state.b_index=shift_records[ix].b;
+            shifted_state.equivalent_structures.push_back(equivalent_state.id());
+        }
+
+        mush::fs::path shift_target = shifted_root / make_shift_dirname(shifted_state.a_index,shifted_state.b_index);
+
+        path_record[shift_target] = shifted_state;
+
+        cautious_create_directory(shift_target);
+        mush::cu::xtal::write_poscar(shifted_structures[i], shift_target / "POSCAR");
+        std::cout << "Wrote shifted structure to " << shift_target << "\n";
     }
 
     return path_record;

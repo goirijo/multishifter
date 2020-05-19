@@ -68,6 +68,11 @@ json record_to_json(const std::unordered_map<std::string, MultiRecord>& record)
         mr_json["id"] = mr.id();
         mr_json["equivalent_structures"] = mr.equivalent_structures;
 
+        if(mr.equivalent_structures.size()==0)
+        {
+            mr_json["equivalent_structures"].push_back(mr_json["id"]);
+        }
+
         j[path] = mr_json;
     }
     return j;
