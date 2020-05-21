@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./multishift -s ./settings.json
