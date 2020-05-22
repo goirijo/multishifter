@@ -54,6 +54,7 @@ config.h*
 *.bak
 multishift-sidekick.py
 multishift-plot.py
+tests/projects/Al-mush
 
 #jekyll
 _site

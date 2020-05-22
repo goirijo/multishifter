@@ -55,6 +55,8 @@ std::unordered_map<std::string, MultiRecord> write_cleaver_structures(const std:
         MultiRecord cleaved_state = starting_state;
         cleaved_state.cleavage = cleavage_values[i];
 
+        //TODO: You have to update the cleavage values of the equivalent ids too!
+
         mush::fs::path cleave_target = cleaved_root / make_cleave_dirname(cleavage_values[i]);
 
         path_record[cleave_target] = cleaved_state;
@@ -75,7 +77,7 @@ std::unordered_map<std::string, MultiRecord> write_shifter_structures(const std:
                                                                       const MultiRecord& starting_state)
 {
     std::unordered_map<std::string, MultiRecord> path_record;
-    log << "Write cleaved structures to..." << shifted_root << std::endl;
+    log << "Write shifted structures to..." << shifted_root << std::endl;
 
     for (int i = 0; i < shifted_structures.size(); ++i)
     {

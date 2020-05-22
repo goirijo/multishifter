@@ -57,6 +57,7 @@ std::string extract_name_from_settings(const json& settings)
 
 json record_to_json(const std::unordered_map<std::string, MultiRecord>& record)
 {
+    //TODO: Maybe it's better to have the path as a value, and the id as a key?
     json j;
     for (const auto& [path, mr] : record)
     {
