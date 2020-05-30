@@ -1,4 +1,9 @@
+#include "casmutils/xtal/structure.hpp"
 #include "gtest/gtest.h"
+#include <multishift/twist.hpp>
+#include <multishift/slab.hpp>
+#include <multishift/definitions.hpp>
+#include <casmutils/xtal/structure_tools.hpp>
 
 TEST(CategoryTest, SpecificTest)
 {
@@ -9,6 +14,14 @@ TEST(OtherCategoryTest, SpecificTest)
 {
     ASSERT_EQ(0, 0);
 }
+
+/* TEST(FakeCategory, RealignLattice) */
+/* { */
+/*     auto slab=mush::cu::xtal::Structure::from_poscar("/home/mesto/programming/multishifter/tests/projects/Mg-mush/slab.vasp"); */
+/*     auto aligned_lat=mush::make_aligned_lattice(slab.lattice()); */
+/*     slab.set_lattice(aligned_lat,mush::cu::xtal::FRAC); */
+/*     casmutils::xtal::write_poscar(slab,"/home/mesto/programming/multishifter/tests/projects/Mg-mush/aligned_slab.vasp"); */
+/* } */
 
 /* TEST(CategoryTest, PrintMessage) */
 /* { */
