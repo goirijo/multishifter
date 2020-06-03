@@ -27,4 +27,15 @@ namespace mush
             std::vector<int> ab=input_settings["shift_grid"];
             return ShiftSettings(ab[0],ab[1]);
         }
+
+        FourierSettings FourierSettings::from_json(const json& input_settings)
+        {
+            fs::path data_path(input_settings["data"]);
+            double resolution=0.0005;
+            if(input_settings.contains("k_resolution"))
+            {
+            resolution=input_settings["k_resolution"];
+            }
+            return FourierSettings(data_path,resolution);
+        }
 }

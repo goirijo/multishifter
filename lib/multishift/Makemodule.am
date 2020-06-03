@@ -13,6 +13,8 @@ libmultishift_la_SOURCES=\
 				   lib/multishift/shifter.cxx\
 				   lib/multishift/cleaver.hpp\
 				   lib/multishift/cleaver.cxx\
+				   lib/multishift/fourier.hpp\
+				   lib/multishift/fourier.cxx\
 				   lib/multishift/twist.hpp\
 				   lib/multishift/twist.cxx\
 				   lib/multishift/shift.hpp\

@@ -3,6 +3,7 @@
 
 #include "./definitions.hpp"
 #include "./slab.hpp"
+#include <filesystem>
 #include <nlohmann/json.hpp>
 #include <vector>
 
@@ -69,6 +70,22 @@ namespace mush
 
         int a_density;
         int b_density;
+    };
+
+    /**
+     * Holds settings for fourier interpolation.
+     * Data file, and resolution for k-points.
+     * Eventually also options for how you want to print the formula.
+     */
+
+    struct FourierSettings
+    {
+        FourierSettings(fs::path data_file,double k_resolution):data_path(data_file),resolution(k_resolution){}
+
+        static FourierSettings from_json(const json& input_settings);
+
+        fs::path data_path;
+        double resolution;
     };
 };
 

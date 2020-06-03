@@ -80,3 +80,13 @@ check_cleaver_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
+
+TESTS+=check_fourier
+check_PROGRAMS += check_fourier
+check_fourier_SOURCES =\
+					   tests/unit/multishift/fourier.cpp
+
+check_fourier_LDADD=\
+					libgtest.la\
+					libmultishift.la
+

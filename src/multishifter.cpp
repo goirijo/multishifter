@@ -17,6 +17,7 @@
 
 #include "./misc.hpp"
 #include "./slice.hpp"
+#include "multishift/fourier.hpp"
 #include "multishift/shifter.hpp"
 
 using json = nlohmann::json;
@@ -118,6 +119,10 @@ int main(int argc, char** argv)
         "shift", "Shift unit cell along interface to generate stacking faults and structures for gamma surface calculations.");
     shift_sub->add_option("-s,--settings", settings_path, "Settings file with path to slab unit, slab thickness, and grid density.")
         ->required();
+
+    CLI::App* fourier_sub = app.add_subcommand("fourier", "Perform Fourier decomposition and get analytical expression for data set.");
+    fourier_sub->add_option("-s,--settings", settings_path, "Settings file with slab, resolution, and lattice periodic data.");
+
 
     CLI11_PARSE(app, argc, argv);
     auto& log = std::cout;
@@ -225,6 +230,62 @@ int main(int argc, char** argv)
 
         log << "Save record of structures to " << shifted_path << "\n";
         write_json(record_to_json(path_record), shifted_path / "record.json");
+    }
+
+    if (fourier_sub->count("--settings"))
+    {
+        json settings = load_json(settings_path);
+
+        auto slaber_settings = mush::SlabSettings::from_json(settings);
+        auto fourier_settings = mush::FourierSettings::from_json(settings);
+
+        log << "Reading surface lattice vectors from "<<slaber_settings.slab_unit_path<<"...\n";
+        auto slab_unit=mush::cu::xtal::Structure::from_poscar(slaber_settings.slab_unit_path);
+        const auto& slab_lattice=slab_unit.lattice();
+
+        std::vector<mush::InterPoint> unrolled_data;
+
+        log << "Reading data from "<<fourier_settings.data_path<<"...\n";
+        json data_dump=load_json(fourier_settings.data_path);
+
+        std::vector<double> a_frac=data_dump["a_frac"];
+        std::vector<double> b_frac=data_dump["b_frac"];
+        std::vector<double> values=data_dump["values"];
+
+        if(a_frac.size()!=b_frac.size() || a_frac.size() != values.size())
+        {
+            throw std::runtime_error("Data was not properly formatted");
+        }
+
+        for(int i=0; i<a_frac.size(); ++i)
+        {
+            unrolled_data.emplace_back(a_frac[i],b_frac[i],values[i]);
+        }
+
+        mush::Interpolator ipolator(slab_lattice,unrolled_data);
+
+        auto [lat, ipolvalues]=ipolator.interpolate(4,4);
+
+        for(const auto& row : ipolvalues)
+        {
+            for(const auto val : row)
+            {
+                std::cout<<val.value.real()<<",    "<<val.value.imag()<<"\n";
+            }
+        }
+
+
+        mush::Analytiker analyzer(ipolator);
+
+        log << "Crushing functions to a resolution of "<<fourier_settings.resolution<<"...\n";
+        auto [real_functions,imag_functions]=analyzer.python_cart("x","y","np",fourier_settings.resolution);
+
+        log<<"Real functions:\n";
+        log<<real_functions;
+        log<<"\n\n\n";
+        log<<"Imaginary functions:\n";
+        log<<imag_functions;
+        log<<"\n";
     }
 
     return 0;

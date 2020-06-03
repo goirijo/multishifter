@@ -152,17 +152,22 @@ def unwind_data(records):
 def grid_divisions(unwinded):
     return max(unwinded["a_index"]) + 1, max(unwinded["b_index"]) + 1
 
+def fractional_coordinates(unwinded):
+    amax, bmax = grid_divisions(unwinded)
+    A = np.array(unwinded["a_index"]) / amax
+    B = np.array(unwinded["b_index"]) / bmax
+
+    return A,B
 
 def bin_data_slice(unwinded, avec, bvec):
     L = np.array([avec[0:2], bvec[0:2]]).T
 
-    amax, bmax = grid_divisions(unwinded)
 
-    A = np.array(unwinded["a_index"]) / amax
-    B = np.array(unwinded["b_index"]) / bmax
+    amax, bmax = grid_divisions(unwinded)
+    A, B = fractional_coordinates(unwinded)
     X, Y = L.dot(np.array([A, B]))
 
-    X = X.reshape(amax, bmax) / amax
+    X = X.reshape(amax, bmax) / amax    #already divided?
     Y = Y.reshape(amax, bmax) / bmax
     Z = np.array(unwinded["energy"]).reshape(X.shape)
 
@@ -277,12 +282,27 @@ def main():
     gamma=surface_energy(unwinded)
     avec, bvec = load_slab_plane_vectors("./Al-FCC.chain/slab.vasp")
 
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
     nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
     Z1 = nocleave["energy"]
     plot_gamma_surface_heatmap(ax,nocleave,avec,bvec)
     plt.savefig("./figs/gamma0.0000.pdf",bbox_inches='tight',pad_inches=0)
+
+    A,B=fractional_coordinates(nocleave)
+    E=nocleave["energy"]
+
+    out={}
+    out["a_frac"]=list(A)
+    out["b_frac"]=list(B)
+    out["values"]=list(E)
+    out["values"]=len(A)*[5.0]
+
+    with open('dump.json', 'w') as f:
+        json.dump(out, f)
+
+    exit()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
