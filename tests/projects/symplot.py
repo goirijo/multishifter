@@ -246,12 +246,15 @@ def shift_energies_to_surface_energy(unwinded):
 def plot_shifted_uber_fit(ax,unwinded_slice,gamma):
     ax.scatter(unwinded_slice["cleavage"], unwinded_slice["energy"])
 
-    partial_uber=lambda delta,lamb : uber(delta,gamma,lamb,0.0)
+    sigma=np.ones(len(unwinded_slice))
+    sigma[0::8]=0.5
 
-    popt, pcov = curve_fit(partial_uber, unwinded_slice["cleavage"], unwinded_slice["energy"])
+    partial=lambda d,g,l:uber(d,g,l,0.0)
+
+    popt, pcov = curve_fit(partial, unwinded_slice["cleavage"], unwinded_slice["energy"],sigma=sigma,absolute_sigma=True)
     deltas = np.linspace(
         min(unwinded_slice["cleavage"]), max(unwinded_slice["cleavage"]), 1000)
-    fitenergy = partial_uber(deltas, *popt)
+    fitenergy = partial(deltas, *popt)
     ax.set_xlabel("$\delta$ $\mathrm{[\AA]}$")
     ax.set_ylabel("Energy [eV]")
     ax.plot(deltas, fitenergy, "g--")
@@ -290,19 +293,18 @@ def main():
     plot_gamma_surface_heatmap(ax,nocleave,avec,bvec)
     plt.savefig("./figs/gamma0.0000.pdf",bbox_inches='tight',pad_inches=0)
 
-    A,B=fractional_coordinates(nocleave)
-    E=nocleave["energy"]
+    # A,B=fractional_coordinates(nocleave)
+    # E=nocleave["energy"]
 
-    out={}
-    out["a_frac"]=list(A)
-    out["b_frac"]=list(B)
-    out["values"]=list(E)
-    out["values"]=len(A)*[5.0]
+    # out={}
+    # out["a_frac"]=list(A)
+    # out["b_frac"]=list(B)
+    # out["values"]=list(E)
 
-    with open('dump.json', 'w') as f:
-        json.dump(out, f)
+    # with open('dump.json', 'w') as f:
+    #     json.dump(out, f)
 
-    exit()
+    # exit()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)

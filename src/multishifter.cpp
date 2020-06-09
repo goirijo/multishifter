@@ -264,13 +264,17 @@ int main(int argc, char** argv)
 
         mush::Interpolator ipolator(slab_lattice,unrolled_data);
 
-        auto [lat, ipolvalues]=ipolator.interpolate(4,4);
+        const auto& start_values=ipolator.sampled_values();
+        auto [lat, ipolvalues]=ipolator.interpolate(start_values.size(),start_values[0].size());
 
-        for(const auto& row : ipolvalues)
+        for(int i=0; i<ipolvalues.size(); ++i)
         {
-            for(const auto val : row)
+            for(int j=0; j<ipolvalues[i].size(); ++j)
             {
-                std::cout<<val.value.real()<<",    "<<val.value.imag()<<"\n";
+                const auto& r=start_values[i][j].value;
+                const auto& p=ipolvalues[i][j].value;
+                auto diff=r-p;
+                std::cout<<diff<<std::endl;
             }
         }
 
@@ -286,6 +290,9 @@ int main(int argc, char** argv)
         log<<"Imaginary functions:\n";
         log<<imag_functions;
         log<<"\n";
+        log<<"Surface lattice vectors:\n";
+        log<<"a: "<<ipolator.real_lattice().a()(0)<<", "<<ipolator.real_lattice().a()(1)<<"\n";
+        log<<"b: "<<ipolator.real_lattice().b()(0)<<", "<<ipolator.real_lattice().b()(1)<<"\n";
     }
 
     return 0;

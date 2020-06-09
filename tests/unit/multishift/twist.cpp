@@ -1,5 +1,6 @@
 #include "../../autotools.hh"
 #include <cmath>
+#include <fstream>
 #include <gtest/gtest.h>
 
 #include <multishift/definitions.hpp>
@@ -36,7 +37,6 @@ protected:
         return;
     }
 
-    using Lattice = cu::xtal::Lattice;
     std::vector<Lattice> sliced_lattices;
     double tol = 1e-10;
 
@@ -149,19 +149,61 @@ TEST_F(TwistTest, AlginLattice)
 
 TEST_F(TwistTest, MoireLattice)
 {
+    std::ofstream dumpstream("./moirelatticeout.txt");
     for (const Lattice& start_lat : sliced_lattices)
     {
-        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00})
-
+        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 25.0})
         {
-            Lattice aligned_lat = make_aligned_lattice(start_lat);
-            Lattice rot_lat = make_twisted_lattice(aligned_lat, angle);
-            Lattice moire_lat = make_aligned_moire_lattice(start_lat, angle);
+            auto [moire_lat,aligned_lat,rot_lat]=make_aligned_moire_lattice(start_lat, angle);
+
+            Eigen::Matrix3d aligned_to_moire_transform=aligned_lat.column_vector_matrix().inverse()*moire_lat.column_vector_matrix();
+            Eigen::Matrix3d aligned_to_moire_transform_diff=aligned_to_moire_transform-aligned_to_moire_transform.unaryExpr([](double x){return std::round(x);});
+
+            Eigen::Matrix3d rot_to_moire_transform=rot_lat.column_vector_matrix().inverse()*moire_lat.column_vector_matrix();
+            Eigen::Matrix3d rot_to_moire_transform_diff=rot_to_moire_transform-rot_to_moire_transform.unaryExpr([](double x){return std::round(x);});
 
             // TODO: How to test the moire lattice? Plotting the two lattices seems
-            // to give the correct results
+            // to give the correct results. I THINK this check makes sense
+            EXPECT_TRUE(rot_to_moire_transform_diff.isApprox(rot_to_moire_transform_diff));
+
+            //This block is for using a dumb python script for visualization
+            dumpstream<<"****************************\n\n";
+            dumpstream<<aligned_lat.column_vector_matrix()<<"\n\n";
+            dumpstream<<rot_lat.column_vector_matrix()<<"\n\n";
+            dumpstream<<moire_lat.column_vector_matrix()<<"\n\n";
         }
     }
+    dumpstream.close();
+}
+
+TEST_F(TwistTest, ApproximantMoireLattice)
+{
+    std::ofstream dumpstream("./apprixmoirelatticeout.txt");
+    for (const Lattice& start_lat : sliced_lattices)
+    {
+        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 25.0})
+        {
+            auto [moire_lat,aligned_lat,rot_lat]=make_approximant_moire_lattice(start_lat, angle);
+
+            Eigen::Matrix3d aligned_to_moire_transform=aligned_lat.column_vector_matrix().inverse()*moire_lat.column_vector_matrix();
+            Eigen::Matrix3d aligned_to_moire_transform_diff=aligned_to_moire_transform-aligned_to_moire_transform.unaryExpr([](double x){return std::round(x);});
+
+            Eigen::Matrix3d rot_to_moire_transform=rot_lat.column_vector_matrix().inverse()*moire_lat.column_vector_matrix();
+            Eigen::Matrix3d rot_to_moire_transform_diff=rot_to_moire_transform-rot_to_moire_transform.unaryExpr([](double x){return std::round(x);});
+
+            // TODO: How to test the moire lattice? Plotting the two lattices seems
+            // to give the correct results. I THINK this check makes sense
+            EXPECT_TRUE(almost_zero(aligned_to_moire_transform_diff.block<2,2>(0,0),1e-8));
+            EXPECT_TRUE(almost_zero(rot_to_moire_transform_diff.block<2,2>(0,0),1e-8));
+
+            //This block is for using a dumb python script for visualization
+            dumpstream<<"****************************\n\n";
+            dumpstream<<aligned_lat.column_vector_matrix()<<"\n\n";
+            dumpstream<<rot_lat.column_vector_matrix()<<"\n\n";
+            dumpstream<<moire_lat.column_vector_matrix()<<"\n\n";
+        }
+    }
+    dumpstream.close();
 }
 
 int main(int argc, char** argv)

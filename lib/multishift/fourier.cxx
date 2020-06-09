@@ -387,7 +387,7 @@ std::vector<Analytiker::FormulaBit> Analytiker::_formula_bits(const Interpolator
         }
     }
 
-    assert(formula_bits.size() == 4 * (adim * bdim + 1) / 2);
+    /* assert(formula_bits.size() == 4 * (adim * bdim + 1) / 2); */
     // TODO: Sort by magnitude
     std::sort(formula_bits.begin(), formula_bits.end(), [](const FormulaBit& lhs, const FormulaBit& rhs) -> bool {
         return std::abs(std::get<0>(lhs)) < std::abs(std::get<0>(rhs));

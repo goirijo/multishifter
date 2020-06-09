@@ -51,6 +51,11 @@ Lattice make_superlattice(const Lattice& tiling_unit, const Eigen::Matrix3i col_
     return Lattice(CASM::xtal::make_superlattice(tiling_unit.__get(), col_transf_mat));
 }
 
+/* Eigen::Matrix3l make_transformation_matrix_to_super(const Lattice &tiling_unit, const Lattice &superlattice, double tol) */
+/* { */
+/*     return CASM::xtal::make_transformation_matrix(tiling_unit.__get(),superlattice.__get(),tol); */
+/* } */
+
 Lattice make_sliced_lattice(const Lattice& unit_lattice, const Eigen::Vector3i& miller_indexes)
 {
     //TODO: Fails if you give it stupid values like (0,-2,0);
