@@ -85,7 +85,7 @@ def scatter_equivalent_shifts(record_file,slab_file):
     bcount = len(set(bix))
 
     eqs = [
-        str(shift_records[s]["equivalent_structures"]) for s in shift_records
+        str(shift_records[s]["equivalent_shifts"]) for s in shift_records
     ]
 
     unq = set(eqs)
@@ -135,6 +135,8 @@ def unwind_data(records):
         for p in records["shift-cleave"]
     ]
 
+    sequivs=[[[int(x) for x in eq.split(':')[0:2]] for eq in group] for group in equivs]
+
     unwinded = pd.DataFrame.from_dict({
         "path": paths,
         "a_index": avals,
@@ -142,7 +144,8 @@ def unwind_data(records):
         "angle": angles,
         "id": ids,
         "cleavage": cleaves,
-        "equivalent_structures": equivs
+        # "equivalent_structures": equivs
+        "equivalent_shifts": sequivs
     })
 
     unwinded = unwinded.sort_values(["a_index", "b_index"])
@@ -176,14 +179,14 @@ def bin_data_slice(unwinded, avec, bvec):
 
 def data_slice_orbits(unwinded):
     id_orbits = []
-    for s in unwinded["equivalent_structures"]:
+    for s in unwinded["equivalent_shifts"]:
         if s not in id_orbits:
             id_orbits.append(s)
     return id_orbits
 
 
 def load_energies(unwinded):
-    unwinded["energy"] = 0.0
+    unwinded["energy"] = np.nan
 
     oszis = glob.glob("./Al-FCC.chain/shift__*/cleave__*/OSZICAR")
     energies = {f[2:-8]: load_oszicar_energy(f) for f in oszis}
@@ -209,9 +212,13 @@ def unfold_orbits(unwinded_slice):
     orbits = data_slice_orbits(unwinded_slice)
 
     for o in orbits:
-        assert (len(unwinded_slice.loc[unwinded_slice["id"] == o[0]]) == 1)
-        e = float(unwinded_slice.loc[unwinded_slice["id"] == o[0]]["energy"])
-        unwinded_slice.loc[unwinded_slice["equivalent_structures"].astype(str)
+        equivs=unwinded_slice.loc[unwinded_slice["equivalent_shifts"].astype(str)
+                           == str(o), "energy"]
+        not_nan=equivs[equivs.notnull()]
+        assert(len(not_nan)>0)
+
+        e = float(not_nan)
+        unwinded_slice.loc[unwinded_slice["equivalent_shifts"].astype(str)
                            == str(o), "energy"] = e
     return unwinded_slice
 
@@ -246,8 +253,9 @@ def shift_energies_to_surface_energy(unwinded):
 def plot_shifted_uber_fit(ax,unwinded_slice,gamma):
     ax.scatter(unwinded_slice["cleavage"], unwinded_slice["energy"])
 
+    unwinded_slice = unwinded_slice.sort_values(["cleavage"])
     sigma=np.ones(len(unwinded_slice))
-    sigma[0::8]=0.5
+    sigma[0::10]=0.001
 
     partial=lambda d,g,l:uber(d,g,l,0.0)
 
@@ -281,17 +289,23 @@ def main():
 
     unwinded = unwind_data(records)
     unwinded = load_energies(unwinded)
-    unwinded = shift_energies_to_surface_energy(unwinded)
-    gamma=surface_energy(unwinded)
+
     avec, bvec = load_slab_plane_vectors("./Al-FCC.chain/slab.vasp")
 
+    unfolded=[unfold_orbits(unwinded.loc[unwinded["cleavage"]==cleave].copy()) for cleave in set(unwinded["cleavage"])]
+    unwinded=pd.concat(unfolded)
+
+    unwinded = shift_energies_to_surface_energy(unwinded)
+    gamma=surface_energy(unwinded)
+
+    nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
     Z1 = nocleave["energy"]
     plot_gamma_surface_heatmap(ax,nocleave,avec,bvec)
-    plt.savefig("./figs/gamma0.0000.pdf",bbox_inches='tight',pad_inches=0)
+    plt.show()
+    # plt.savefig("./figs/gamma0.0000.pdf",bbox_inches='tight',pad_inches=0)
 
     # A,B=fractional_coordinates(nocleave)
     # E=nocleave["energy"]
@@ -306,25 +320,18 @@ def main():
 
     # exit()
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    nocleave = unfold_orbits(nocleave.copy())
-    Z2 = nocleave["energy"]
-    plot_gamma_surface_heatmap(ax,nocleave,avec,bvec)
-    plt.show()
-
-    print(Z1 - Z2)
-    print("max error {} meV".format(max((Z1 - Z2).ravel()) * 1000))
+    # print(Z1 - Z2)
+    # print("max error {} meV".format(max((Z1 - Z2).ravel()) * 1000))
 
     noshift = unwinded.loc[(unwinded["a_index"] == 0) &
                            (unwinded["b_index"] == 0)]
 
     id_orbits=data_slice_orbits(nocleave)
     prototypes=[o[0] for o in id_orbits]
-    unqa=[int(nocleave.loc[nocleave["id"]==p]["a_index"]) for p in prototypes]
-    unqb=[int(nocleave.loc[nocleave["id"]==p]["b_index"]) for p in prototypes]
+    # unqa=[int(nocleave.loc[nocleave["id"]==p]["a_index"]) for p in prototypes]
+    # unqb=[int(nocleave.loc[nocleave["id"]==p]["b_index"]) for p in prototypes]
 
-    for a,b in zip(unqa,unqb):
+    for a,b in prototypes:
         fig = plt.figure()
         ax = fig.add_subplot(111)
         shiftdata=unwinded.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b)]
