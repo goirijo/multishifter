@@ -5,6 +5,7 @@
 
 #include <multishift/definitions.hpp>
 #include <multishift/twist.hpp>
+#include <tuple>
 #include <vector>
 
 namespace casmutils::xtal
@@ -181,7 +182,7 @@ TEST_F(TwistTest, ApproximantMoireLattice)
     std::ofstream dumpstream("./apprixmoirelatticeout.txt");
     for (const Lattice& start_lat : sliced_lattices)
     {
-        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 25.0})
+        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
             auto [moire_lat,aligned_lat,rot_lat]=make_approximant_moire_lattice(start_lat, angle);
 
@@ -191,8 +192,6 @@ TEST_F(TwistTest, ApproximantMoireLattice)
             Eigen::Matrix3d rot_to_moire_transform=rot_lat.column_vector_matrix().inverse()*moire_lat.column_vector_matrix();
             Eigen::Matrix3d rot_to_moire_transform_diff=rot_to_moire_transform-rot_to_moire_transform.unaryExpr([](double x){return std::round(x);});
 
-            // TODO: How to test the moire lattice? Plotting the two lattices seems
-            // to give the correct results. I THINK this check makes sense
             EXPECT_TRUE(almost_zero(aligned_to_moire_transform_diff.block<2,2>(0,0),1e-8));
             EXPECT_TRUE(almost_zero(rot_to_moire_transform_diff.block<2,2>(0,0),1e-8));
 
@@ -201,6 +200,27 @@ TEST_F(TwistTest, ApproximantMoireLattice)
             dumpstream<<aligned_lat.column_vector_matrix()<<"\n\n";
             dumpstream<<rot_lat.column_vector_matrix()<<"\n\n";
             dumpstream<<moire_lat.column_vector_matrix()<<"\n\n";
+
+            if(!almost_zero(aligned_to_moire_transform_diff.block<2,2>(0,0),1e-8) || !almost_zero(rot_to_moire_transform_diff.block<2,2>(0,0),1e-8))
+            {
+                std::cout<<"ALERT "<<angle<<"\n";
+
+                std::cout<<"DEBUGGING: start_lat.column_vector_matrix().determinant() is "<<start_lat.column_vector_matrix().determinant()<<std::endl;
+                std::cout<<"DEBUGGING: aligned_to_moire_transform_diff is "<<aligned_to_moire_transform_diff<<std::endl;
+                std::cout<<"DEBUGGING: rot_to_moire_transform_diff is "<<rot_to_moire_transform_diff<<std::endl;
+                
+                
+
+                auto tmp=mush::make_aligned_moire_lattice(start_lat,angle);
+                std::cout<<std::get<1>(tmp).column_vector_matrix()<<"\n\n";
+
+                std::cout<<mush::make_twist_rotation_matrix(start_lat,angle)<<"\n\n";
+                std::cout<<mush::make_twist_rotation_matrix(start_lat,angle).inverse()<<"\n\n";
+                
+                std::cout<<start_lat.column_vector_matrix()<<"\n\n";
+                std::cout<<aligned_lat.column_vector_matrix()<<"\n\n";
+                std::cout<<aligned_to_moire_transform_diff<<"\n\n";
+            }
         }
     }
     dumpstream.close();

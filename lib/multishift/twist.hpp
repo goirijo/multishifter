@@ -21,7 +21,7 @@ namespace mush
     namespace cu = casmutils;
     
     ///Create a rotation matrix that rotates the given lattice by the specified angle
-    ///within the plane spanneed by the ab vectors of the lattice.
+    ///within the plane spanned by the ab vectors of the lattice.
     ///The rotation should be applied to column vectors.
     Eigen::Matrix3d make_twist_rotation_matrix(const Lattice& lat, double degrees);
 

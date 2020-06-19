@@ -7,12 +7,18 @@
 #include <cassert>
 #include <cmath>
 #include <multishift/definitions.hpp>
+#include <stdexcept>
 #include <tuple>
 
 namespace
 {
     using namespace mush;
     Eigen::Matrix2d make_2d_column_matrix(const Lattice lat3d) {
+        assert(almost_equal(lat3d.column_vector_matrix()(2,0),0.0,1e-10));
+        assert(almost_equal(lat3d.column_vector_matrix()(2,1),0.0,1e-10));
+
+        return lat3d.column_vector_matrix().block<2,2>(0,0);
+
         Eigen::Vector2d a2d(lat3d.a()(0), lat3d.a()(1));
         Eigen::Vector2d b2d(lat3d.b()(0), lat3d.b()(1));
 
@@ -28,6 +34,12 @@ namespace
         Eigen::Matrix3d lat3d=Eigen::Matrix3d::Identity();
         lat3d.block<2,2>(0,0)=lat2d;
         return lat3d;
+    }
+
+    double coarse_round(double x)
+    {
+        double trucated=std::round(100000.0*x)/100000.0;
+        return std::round(trucated);
     }
 }
 
@@ -51,6 +63,11 @@ namespace mush
 /// a vector, the ab plane normal, and whatever is perpendicular to that
 Eigen::Matrix3d slab_unit_vectors(const Lattice& slab)
 {
+    if(slab.column_vector_matrix().determinant()<0)
+    {
+        throw std::runtime_error("Encountered a left handed lattice when making slab unit vectors.");
+    }
+
     Eigen::Matrix3d slab_span;
     slab_span.col(0) = slab.a().normalized();
     slab_span.col(2) = slab.a().cross(slab.b()).normalized();
@@ -74,6 +91,7 @@ Lattice make_aligned_lattice(const Lattice& lat)
     Eigen::Matrix3d lat_span_to_standard = slab_unit_vectors(lat).inverse();
     Lattice aligned_lat = make_transformed_lattice(lat, lat_span_to_standard);
     assert(almost_equal((aligned_lat.a().cross(aligned_lat.b())).normalized(), Eigen::Vector3d(0, 0, 1), 1e-10));
+    assert(almost_equal(lat.column_vector_matrix().determinant(),aligned_lat.column_vector_matrix().determinant(),1e-10));
     return aligned_lat;
 }
 
@@ -128,10 +146,13 @@ std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Latti
     Eigen::Matrix2d rot_lat_2d=::make_2d_column_matrix(rot_lat);
 
     Eigen::Matrix2d aligned_to_moire_transform = aligned_lat_2d.inverse() * moire_lat_2d;
-    Eigen::Matrix2d aligned_to_moire_transform_round=aligned_to_moire_transform.unaryExpr([](double x){return std::round(x);});
+    Eigen::Matrix2d aligned_to_moire_transform_round=aligned_to_moire_transform.unaryExpr(&::coarse_round);
+    //Assert not nan
+    assert(aligned_to_moire_transform==aligned_to_moire_transform);
 
     Eigen::Matrix2d rot_to_moire_transform = rot_lat_2d.inverse() * moire_lat_2d;
-    Eigen::Matrix2d rot_to_moire_transform_round=rot_to_moire_transform.unaryExpr([](double x){return std::round(x);});
+    Eigen::Matrix2d rot_to_moire_transform_round=rot_to_moire_transform.unaryExpr(&::coarse_round);
+    assert(rot_to_moire_transform==rot_to_moire_transform);
 
     Eigen::Matrix2d aligned_superlattice_2d=aligned_lat_2d*aligned_to_moire_transform_round;
     Eigen::Matrix2d rot_superlattice_2d=rot_lat_2d*rot_to_moire_transform_round;
@@ -139,6 +160,27 @@ std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Latti
     Eigen::Matrix2d approx_superlattice_2d=(aligned_superlattice_2d+rot_superlattice_2d)/2.0;
     Eigen::Matrix2d approx_aligned_2d=approx_superlattice_2d*aligned_to_moire_transform_round.inverse();
     Eigen::Matrix2d approx_rot_2d=approx_superlattice_2d*rot_to_moire_transform_round.inverse();
+
+    std::cout<<"***************\n\n";
+    std::cout<<moire_lat_2d<<"\n\n";
+    std::cout<<aligned_lat_2d<<"\n\n";
+    std::cout<<rot_lat_2d<<"\n\n";
+    std::cout<<"\n";
+    std::cout<<"\n";
+    std::cout<<aligned_to_moire_transform<<"\n\n";
+    std::cout<<(aligned_to_moire_transform(1,1)==-0.5)<<"    ";
+    std::cout<<std::round(aligned_to_moire_transform(1,1))<<"\n";
+    std::cout<<"corner subtraction: "<<aligned_to_moire_transform(0,0)-aligned_to_moire_transform(1,1)<<"\n";
+    std::cout<<aligned_to_moire_transform_round<<"\n\n";
+    std::cout<<rot_to_moire_transform<<"\n\n";
+    std::cout<<rot_to_moire_transform_round<<"\n\n";
+    std::cout<<"\n";
+    std::cout<<"\n";
+    std::cout<<approx_superlattice_2d<<"\n\n";
+    std::cout<<approx_aligned_2d<<"\n\n";
+
+    assert(approx_aligned_2d==approx_aligned_2d);
+    assert(approx_rot_2d==approx_rot_2d);
 
     Eigen::Matrix3d approx_superlattice_col_mat=::make_3d_column_matrix(approx_superlattice_2d);
     //The moire lattice has zero c vector, but we still want to keep the c vector around for the aligned and rotated lattices
