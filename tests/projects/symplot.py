@@ -2,9 +2,15 @@ import json
 import numpy as np
 import glob
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
+
+font = {'family' : 'normal',
+        'size'   : 16}
+
+matplotlib.rc('font', **font)
 
 def angle(v1, v2):
     """Return unsigned angle between two 3d vectors
@@ -85,29 +91,38 @@ def write_json(data,target_file):
 
 
 def scatter_equivalent_shifts(ax,data_slice,avec,bvec):
-    shift_records=data_slice
+    awall=data_slice.loc[data_slice["a_index"]==0].copy()
+    awall["a_index"]=len(awall)
+
+    bwall=data_slice.loc[data_slice["b_index"]==0].copy()
+    bwall["b_index"]=len(bwall)
+
+    corner=data_slice.loc[(data_slice["b_index"]==0) & (data_slice["a_index"]==0)].copy()
+    corner["a_index"]=len(awall)
+    corner["b_index"]=len(bwall)
+
+    shift_records=pd.concat([data_slice,awall,bwall,corner])
 
     aix = shift_records["a_index"]
     bix = shift_records["b_index"]
 
-    acount = len(set(aix))
-    bcount = len(set(bix))
+    acount = max(set(aix))
+    bcount = max(set(bix))
 
     eqs = shift_records["equivalent_shifts"].astype(str)
 
-    unq = set(eqs)
+    unq = list(set(eqs))
+    unq.sort()
     colors = np.arange(len(unq)) / len(unq)
-    np.random.shuffle(colors)
+    # np.random.shuffle(colors)
     cmap = {u: c for u, c in zip(list(unq), colors)}
-
-    # print(len(unq),len(eqs))
-    # exit()
 
     pts = np.array(
         [avec * a / acount + bvec * b / bcount for a, b in zip(aix, bix)])
+
     c = [cmap[eq] for eq in eqs]
 
-    ax.scatter(pts[:, 0], pts[:, 1], c=c,s=85)
+    ax.scatter(pts[:, 0], pts[:, 1], c=c,s=85, cmap=matplotlib.cm.get_cmap("twilight"))
 
     ax.set_aspect('equal')
 
@@ -281,7 +296,7 @@ def plot_shifted_uber_fit(ax,unwinded_slice,popt):
     deltas = np.linspace(
         min(unwinded_slice["cleavage"]), max(unwinded_slice["cleavage"]), 1000)
     fitenergy = uber(deltas, *popt)
-    ax.set_xlabel("$\delta$ $\mathrm{[\AA]}$")
+    ax.set_xlabel("$d$ $\mathrm{[\AA]}$")
     ax.set_ylabel("Energy $\mathrm{[J/m^2]}$")
     # ax.scatter(unwinded_slice["cleavage"]-popt[0], unwinded_slice["energy"])
     # ax.plot(deltas-popt[0], fitenergy, "g--")
@@ -339,7 +354,7 @@ def main():
     fig = plt.figure()
     ax = fig.add_subplot(111)
     scatter_equivalent_shifts(ax,nocleave,avec,bvec)
-    plt.savefig("./figs/equivalents.pdf",bbox_inches='tight',pad_inches=0)
+    plt.savefig("./figs/shift_symmetry.pdf",bbox_inches='tight',pad_inches=0)
 
     noshift = unwinded.loc[(unwinded["a_index"] == 0) &
                            (unwinded["b_index"] == 0)]
@@ -365,7 +380,7 @@ def main():
         print(uber(popt[0],*popt)-popt[3],-2*popt[1])
 
         ax=plot_shifted_uber_fit(ax,shiftdata,popt)
-        plt.savefig("./figs/uber{}.{}.pdf".format(a,b),bbox_inches='tight',pad_inches=0)
+        plt.savefig("./figs/al.uber{}.{}.pdf".format(a,b),bbox_inches='tight',pad_inches=0)
 
     uberfits=unfold_orbits(uberfits,"_d0")
     uberfits=unfold_orbits(uberfits,"_gamma")
@@ -374,10 +389,14 @@ def main():
     uberfits=unfold_orbits(uberfits,"_tmp")
 
     A, B = fractional_coordinates(uberfits)
+
     E=uberfits["_gamma"].values
     ipolable={"a_frac":A.tolist(),"b_frac":B.tolist(),"values":E.tolist()}
+    write_json(ipolable,"./ipol/gamma.json")
 
-    write_json(ipolable,"./ipol/dump.json")
+    E=uberfits["_d0"].values
+    ipolable={"a_frac":A.tolist(),"b_frac":B.tolist(),"values":E.tolist()}
+    write_json(ipolable,"./ipol/d0.json")
 
 
     fig = plt.figure()

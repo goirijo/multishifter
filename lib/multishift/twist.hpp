@@ -47,6 +47,47 @@ namespace mush
     ///and rotated orientations.
     std::tuple<Lattice,Lattice,Lattice> make_approximant_moire_lattice(const Lattice& lat, double degrees);
     
+    ///2D representation of a Moire lattice, given an input lattice and rotation angle, as well
+    ///as approximant versions of the same Moire lattice, where some strain has been introduced
+    ///to enforce periodicity.
+    struct MoireApproximant
+    {
+        typedef Eigen::Matrix3i matrix_type;
+
+        MoireApproximant(const Lattice& lat, double degrees);
+
+        ///Lattice given at construction
+        Lattice input_lattice;
+
+        ///Degrees given at construction
+        double input_degrees;
+
+        ///Rotation matrix to go from the input lattice to the alinged lattice
+        Eigen::Matrix3d alignment_rotation;
+
+        ///Same as the input lattice, but rotated such that the a and b vectors span the x-y plane (no z component)
+        Lattice aligned_lattice;
+
+        ///Same as the aligned lattice, but rotated by the specified degrees.
+        Lattice rotated_lattice;
+
+        ///The true Moire lattice resulting from the superposition of the input lattice and it's rotated version.
+        ///The pattern resulting from this Moire lattice is only semi-periodic, and not useful for DFT calculations.
+        Lattice moire_lattice;
+
+        ///The aligned lattice with some strain introduced, such that combining with the approximate rotated lattice
+        ///results in a fully periodic Moire lattice.
+        ///The second element of the pair can be used to create the More lattice via integer matrix multiplication of vectors.
+        std::pair<Lattice,matrix_type> approximate_aligned_lattice;
+        
+        ///The rotated lattice with some strain introduced, such that combining with the approximate aligned lattice
+        ///results in a fully periodic Moire lattice
+        ///The second element of the pair can be used to create the More lattice via integer matrix multiplication of vectors.
+        std::pair<Lattice,matrix_type> approximate_rotated_lattice;
+        
+        ///Deformation introduced by making the approximations to introduce complete periodicity
+        Eigen::Matrix3d approximation_deformation;
+    };
 }
 
 #endif

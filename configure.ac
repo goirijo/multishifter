@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([multishifter], [0.2.1], [jg.goiri@gmail.com])
-AC_CONFIG_SRCDIR([src/base/base.cpp])
+AC_CONFIG_SRCDIR([src/multishifter.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
