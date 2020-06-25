@@ -283,6 +283,9 @@ TEST_F(TwistTest, MoireApproximantRotationEffect)
 
             for(const Eigen::Matrix3d& M : {aligned_R,aligned_U,rot_R,rot_U})
             {
+                //TODO:
+                //What to test here? Hard to make sense of 2d features on the 3d matrices
+                
                 /* std::cout<<moire.approximation_deformations[0]<<std::endl<<std::endl; */
                 /* std::cout<<moire.approximation_deformations[1]<<std::endl<<std::endl; */
 
@@ -318,27 +321,15 @@ TEST_F(TwistTest, MoireApproximantRotationEffect)
 
     hcp_aligned.set_lattice(hcp_moire.approximate_lattices[0],cu::xtal::FRAC);
     hcp_rotated.set_lattice(hcp_moire.approximate_lattices[1],cu::xtal::FRAC);
-
-
     
     Lattice aligned_superlat=cu::xtal::make_superlattice(hcp_moire.approximate_lattices[0],hcp_moire.approximate_moire_integer_transformations[0].cast<int>());
     Lattice rotated_superlat=cu::xtal::make_superlattice(hcp_moire.approximate_lattices[1],hcp_moire.approximate_moire_integer_transformations[1].cast<int>());
-
-    std::cout<<"&&&&&&&&&&&&&&&&&&\n";
-    std::cout<<aligned_superlat.column_vector_matrix()<<"\n\n";
-    std::cout<<rotated_superlat.column_vector_matrix()<<"\n\n";
-    std::cout<<"&&&&&&&&&&&&&&&&&&\n";
-
-
-
-
-
 
     cu::xtal::write_poscar(hcp_aligned,"./aligned.vasp");
     cu::xtal::write_poscar(hcp_rotated,"./rotated.vasp");
 
     auto hcp_bottom=cu::xtal::make_superstructure(hcp_aligned,hcp_moire.approximate_moire_integer_transformations[0].cast<int>());
-    auto hcp_top=cu::xtal::make_superstructure(hcp_aligned,hcp_moire.approximate_moire_integer_transformations[1].cast<int>());
+    auto hcp_top=cu::xtal::make_superstructure(hcp_rotated,hcp_moire.approximate_moire_integer_transformations[1].cast<int>());
 
     auto hcp_twist=cu::xtal::frankenstein::stack({hcp_bottom,hcp_top});
     cu::xtal::write_poscar(hcp_twist,"./hcpstack.vasp");
