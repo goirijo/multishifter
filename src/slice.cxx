@@ -1,6 +1,8 @@
 #include "./slice.hpp"
 #include "./misc.hpp"
+#include "casmutils/xtal/structure.hpp"
 #include "multishift/shift.hpp"
+#include "multishift/twist.hpp"
 #include <bits/c++config.h>
 #include <casmutils/xtal/structure_tools.hpp>
 #include <cassert>
@@ -16,6 +18,13 @@ void write_slicer_structures(const mush::Slicer& slicer, const mush::fs::path& s
 
     log << "Write sliced prim...\n";
     mush::cu::xtal::write_poscar(slicer.sliced_prim, slices_path / "sliced_prim.vasp");
+
+    log << "Write aligned sliced prim...\n";
+    auto aligned_sliced_lat=mush::make_aligned_lattice(slicer.sliced_prim.lattice());
+    mush::cu::xtal::Structure aligned_sliced_prim=slicer.sliced_prim;
+    //TODO: Is this really how it works?
+    aligned_sliced_prim.set_lattice(aligned_sliced_lat,mush::cu::xtal::FRAC);
+    mush::cu::xtal::write_poscar(aligned_sliced_prim, slices_path / "aligned_sliced_prim.vasp");
 
     log << "Write all possible basis translations...";
     for (int i = 0; i < slicer.floored_sliced_prims.size(); ++i)

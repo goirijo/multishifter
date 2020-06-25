@@ -71,9 +71,11 @@ def load_slab_plane_vectors(slabfile):
 
     aline = content[2]
     bline = content[3]
+    cline = content[3]
 
     a = np.array([float(x) for x in aline.split()])
     b = np.array([float(x) for x in bline.split()])
+    c = np.array([float(x) for x in cline.split()])
 
     return a, b
 
@@ -92,14 +94,14 @@ def write_json(data,target_file):
 
 def scatter_equivalent_shifts(ax,data_slice,avec,bvec):
     awall=data_slice.loc[data_slice["a_index"]==0].copy()
-    awall["a_index"]=len(awall)
-
     bwall=data_slice.loc[data_slice["b_index"]==0].copy()
-    bwall["b_index"]=len(bwall)
+
+    awall["a_index"]=len(bwall)
+    bwall["b_index"]=len(awall)
 
     corner=data_slice.loc[(data_slice["b_index"]==0) & (data_slice["a_index"]==0)].copy()
-    corner["a_index"]=len(awall)
-    corner["b_index"]=len(bwall)
+    corner["a_index"]=len(bwall)
+    corner["b_index"]=len(awall)
 
     shift_records=pd.concat([data_slice,awall,bwall,corner])
 
@@ -328,33 +330,40 @@ def plot_gamma_surface_heatmap(ax,unwinded_slice,avec,bvec):
 
 
 def main():
-    records = load_record("./Al-FCC.chain/record.json")
+    # records = load_record("./Al-FCC.chain/record.json")
+    # records = load_record("./Mg-prismatic.chain/record.json")
+    # records = load_record("./Mg-pyramidal1.chain/record.json")
+    records = load_record("./Mg-pyramidal2.chain/record.json")
     # print(json.dumps(records["shift-cleave"],indent=4,sort_keys=True))
 
-    avec, bvec = load_slab_plane_vectors("./Al-FCC.chain/slab.vasp")
+    # avec, bvec = load_slab_plane_vectors("./Al-FCC.chain/slab.vasp")
+    # avec, bvec = load_slab_plane_vectors("./Mg-pyramidal1.slices/aligned_sliced_prim.vasp")
+    avec, bvec = load_slab_plane_vectors("./Mg-pyramidal2.slices/aligned_sliced_prim.vasp")
 
     unwinded = unwind_data(records)
+    nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    scatter_equivalent_shifts(ax,nocleave,avec,bvec)
+    plt.savefig("./figs/shift_symmetry.pdf",bbox_inches='tight',pad_inches=0)
+
+    exit()
+
     unwinded = load_energies(unwinded,avec,bvec)
-
-    print(unwinded[["raw_energy","energy"]])
-
     unfolded=[unfold_orbits(unwinded.loc[unwinded["cleavage"]==cleave].copy(),"energy") for cleave in set(unwinded["cleavage"])]
     unwinded=pd.concat(unfolded)
 
     # unwinded = shift_energies_to_surface_energy(unwinded)
     # gamma=surface_energy(unwinded)
 
-    nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
+    # nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax=plot_gamma_surface_heatmap(ax,nocleave,avec,bvec)
-    plt.show()
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax=plot_gamma_surface_heatmap(ax,nocleave,avec,bvec)
+    # plt.show()
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    scatter_equivalent_shifts(ax,nocleave,avec,bvec)
-    plt.savefig("./figs/shift_symmetry.pdf",bbox_inches='tight',pad_inches=0)
 
     noshift = unwinded.loc[(unwinded["a_index"] == 0) &
                            (unwinded["b_index"] == 0)]

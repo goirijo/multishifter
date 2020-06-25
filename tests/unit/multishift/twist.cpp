@@ -1,4 +1,7 @@
 #include "../../autotools.hh"
+#include "casmutils/xtal/structure.hpp"
+#include "casmutils/xtal/structure_tools.hpp"
+#include "multishift/slab.hpp"
 #include <cmath>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -11,6 +14,11 @@
 namespace casmutils::xtal
 {
 xtal::Lattice make_sliced_lattice(const xtal::Lattice& unit_lattice, const Eigen::Vector3i& miller_indexes);
+
+namespace frankenstein
+{
+xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs);
+}
 }
 
 using namespace mush;
@@ -225,6 +233,119 @@ TEST_F(TwistTest, ApproximantMoireLattice)
     }
     dumpstream.close();
 }
+
+TEST_F(TwistTest, MoireApproximantVectorMatch)
+{
+    for (const Lattice& start_lat : sliced_lattices)
+    {
+        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
+        {
+            MoireApproximant moire(start_lat,angle);
+            Lattice aligned_super=cu::xtal::make_superlattice(moire.approximate_lattices[0],moire.approximate_moire_integer_transformations[0].cast<int>());
+            Lattice rot_super=cu::xtal::make_superlattice(moire.approximate_lattices[1],moire.approximate_moire_integer_transformations[1].cast<int>());
+
+            std::cout<<"DEBUGGING: aligned_super.column_vector_matrix()-rot_super.column_vector_matrix() is \n"<<aligned_super.column_vector_matrix()-rot_super.column_vector_matrix()<<std::endl<<std::endl;;
+            
+
+            almost_equal(aligned_super.a(),rot_super.a());
+            almost_equal(aligned_super.b(),rot_super.b());
+        }
+    }
+}
+
+TEST_F(TwistTest, MoireApproximantAlignedRotatedMatch)
+{
+    for (const Lattice& start_lat : sliced_lattices)
+    {
+        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
+        {
+            //TODO: Make sure that the aligned and rotated lattices
+            //(both perfect and approximated) are exclusively related
+            //by a rotation
+        }
+    }
+}
+
+#include <casmutils/xtal/frankenstein.hpp>
+
+TEST_F(TwistTest, MoireApproximantRotationEffect)
+{
+    for (const Lattice& start_lat : sliced_lattices)
+    {
+        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
+        {
+            MoireApproximant moire(start_lat,angle);
+            auto [aligned_R,aligned_U]=cu::xtal::polar_decomposition(moire.approximation_deformations[0]);
+            auto [rot_R,rot_U]=cu::xtal::polar_decomposition(moire.approximation_deformations[1]);
+
+            std::cout<<moire.approximate_moire_integer_transformations[0]<<"\n\n";
+            std::cout<<moire.approximate_moire_integer_transformations[1]<<"\n\n";
+
+            for(const Eigen::Matrix3d& M : {aligned_R,aligned_U,rot_R,rot_U})
+            {
+                /* std::cout<<moire.approximation_deformations[0]<<std::endl<<std::endl; */
+                /* std::cout<<moire.approximation_deformations[1]<<std::endl<<std::endl; */
+
+                /* std::cout<<moire.aligned_lattice.column_vector_matrix()<<"\n\n"; */
+                /* std::cout<<moire.approximate_lattices[0].column_vector_matrix()<<"\n\n"; */
+                /* std::cout<<moire.approximation_deformations[0]<<"\n\n"; */
+
+                /* std::cout<<moire.aligned_lattice.column_vector_matrix()-moire.approximate_lattices[0].column_vector_matrix(); */
+                /* std::cout<<"\n\n"; */
+                /* std::cout<<moire.rotated_lattice.column_vector_matrix()-moire.approximate_lattices[1].column_vector_matrix(); */
+                /* std::cout<<"\n\n"; */
+
+                /* std::cout<<M.determinant()<<std::endl; */
+                /* std::cout<<M<<"\n\n"; */
+
+                /* EXPECT_TRUE(almost_equal(M(0,1),0.0,1e-8)); */
+                /* EXPECT_TRUE(almost_equal(M(0,2),0.0,1e-8)); */
+                /* EXPECT_TRUE(almost_equal(M(2,0),0.0,1e-8)); */
+                /* EXPECT_TRUE(almost_equal(M(2,1),0.0,1e-8)); */
+                /* EXPECT_TRUE(almost_equal(M(2,1),1.0,1e-8)); */
+            }
+            std::cout<<"***************\n";
+        }
+    }
+
+    //Just for testing
+    auto hcp_path=autotools::input_filesdir/"hcp.vasp";
+    auto hcp=cu::xtal::Structure::from_poscar(hcp_path);
+
+    MoireApproximant hcp_moire(hcp.lattice(),5.0);
+    auto hcp_aligned=hcp;
+    auto hcp_rotated=hcp;
+
+    hcp_aligned.set_lattice(hcp_moire.approximate_lattices[0],cu::xtal::FRAC);
+    hcp_rotated.set_lattice(hcp_moire.approximate_lattices[1],cu::xtal::FRAC);
+
+
+    
+    Lattice aligned_superlat=cu::xtal::make_superlattice(hcp_moire.approximate_lattices[0],hcp_moire.approximate_moire_integer_transformations[0].cast<int>());
+    Lattice rotated_superlat=cu::xtal::make_superlattice(hcp_moire.approximate_lattices[1],hcp_moire.approximate_moire_integer_transformations[1].cast<int>());
+
+    std::cout<<"&&&&&&&&&&&&&&&&&&\n";
+    std::cout<<aligned_superlat.column_vector_matrix()<<"\n\n";
+    std::cout<<rotated_superlat.column_vector_matrix()<<"\n\n";
+    std::cout<<"&&&&&&&&&&&&&&&&&&\n";
+
+
+
+
+
+
+    cu::xtal::write_poscar(hcp_aligned,"./aligned.vasp");
+    cu::xtal::write_poscar(hcp_rotated,"./rotated.vasp");
+
+    auto hcp_bottom=cu::xtal::make_superstructure(hcp_aligned,hcp_moire.approximate_moire_integer_transformations[0].cast<int>());
+    auto hcp_top=cu::xtal::make_superstructure(hcp_aligned,hcp_moire.approximate_moire_integer_transformations[1].cast<int>());
+
+    auto hcp_twist=cu::xtal::frankenstein::stack({hcp_bottom,hcp_top});
+    cu::xtal::write_poscar(hcp_twist,"./hcpstack.vasp");
+    cu::xtal::write_poscar(hcp_bottom,"./bottom.vasp");
+    cu::xtal::write_poscar(hcp_top,"./top.vasp");
+}
+
 
 int main(int argc, char** argv)
 {
