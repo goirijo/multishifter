@@ -8,6 +8,7 @@
 
 #include <multishift/definitions.hpp>
 #include <multishift/twist.hpp>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -312,29 +313,34 @@ TEST_F(TwistTest, MoireApproximantRotationEffect)
     }
 
     //Just for testing
-    auto hcp_path=autotools::input_filesdir/"hcp.vasp";
-    auto hcp=cu::xtal::Structure::from_poscar(hcp_path);
+    auto graph_path=autotools::input_filesdir/"graphene.vasp";
+    auto graph=cu::xtal::Structure::from_poscar(graph_path);
 
-    MoireApproximant hcp_moire(hcp.lattice(),5.0);
-    auto hcp_aligned=hcp;
-    auto hcp_rotated=hcp;
+    for(double degrees : {2,6,9,12,15})
+    {
+        std::cout<<"DEBUGGING: degrees is "<<degrees<<std::endl;
+        
+        MoireApproximant graph_moire(graph.lattice(),degrees);
+        auto graph_aligned=graph;
+        auto graph_rotated=graph;
 
-    hcp_aligned.set_lattice(hcp_moire.approximate_lattices[0],cu::xtal::FRAC);
-    hcp_rotated.set_lattice(hcp_moire.approximate_lattices[1],cu::xtal::FRAC);
-    
-    Lattice aligned_superlat=cu::xtal::make_superlattice(hcp_moire.approximate_lattices[0],hcp_moire.approximate_moire_integer_transformations[0].cast<int>());
-    Lattice rotated_superlat=cu::xtal::make_superlattice(hcp_moire.approximate_lattices[1],hcp_moire.approximate_moire_integer_transformations[1].cast<int>());
+        graph_aligned.set_lattice(graph_moire.approximate_lattices[0],cu::xtal::FRAC);
+        graph_rotated.set_lattice(graph_moire.approximate_lattices[1],cu::xtal::FRAC);
+        
+        Lattice aligned_superlat=cu::xtal::make_superlattice(graph_moire.approximate_lattices[0],graph_moire.approximate_moire_integer_transformations[0].cast<int>());
+        Lattice rotated_superlat=cu::xtal::make_superlattice(graph_moire.approximate_lattices[1],graph_moire.approximate_moire_integer_transformations[1].cast<int>());
 
-    cu::xtal::write_poscar(hcp_aligned,"./aligned.vasp");
-    cu::xtal::write_poscar(hcp_rotated,"./rotated.vasp");
+        cu::xtal::write_poscar(graph_aligned,"./"+std::to_string(degrees)+"_aligned.vasp");
+        cu::xtal::write_poscar(graph_rotated,"./"+std::to_string(degrees)+"_rotated.vasp");
 
-    auto hcp_bottom=cu::xtal::make_superstructure(hcp_aligned,hcp_moire.approximate_moire_integer_transformations[0].cast<int>());
-    auto hcp_top=cu::xtal::make_superstructure(hcp_rotated,hcp_moire.approximate_moire_integer_transformations[1].cast<int>());
+        auto graph_bottom=cu::xtal::make_superstructure(graph_aligned,graph_moire.approximate_moire_integer_transformations[0].cast<int>());
+        auto graph_top=cu::xtal::make_superstructure(graph_rotated,graph_moire.approximate_moire_integer_transformations[1].cast<int>());
 
-    auto hcp_twist=cu::xtal::frankenstein::stack({hcp_bottom,hcp_top});
-    cu::xtal::write_poscar(hcp_twist,"./hcpstack.vasp");
-    cu::xtal::write_poscar(hcp_bottom,"./bottom.vasp");
-    cu::xtal::write_poscar(hcp_top,"./top.vasp");
+        auto graph_twist=cu::xtal::frankenstein::stack({graph_bottom,graph_top});
+        cu::xtal::write_poscar(graph_twist,"./"+std::to_string(degrees)+"_graphstack.vasp");
+        cu::xtal::write_poscar(graph_bottom,"./"+std::to_string(degrees)+"_bottom.vasp");
+        cu::xtal::write_poscar(graph_top,"./"+std::to_string(degrees)+"_top.vasp");
+    }
 }
 
 
