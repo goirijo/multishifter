@@ -4,7 +4,12 @@ import numpy.linalg
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.lines as lines
+import matplotlib
 
+font = {'family' : 'normal',
+        'size'   : 16}
+
+matplotlib.rc('font', **font)
 
 def reciprocal_vectors(a,b):
     """Construct a reciprocal lattice from the given
@@ -440,13 +445,48 @@ def main():
     L=make_square_lattice()
     L=make_hexagonal_lattice()
 
+    rot_m=make_rotation_matrix(180//3)
+    rot_m=make_rotation_matrix(55)
+    # rot_m=make_rotation_matrix(-5)
+    Lt=L.transform(rot_m)
+
+    ################################################
     fig=plt.figure(0)
     ax=fig.add_subplot('111')
     ax.set_aspect("equal")
 
-    rot_m=make_rotation_matrix(180//3)
-    rot_m=make_rotation_matrix(10)
-    Lt=L.transform(rot_m)
+    rot_m=make_rotation_matrix(-5)
+    Ltt=L.transform(rot_m)
+
+    plot_periodic_lattice_cells(ax,L,8,8,c='red')
+    plot_lattice_unit_vectors(ax,L,width=0.1,color="red")
+    plot_periodic_lattice_cells(ax,Lt,8,8,c='green')
+    plot_lattice_unit_vectors(ax,Lt,width=0.1,color="green")
+    # plot_lattice_unit_vectors(ax,Ltt,width=0.1,color="yellowgreen")
+    ax.set_ylim([-2,4])
+    ax.set_xlim([-6,6])
+
+    fig=plt.figure(1)
+    ax=fig.add_subplot('111')
+    ax.set_aspect("equal")
+
+    K=L.reciprocal()
+    Kt=Lt.reciprocal()
+    G_mat=Kt.column_vector_matrix()-K.column_vector_matrix()
+    G=Lattice(*G_mat.T)
+    plot_periodic_lattice_cells(ax,K,8,8,c='red')
+    plot_lattice_unit_vectors(ax,K,width=0.1,color="red")
+    plot_lattice_unit_vectors(ax,Kt,width=0.1,color="green")
+    plot_lattice_unit_vectors(ax,G,width=0.1,color="k")
+    ax.set_ylim([-2,4])
+    ax.set_xlim([-6,6])
+
+    plt.show()
+    ################################################
+    fig=plt.figure(0)
+    ax=fig.add_subplot('111')
+    ax.set_aspect("equal")
+
 
     plot_superposition(ax, L, Lt)
 
