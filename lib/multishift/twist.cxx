@@ -4,6 +4,7 @@
 #include "casmutils/xtal/structure_tools.hpp"
 #include "multishift/slab.hpp"
 #include <casmutils/xtal/lattice.hpp>
+#include <casmutils/xtal/symmetry.hpp>
 #include <cassert>
 #include <cmath>
 #include <multishift/definitions.hpp>
@@ -67,9 +68,9 @@ namespace frankenstein
 {
 xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs)
 {
-    //TODO:
-    //Assert that ab matches
-    
+    // TODO:
+    // Assert that ab matches
+
     // Create a new lattice that has the same ab vectors. but summed up
     // the c vectors of every structure
     Eigen::Matrix3d stacked_lat_mat = sub_strucs[0].lattice().column_vector_matrix();
@@ -83,7 +84,7 @@ xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs)
     // sites inside in a second. It already has the basis for the bottom of
     // the stack
     Lattice stacked_lat(stacked_lat_mat);
-    std::vector<Site> stacked_basis=sub_strucs[0].basis_sites();
+    std::vector<Site> stacked_basis = sub_strucs[0].basis_sites();
 
     // For each structure we stack, we'll take the basis, shift it up by the
     // approprate amount, and stick it into our template stacked structure
@@ -97,13 +98,13 @@ xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs)
         // and adds them to the stacked structure
         for (const Site& s : sub_strucs[i].basis_sites())
         {
-            Coordinate new_coord=Coordinate(s.cart()+c_shift);
-            stacked_basis.emplace_back(new_coord,s.label());
+            Coordinate new_coord = Coordinate(s.cart() + c_shift);
+            stacked_basis.emplace_back(new_coord, s.label());
         }
     }
-    return Structure(stacked_lat,stacked_basis);
+    return Structure(stacked_lat, stacked_basis);
 }
-}
+} // namespace frankenstein
 } // namespace xtal
 } // namespace casmutils
 
@@ -197,7 +198,7 @@ std::tuple<Lattice, Lattice, Lattice> make_aligned_moire_lattice(const Lattice& 
 
 std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Lattice& lat, double degrees)
 {
-    auto [moire_lat, aligned_lat, rot_lat] = make_aligned_moire_lattice(lat, degrees);
+    const auto [moire_lat, aligned_lat, rot_lat] = make_aligned_moire_lattice(lat, degrees);
 
     Eigen::Matrix2d moire_lat_2d = ::make_2d_column_matrix(moire_lat);
     Eigen::Matrix2d aligned_lat_2d = ::make_2d_column_matrix(aligned_lat);
@@ -206,6 +207,7 @@ std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Latti
     Eigen::Matrix2d aligned_to_moire_transform = aligned_lat_2d.inverse() * moire_lat_2d;
     Eigen::Matrix2d aligned_to_moire_transform_round = aligned_to_moire_transform.unaryExpr(&::coarse_round);
     // Assert not nan
+    std::cout << "DEGREES: " << degrees << "\n";
     assert(aligned_to_moire_transform == aligned_to_moire_transform);
 
     Eigen::Matrix2d rot_to_moire_transform = rot_lat_2d.inverse() * moire_lat_2d;
@@ -261,4 +263,92 @@ MoireApproximant::MoireApproximant(const Lattice& lat, double degrees)
     this->approximation_deformations[1] = approx_rot.column_vector_matrix() * rotated_lattice.column_vector_matrix().inverse();
 }
 
+Lattice make_prismatic_lattice(const Lattice& lat)
+{
+    Eigen::Vector3d orthogonal_unit = lat.a().cross(lat.b()).normalized();
+    Eigen::Vector3d new_c = lat.c().dot(orthogonal_unit) * orthogonal_unit;
+    return Lattice(lat.a(), lat.b(), new_c);
+}
+
+MoirePrismaticApproximant::MoirePrismaticApproximant(const Lattice& lat, double degrees)
+    : MoireApproximant(make_prismatic_lattice(lat), degrees)
+{
+}
+
+ReducedAngleMoirePrismaticApproximant::ReducedAngleMoirePrismaticApproximant(const Lattice& lat, double degrees)
+    :
+        original_degrees(degrees),
+        prismatic_aligned_lattice(make_prismatic_lattice(make_aligned_lattice(lat))),
+        prismatic_rotated_lattice(make_twisted_lattice(prismatic_aligned_lattice,degrees)),
+      reduced_angle_operation(
+          this->find_reduced_angle_operation(prismatic_aligned_lattice, prismatic_rotated_lattice)),
+      reduced_angle(
+          calculate_rotation_angle(prismatic_aligned_lattice,
+                                   make_transformed_lattice(prismatic_rotated_lattice, reduced_angle_operation.matrix))),
+      reduced_angle_moire(lat, reduced_angle)
+{
+}
+
+ReducedAngleMoirePrismaticApproximant::CartOp
+ReducedAngleMoirePrismaticApproximant::find_reduced_angle_operation(const Lattice& aligned_lat, const Lattice& rotated_lat) const
+{
+    auto in_plane_ops = in_plane_rotation_point_operations(rotated_lat);
+
+    const CartOp* best_op;
+    double smallest_angle = 100000;
+
+    for (const CartOp& op : in_plane_ops)
+    {
+        Lattice rerotated_lat = make_transformed_lattice(rotated_lat, op.matrix);
+        double candidate_angle = calculate_rotation_angle(aligned_lat, rerotated_lat);
+        if (std::abs(candidate_angle) < std::abs(smallest_angle))
+        {
+            smallest_angle = candidate_angle;
+            best_op = &op;
+        }
+    }
+
+    return *best_op;
+}
+
+double ReducedAngleMoirePrismaticApproximant::calculate_rotation_angle(const Lattice& aligned_lat, const Lattice& rotated_lat) const
+{
+    Eigen::MatrixXd rotation = rotated_lat.column_vector_matrix() * aligned_lat.column_vector_matrix().inverse();
+
+    // This stuff better be aligned along all the right directions:
+    assert(almost_equal(rotation(0, 2), 0.0, 1e-8));
+    assert(almost_equal(rotation(1, 2), 0.0, 1e-8));
+    assert(almost_equal(rotation(2, 0), 0.0, 1e-8));
+    assert(almost_equal(rotation(2, 1), 0.0, 1e-8));
+    assert(almost_equal(rotation(2, 2), 1.0, 1e-8));
+
+    return std::atan2(rotation(1, 0), rotation(0, 0)) * 180 / M_PI;
+}
+
+std::vector<ReducedAngleMoirePrismaticApproximant::CartOp>
+ReducedAngleMoirePrismaticApproximant::in_plane_rotation_point_operations(const Lattice& lat) const
+{
+    // TODO: Allow setting tol?
+    auto point_group = cu::xtal::make_point_group(lat, 1e-5);
+    std::vector<CartOp> point_group_subset;
+    for (const CartOp& op : point_group)
+    {
+        // Discard anything improper
+        if (op.matrix.determinant() < 0.5)
+        {
+            continue;
+        }
+
+        // Discard anything that alters the c vector (you're using prismatic lattices remember?)
+        Eigen::Vector3d rotated_c = op.matrix * lat.c();
+        if (!almost_equal(lat.c(), rotated_c))
+        {
+            continue;
+        }
+
+        point_group_subset.push_back(op);
+    }
+
+    return point_group_subset;
+}
 } // namespace mush

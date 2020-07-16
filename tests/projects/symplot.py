@@ -1,4 +1,5 @@
 import json
+import os
 import numpy as np
 import glob
 import pandas as pd
@@ -213,14 +214,19 @@ def data_slice_orbits(unwinded):
     return id_orbits
 
 
-def load_energies(unwinded,avec,bvec):
+def load_energies(unwinded,avec,bvec,project):
     unwinded["energy"] = np.nan
 
-    oszis = glob.glob("./Al-FCC.chain/shift__*/cleave__*/OSZICAR")
-    energies = {f[2:-8]: load_oszicar_energy(f) for f in oszis}
+    # oszis = glob.glob("./Al-FCC.chain/shift__*/cleave__*/OSZICAR")
+    # oszis = glob.glob("./Mg-prismatic.chain/shift__*/cleave__*/OSZICAR")
+    # oszis = glob.glob("./Mg-pyramidal1.chain/shift__*/cleave__*/OSZICAR")
+    oszis = glob.glob(os.path.join(project+".chain","shift__*","cleave__*","OSZICAR"))
+
+    energies = {f[0:-8]: load_oszicar_energy(f) for f in oszis}
     for p in energies:
         unwinded.loc[unwinded["path"] == p, "raw_energy"] = energies[p]
     unwinded["energy"]=transform_energy_to_surface_energy(unwinded["raw_energy"],avec,bvec)
+
     return unwinded
 
 
@@ -285,6 +291,9 @@ def uber(d, d0, gamma, lamb, shift):
 
 
 def uber_fit(unwinded_slice):
+    # -25.359233540234765 -23.931949647554593
+    # unwinded_slice=unwinded_slice.loc[unwinded_slice["cleavage"]>-0.01]
+    # unwinded_slice=unwinded_slice.loc[unwinded_slice["energy"]<-24.0]
     unwinded_slice = unwinded_slice.sort_values(["cleavage"])
     sigma=np.ones(len(unwinded_slice))
     # sigma[0::10]=0.001
@@ -306,7 +315,12 @@ def plot_shifted_uber_fit(ax,unwinded_slice,popt):
     ax.plot(deltas, fitenergy-popt[3], "g--")
     ax.axvline(x=popt[0],ls="-.",c='k')
 
-    ax.annotate("$d_0$",(popt[0]+0.2,max(unwinded_slice["energy"]-popt[3])-0.05))
+    # ax.set_ylim([-1.8,0.1]) #Al
+    # ax.set_ylim([-1.4,0.1]) #Mg prismatic
+    ax.set_ylim([-1.5,0.1]) #Mg pyramidal2
+    # -25.359233540234765 -23.931949647554593
+
+    ax.annotate("$d_0$",(popt[0]+0.2,0.0-0.05))
 
     return ax
 
@@ -330,15 +344,24 @@ def plot_gamma_surface_heatmap(ax,unwinded_slice,avec,bvec):
 
 
 def main():
+
+    project="Al-FCC"
+    project="Mg-pyramidal1"
+    project="Mg-prismatic"
+    # project="Mg-pyramidal2"
+
     # records = load_record("./Al-FCC.chain/record.json")
     # records = load_record("./Mg-prismatic.chain/record.json")
     # records = load_record("./Mg-pyramidal1.chain/record.json")
-    records = load_record("./Mg-pyramidal2.chain/record.json")
+    records = load_record(os.path.join(project+".chain","record.json"))
+    # records = load_record("./Mg-pyramidal2.chain/record.json")
+
     # print(json.dumps(records["shift-cleave"],indent=4,sort_keys=True))
 
     # avec, bvec = load_slab_plane_vectors("./Al-FCC.chain/slab.vasp")
-    # avec, bvec = load_slab_plane_vectors("./Mg-pyramidal1.slices/aligned_sliced_prim.vasp")
-    avec, bvec = load_slab_plane_vectors("./Mg-pyramidal2.slices/aligned_sliced_prim.vasp")
+    # avec, bvec = load_slab_plane_vectors("./Mg-prismatic.slices/aligned_sliced_prim.vasp")
+    avec, bvec = load_slab_plane_vectors(os.path.join(project+".slices","aligned_sliced_prim.vasp"))
+    # avec, bvec = load_slab_plane_vectors("./Mg-pyramidal2.slices/aligned_sliced_prim.vasp")
 
     unwinded = unwind_data(records)
     nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
@@ -348,16 +371,12 @@ def main():
     scatter_equivalent_shifts(ax,nocleave,avec,bvec)
     plt.savefig("./figs/shift_symmetry.pdf",bbox_inches='tight',pad_inches=0)
 
-    exit()
-
-    unwinded = load_energies(unwinded,avec,bvec)
+    unwinded = load_energies(unwinded,avec,bvec,project)
     unfolded=[unfold_orbits(unwinded.loc[unwinded["cleavage"]==cleave].copy(),"energy") for cleave in set(unwinded["cleavage"])]
     unwinded=pd.concat(unfolded)
 
     # unwinded = shift_energies_to_surface_energy(unwinded)
     # gamma=surface_energy(unwinded)
-
-    # nocleave = unwinded.loc[unwinded["cleavage"] == 0.0]
 
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
@@ -373,6 +392,15 @@ def main():
 
     uberfits=nocleave.copy()
 
+
+    # for a,b in prototypes:
+    #     fig = plt.figure()
+    #     ax = fig.add_subplot(111)
+    #     shiftdata=unwinded.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b)]
+    #     ax.scatter(shiftdata["cleavage"],shiftdata["energy"])
+    #     ax.set_ylim(min(noshift["energy"]),max(noshift["energy"]))
+    #     plt.savefig("./figs/{}.raw{}.{}.pdf".format(project,a,b),bbox_inches='tight',pad_inches=0)
+
     for a,b in prototypes:
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -387,10 +415,13 @@ def main():
         uberfits.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b),"_tmp"]=uber(popt[0],*popt)
 
         print(uber(popt[0],*popt)-popt[3],-2*popt[1])
+        print(a,b)
 
         ax=plot_shifted_uber_fit(ax,shiftdata,popt)
-        plt.savefig("./figs/al.uber{}.{}.pdf".format(a,b),bbox_inches='tight',pad_inches=0)
+        # ax.set_ylim(min(noshift["energy"]),max(noshift["energy"]))
+        plt.savefig("./figs/{}.uber{}.{}.pdf".format(project,a,b),bbox_inches='tight',pad_inches=0)
 
+    # plt.show()
     uberfits=unfold_orbits(uberfits,"_d0")
     uberfits=unfold_orbits(uberfits,"_gamma")
     uberfits=unfold_orbits(uberfits,"_lambda")
