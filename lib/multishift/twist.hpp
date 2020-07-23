@@ -6,6 +6,7 @@
 #include <casmutils/sym/cartesian.hpp>
 #include <tuple>
 #include <array>
+#include <unordered_map>
 
 //TODO: Put in casm utilities
 #include <casm/crystallography/Superlattice.hh>
@@ -62,6 +63,80 @@ namespace mush
     ///Returns the same lattice, but the c vector has been modified to be orthogonal to the
     ///ab vectors. This will break periodicity, but not the thickness of the slab.
     Lattice make_prismatic_lattice(const Lattice& lat);
+
+    ///Constructs Moire lattice for the given angle, and keeps information of the steps made along
+    ///the way. Before anything happens, the input lattice will be transformed to an aligned
+    ///prismatic one, breaking periodicity along the c axis.
+    ///The Moire lattice is likely not coincident with the smaller lattices. For constructing
+    ///periodic interference patterns, a small deformation must be introduced, accomplished
+    ///using ApproximantMoireLattice
+    struct MoireLattice
+    {
+        MoireLattice(const Lattice& lat, double degrees);
+
+        ///The lattice given at construction
+        Lattice input_lattice;
+
+        ///The degrees given at construction
+        double input_degrees;
+
+        ///The input lattice, after being transfromed to be prismatic and properly aligned along the xy plane
+        Lattice aligned_lattice;
+        Lattice reciprocal_aligned_lattice;
+
+        ///The aligned lattice after being rotated by the input degrees
+        Lattice rotated_lattice;
+        Lattice reciprocal_rotated_lattice;
+
+        ///Result from subtracting the reciprocal aligned and rotated lattices.
+        ///There is no c vector difference, it's zero by construction.
+        Eigen::Matrix2d full_reciprocal_difference;
+
+        ///The reciprocal difference, brought into the first Brillouin zone of the
+        ///aligned lattice
+        Eigen::Matrix2d aligned_brillouin_zone_reciprocal_difference;
+        
+        ///The reciprocal difference, brought into the first Brillouin zone of the
+        ///rotated lattice
+        Eigen::Matrix2d rotated_brillouin_zone_reciprocal_difference;
+        
+        ///Moire lattice constructed from the reciprocal difference brought within the
+        ///aligned lattice brillouin zone (this is equivalent to using the rotated
+        ///lattice brillouin zone, but results in different lattice vectors)
+        Lattice aligned_moire_lattice;
+        
+        ///Moire lattice constructed from the reciprocal difference brought within the
+        ///rotated lattice brillouin zone (this is equivalent to using the aligned
+        ///lattice brillouin zone, but results in different lattice vectors)
+        Lattice rotated_moire_lattice;
+
+        ///Maps the address of a Moire lattice to an array that specifies if its reciprocal vectors
+        ///fall within the Brillouin zone of the other (rotated/aligned) lattice. For example
+        ///brillouin_zone_overlap[&aligned_moire_lattice][0] returns true if the reciprocal <a> vector
+        ///of the aligned moire lattice falls within the first Brillouin zone of the rotated
+        ///moire lattice
+        std::unordered_map<const Lattice*,std::array<bool,2>> is_within_brillouin_zone_overlap;
+        
+        ///Points to whichever Moire lattice has reciprocal vectors that fall within both the aligned
+        ///and the rotated Brillouin zones. If both lattices are valid, points to the aligned lattice,
+        ///if neither lattice is valid, is nullptr.
+        const Lattice* moire_lattice;
+
+        ///Brings the given vectors (columns in matrix) into the first voronoi (Wigner Seitz) cell
+        ///of the provided lattice. Note that the function assumes vectors are in the xy plane
+        ///(no z component) and that the lattice used for the Brillouin zone is prismatic
+        ///and aligned.
+        static Eigen::Matrix2d bring_vectors_into_voronoi(const Eigen::Matrix2d& col_vectors, const Lattice& lat);
+        
+        ///Given the a and b reciprocal Moire lattice vectors, transform them into a real
+        ///Moire lattice, assigning the c vector as the last provided parameter.
+        ///Vectors must have no z component.
+        static Lattice make_moire_lattice_from_reciprocal_difference(const Eigen::Matrix2d diff, const Eigen::Vector3d& real_c_vector);
+        
+        private:
+            Eigen::Matrix2d calculate_reciprocal_difference() const;
+            bool is_within_voronoi(const Eigen::Vector2d& v, const cu::xtal::Lattice& lat) const;
+    };
 
    ///representation of a Moire lattice, given an input lattice and rotation angle, as well
     ///as approximant versions of the same Moire lattice, where some strain has been introduced

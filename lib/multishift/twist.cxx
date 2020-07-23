@@ -44,6 +44,13 @@ double coarse_round(double x)
     double trucated = std::round(100000.0 * x) / 100000.0;
     return std::round(trucated);
 }
+
+bool is_within_voronoi(const Eigen::Vector3d& v, const cu::xtal::Lattice& lat)
+{
+    cu::xtal::Coordinate vw(v);
+    vw.bring_within_wigner_seitz(lat);
+    return almost_equal(v,vw.cart());
+}
 } // namespace
 
 namespace casmutils
@@ -176,6 +183,95 @@ Lattice make_twisted_lattice(const Lattice& lat, double degrees)
     return make_transformed_lattice(lat, twist_matrix);
 }
 
+MoireLattice::MoireLattice(const Lattice& lat, double degrees)
+    : input_lattice(lat),
+      input_degrees(degrees),
+      aligned_lattice(make_prismatic_lattice(make_aligned_lattice(input_lattice))),
+      reciprocal_aligned_lattice(cu::xtal::make_reciprocal(aligned_lattice)),
+      rotated_lattice(make_twisted_lattice(aligned_lattice, input_degrees)),
+      reciprocal_rotated_lattice(cu::xtal::make_reciprocal(rotated_lattice)),
+      full_reciprocal_difference(this->calculate_reciprocal_difference()),
+      aligned_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, aligned_lattice)),
+      rotated_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, rotated_lattice)),
+      aligned_moire_lattice(make_moire_lattice_from_reciprocal_difference(aligned_brillouin_zone_reciprocal_difference, input_lattice.c())),
+      rotated_moire_lattice(make_moire_lattice_from_reciprocal_difference(rotated_brillouin_zone_reciprocal_difference, input_lattice.c())),
+      moire_lattice(nullptr)
+{
+    //calculate overlap
+    for(int i=0; i<2; ++i)
+    {
+        this->is_within_brillouin_zone_overlap[&aligned_moire_lattice][i]=this->is_within_voronoi(aligned_brillouin_zone_reciprocal_difference.col(i),reciprocal_rotated_lattice);
+        this->is_within_brillouin_zone_overlap[&rotated_moire_lattice][i]=this->is_within_voronoi(rotated_brillouin_zone_reciprocal_difference.col(i),aligned_lattice);
+    }
+    
+    //Point to appropriate moire lattice
+    for(const Lattice* moire_ptr : {&aligned_moire_lattice, &rotated_moire_lattice})
+    {
+        if(is_within_brillouin_zone_overlap[moire_ptr][0] && is_within_brillouin_zone_overlap[moire_ptr][1])
+        {
+            moire_lattice=moire_ptr;
+            break;
+        }
+    }
+}
+
+bool MoireLattice::is_within_voronoi(const Eigen::Vector2d& v, const cu::xtal::Lattice& lat) const
+{
+    Eigen::Vector3d v3(v(0),v(1),0);
+    return ::is_within_voronoi(v3,lat);
+}
+
+Eigen::Matrix2d MoireLattice::calculate_reciprocal_difference() const
+{
+    Eigen::Matrix3d diff =
+        this->reciprocal_rotated_lattice.column_vector_matrix() - this->reciprocal_aligned_lattice.column_vector_matrix();
+
+    Eigen::Vector3d z3=Eigen::Vector3d::Zero();
+
+    // There should be no difference in the c vector
+    assert(almost_equal(diff.col(2), z3));
+    // There should be no z components for anything
+    assert(almost_equal(diff.row(2), z3.transpose()));
+
+    return diff.block<2, 2>(0, 0);
+}
+
+Eigen::Matrix2d MoireLattice::bring_vectors_into_voronoi(const Eigen::Matrix2d& col_vectors, const Lattice& lat)
+{
+    // You must provide a prismatic aligned lattice for this to word
+    if (!almost_equal(lat.a()(2), 0.0) && !almost_equal(lat.b()(2), 0.0) && !almost_equal(lat.c()(0), 0.0) &&
+        !almost_equal(lat.c()(1), 0.0))
+    {
+        throw std::runtime_error("The provided lattice must be prismatic (perpendicular c vector) and aligned in the xy plane");
+    }
+
+    //TODO: Bring within voronoi. Function is missing in cu
+    cu::xtal::Coordinate ka(col_vectors(0,0),col_vectors(1,0),0);
+    cu::xtal::Coordinate kb(col_vectors(0,1),col_vectors(1,1),0);
+
+    ka.bring_within_wigner_seitz(lat);
+    kb.bring_within_wigner_seitz(lat);
+
+    Eigen::Matrix2d col_vectors_within;
+    col_vectors_within.col(0)=ka.cart().head(2);
+    col_vectors_within.col(1)=kb.cart().head(2);
+
+    return col_vectors_within;
+}
+
+Lattice MoireLattice::make_moire_lattice_from_reciprocal_difference(const Eigen::Matrix2d diff, const Eigen::Vector3d& real_c_vector)
+{
+    Eigen::Matrix3d phony_recip_mat=Eigen::Matrix3d::Identity();
+    phony_recip_mat.block<2,2>(0,0)=diff;
+    Lattice phony_recip_lat(phony_recip_mat.col(0),phony_recip_mat.col(1),phony_recip_mat.col(2));
+
+    Lattice phony_real_moire_lattice=cu::xtal::make_reciprocal(phony_recip_lat);
+    Eigen::Matrix3d final_real_moire_mat=phony_real_moire_lattice.column_vector_matrix();
+    final_real_moire_mat.col(2)=real_c_vector;
+
+    return Lattice(final_real_moire_mat.col(0),final_real_moire_mat.col(1),final_real_moire_mat.col(2));
+}
+
 std::tuple<Lattice, Lattice, Lattice> make_aligned_moire_lattice(const Lattice& lat, double degrees)
 {
 
@@ -276,15 +372,12 @@ MoirePrismaticApproximant::MoirePrismaticApproximant(const Lattice& lat, double 
 }
 
 ReducedAngleMoirePrismaticApproximant::ReducedAngleMoirePrismaticApproximant(const Lattice& lat, double degrees)
-    :
-        original_degrees(degrees),
-        prismatic_aligned_lattice(make_prismatic_lattice(make_aligned_lattice(lat))),
-        prismatic_rotated_lattice(make_twisted_lattice(prismatic_aligned_lattice,degrees)),
-      reduced_angle_operation(
-          this->find_reduced_angle_operation(prismatic_aligned_lattice, prismatic_rotated_lattice)),
-      reduced_angle(
-          calculate_rotation_angle(prismatic_aligned_lattice,
-                                   make_transformed_lattice(prismatic_rotated_lattice, reduced_angle_operation.matrix))),
+    : original_degrees(degrees),
+      prismatic_aligned_lattice(make_prismatic_lattice(make_aligned_lattice(lat))),
+      prismatic_rotated_lattice(make_twisted_lattice(prismatic_aligned_lattice, degrees)),
+      reduced_angle_operation(this->find_reduced_angle_operation(prismatic_aligned_lattice, prismatic_rotated_lattice)),
+      reduced_angle(calculate_rotation_angle(prismatic_aligned_lattice,
+                                             make_transformed_lattice(prismatic_rotated_lattice, reduced_angle_operation.matrix))),
       reduced_angle_moire(lat, reduced_angle)
 {
 }
