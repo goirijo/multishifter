@@ -66,12 +66,22 @@ def plot_moire(ax,L,Lt,M):
 
     return ax
 
+def integer_transform_diff(L1,L2):
+    L1=L1.column_vector_matrix()
+    L2=L2.column_vector_matrix()
+
+    T=np.linalg.inv(L1).dot(L2)
+    iT=np.rint(T)
+
+    diff=T-iT
+    return abs(diff.flat[abs(diff).argmax()])
+
 def main1():
     dirs=glob.glob("./frames/1???")
 
     Ms=[load_lattice(os.path.join(d,"M.txt")) for d in dirs]
     Mts=[load_lattice(os.path.join(d,"Mt.txt")) for d in dirs]
-    Mds=[load_lattice(os.path.join(d,"Md.txt")) for d in dirs]
+    # Mds=[load_lattice(os.path.join(d,"Md.txt")) for d in dirs]
     
     def deg(d):
         f=open(os.path.join(d,"degrees.txt"),'r')
@@ -91,7 +101,7 @@ def main1():
     # Mtsvol=[abs(np.linalg.det(M.column_vector_matrix())) for M in Mts]
     Msvol=[np.linalg.det(M.column_vector_matrix()) for M in Ms]
     Mtsvol=[np.linalg.det(M.column_vector_matrix()) for M in Mts]
-    Mdsvol=[np.linalg.det(M.column_vector_matrix()) for M in Mds]
+    # Mdsvol=[np.linalg.det(M.column_vector_matrix()) for M in Mds]
 
     Msvol=np.array(Msvol)
     Mtsvol=np.array(Mtsvol)
@@ -100,18 +110,27 @@ def main1():
     Mtcolor=["green" if a and b else "blue" for a,b in zip(GztainK,GztbinK) ]
     diffcolor=["gray" if a and b and c and d else "black" for _,a,b,c,d in extras ]
 
+    maxvol=1200
+
     fig=plt.figure(0)
-    ax=fig.add_subplot('311')
+    ax=fig.add_subplot('411')
     ax.scatter(ds,Msvol,c=Mcolor)
-    ax.set_ylim([-800,800])
+    ax.set_ylim([-maxvol,maxvol])
 
-    ax=fig.add_subplot('312')
+    ax=fig.add_subplot('412')
     ax.scatter(ds,Mtsvol,c=Mtcolor)
-    ax.set_ylim([-800,800])
+    ax.set_ylim([-maxvol,maxvol])
 
-    ax=fig.add_subplot('313')
+    ax=fig.add_subplot('413')
     ax.scatter(ds,abs(Msvol-Mtsvol),c=diffcolor)
-    ax.set_ylim([-800,800])
+    ax.set_ylim([-maxvol,maxvol])
+
+    overlap_sum=[int(a)+int(b)+int(c)+int(d) for _,a,b,c,d in extras]
+    intdiff=[integer_transform_diff(M,Mt) for M,Mt in zip(Ms,Mts)]
+    intcolor=["gray" if d<1e-4 else "black" for d in intdiff]
+    ax=fig.add_subplot('414')
+    ax.scatter(ds,intdiff,c=diffcolor)
+    ax.set_ylim([-1,2])
     plt.show()
 
 
@@ -123,14 +142,14 @@ def main2():
     G=load_lattice("./frames/{}/G.txt".format(sys.argv[1]))
     Gz=load_lattice("./frames/{}/Gz.txt".format(sys.argv[1]))
     Gzt=load_lattice("./frames/{}/Gzt.txt".format(sys.argv[1]))
-    Gzx=load_lattice("./frames/{}/Gzx.txt".format(sys.argv[1]))
-    Gzx2=load_lattice("./frames/{}/Gzx2.txt".format(sys.argv[1]))
-    Gd=load_lattice("./frames/{}/Gd.txt".format(sys.argv[1]))
+    # Gzx=load_lattice("./frames/{}/Gzx.txt".format(sys.argv[1]))
+    # Gzx2=load_lattice("./frames/{}/Gzx2.txt".format(sys.argv[1]))
+    # Gd=load_lattice("./frames/{}/Gd.txt".format(sys.argv[1]))
     M=load_lattice("./frames/{}/M.txt".format(sys.argv[1]))
     Mt=load_lattice("./frames/{}/Mt.txt".format(sys.argv[1]))
-    Mx=load_lattice("./frames/{}/Mx.txt".format(sys.argv[1]))
-    Mx2=load_lattice("./frames/{}/Mx2.txt".format(sys.argv[1]))
-    Md=load_lattice("./frames/{}/Md.txt".format(sys.argv[1]))
+    # Mx=load_lattice("./frames/{}/Mx.txt".format(sys.argv[1]))
+    # Mx2=load_lattice("./frames/{}/Mx2.txt".format(sys.argv[1]))
+    # Md=load_lattice("./frames/{}/Md.txt".format(sys.argv[1]))
 
     fig=plt.figure(0,figsize=[15,10])
 

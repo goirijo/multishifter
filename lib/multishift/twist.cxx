@@ -49,7 +49,7 @@ bool is_within_voronoi(const Eigen::Vector3d& v, const cu::xtal::Lattice& lat)
 {
     cu::xtal::Coordinate vw(v);
     vw.bring_within_wigner_seitz(lat);
-    return almost_equal(v,vw.cart());
+    return almost_equal(v,vw.cart(),1e-13);
 }
 } // namespace
 
@@ -191,17 +191,17 @@ MoireLattice::MoireLattice(const Lattice& lat, double degrees)
       rotated_lattice(make_twisted_lattice(aligned_lattice, input_degrees)),
       reciprocal_rotated_lattice(cu::xtal::make_reciprocal(rotated_lattice)),
       full_reciprocal_difference(this->calculate_reciprocal_difference()),
-      aligned_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, aligned_lattice)),
-      rotated_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, rotated_lattice)),
-      aligned_moire_lattice(make_moire_lattice_from_reciprocal_difference(aligned_brillouin_zone_reciprocal_difference, input_lattice.c())),
-      rotated_moire_lattice(make_moire_lattice_from_reciprocal_difference(rotated_brillouin_zone_reciprocal_difference, input_lattice.c())),
+      aligned_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, reciprocal_aligned_lattice)),
+      rotated_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, reciprocal_rotated_lattice)),
+      aligned_moire_lattice(make_moire_lattice_from_reciprocal_difference(aligned_brillouin_zone_reciprocal_difference, aligned_lattice.c())),
+      rotated_moire_lattice(make_moire_lattice_from_reciprocal_difference(rotated_brillouin_zone_reciprocal_difference, aligned_lattice.c())),
       moire_lattice(nullptr)
 {
     //calculate overlap
     for(int i=0; i<2; ++i)
     {
         this->is_within_brillouin_zone_overlap[&aligned_moire_lattice][i]=this->is_within_voronoi(aligned_brillouin_zone_reciprocal_difference.col(i),reciprocal_rotated_lattice);
-        this->is_within_brillouin_zone_overlap[&rotated_moire_lattice][i]=this->is_within_voronoi(rotated_brillouin_zone_reciprocal_difference.col(i),aligned_lattice);
+        this->is_within_brillouin_zone_overlap[&rotated_moire_lattice][i]=this->is_within_voronoi(rotated_brillouin_zone_reciprocal_difference.col(i),reciprocal_aligned_lattice);
     }
     
     //Point to appropriate moire lattice
@@ -303,7 +303,6 @@ std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Latti
     Eigen::Matrix2d aligned_to_moire_transform = aligned_lat_2d.inverse() * moire_lat_2d;
     Eigen::Matrix2d aligned_to_moire_transform_round = aligned_to_moire_transform.unaryExpr(&::coarse_round);
     // Assert not nan
-    std::cout << "DEGREES: " << degrees << "\n";
     assert(aligned_to_moire_transform == aligned_to_moire_transform);
 
     Eigen::Matrix2d rot_to_moire_transform = rot_lat_2d.inverse() * moire_lat_2d;
