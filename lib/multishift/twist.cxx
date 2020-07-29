@@ -51,6 +51,8 @@ bool is_within_voronoi(const Eigen::Vector3d& v, const cu::xtal::Lattice& lat)
     vw.bring_within_wigner_seitz(lat);
     return almost_equal(v,vw.cart(),1e-13);
 }
+
+CASM::xtal::Superlattice make_smooth_superlattice(const CASM::xtal::Lattice& tiling_unit, const CASM::xtal::Lattice& superlattice);
 } // namespace
 
 namespace casmutils
@@ -66,8 +68,8 @@ Lattice make_reciprocal(const Lattice& real_lattice)
 
 std::pair<Eigen::Matrix3d, Eigen::Matrix3d> polar_decomposition(Eigen::Matrix3d const& F)
 {
-    Eigen::Matrix3d U = Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d>(F.transpose() * F).operatorSqrt();
-    Eigen::Matrix3d R = F*U.inverse();
+    Eigen::Matrix3d U = Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d>(F * F.transpose()).operatorSqrt();
+    Eigen::Matrix3d R = U.inverse()*F;
     return std::make_pair(R, U);
 }
 
@@ -292,62 +294,40 @@ std::tuple<Lattice, Lattice, Lattice> make_aligned_moire_lattice(const Lattice& 
     return std::make_tuple(moire_mat3d, aligned_lat, rotated_lat);
 }
 
-std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rot_lat)
-{
-    Eigen::Matrix2d moire_lat_2d = ::make_2d_column_matrix(moire_lat);
-    Eigen::Matrix2d aligned_lat_2d = ::make_2d_column_matrix(aligned_lat);
-    Eigen::Matrix2d rot_lat_2d = ::make_2d_column_matrix(rot_lat);
-
-    Eigen::Matrix2d aligned_to_moire_transform = aligned_lat_2d.inverse() * moire_lat_2d;
-    Eigen::Matrix2d aligned_to_moire_transform_round = aligned_to_moire_transform.unaryExpr(&::coarse_round);
-    // Assert not nan
-    assert(aligned_to_moire_transform == aligned_to_moire_transform);
-
-    Eigen::Matrix2d rot_to_moire_transform = rot_lat_2d.inverse() * moire_lat_2d;
-    Eigen::Matrix2d rot_to_moire_transform_round = rot_to_moire_transform.unaryExpr(&::coarse_round);
-    assert(rot_to_moire_transform == rot_to_moire_transform);
-
-    Eigen::Matrix2d aligned_superlattice_2d = aligned_lat_2d * aligned_to_moire_transform_round;
-    Eigen::Matrix2d rot_superlattice_2d = rot_lat_2d * rot_to_moire_transform_round;
-
-    Eigen::Matrix2d approx_superlattice_2d = (aligned_superlattice_2d + rot_superlattice_2d) / 2.0;
-    Eigen::Matrix2d approx_aligned_2d = approx_superlattice_2d * aligned_to_moire_transform_round.inverse();
-    Eigen::Matrix2d approx_rot_2d = approx_superlattice_2d * rot_to_moire_transform_round.inverse();
-
-    assert(approx_aligned_2d == approx_aligned_2d);
-    assert(approx_rot_2d == approx_rot_2d);
-
-    Eigen::Matrix3d approx_superlattice_col_mat = ::make_3d_column_matrix(approx_superlattice_2d);
-    // The moire lattice has zero c vector, but we still want to keep the c vector around for the aligned and rotated lattices
-    Eigen::Matrix3d approx_aligned_col_mat = ::make_3d_column_matrix(approx_aligned_2d);
-    approx_aligned_col_mat.col(2) = aligned_lat.c();
-    Eigen::Matrix3d approx_rot_col_mat = ::make_3d_column_matrix(approx_rot_2d);
-    approx_rot_col_mat.col(2) = rot_lat.c();
-
-    return std::make_tuple(approx_superlattice_col_mat, approx_aligned_col_mat, approx_rot_col_mat);
-}
 
 MoireApproximant::MoireApproximant(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rotated_lat):
     approximate_moire_lattice(this->default_lattice())
 {
-    auto [approx_moire, approx_aligned, approx_rot] = make_approximant_moire_lattice(moire_lat,aligned_lat,rotated_lat);
-    approximate_moire_lattice=approx_moire;
+    //Figure out the integer transformations
+    for(const Lattice* lat : {&aligned_lat,&rotated_lat})
+    {
+        const Eigen::Matrix3d& M=moire_lat.column_vector_matrix();
+        const Eigen::Matrix3d& L=lat->column_vector_matrix();
 
-    this->approximate_lattices.emplace(&aligned_lat, approx_aligned);
-    this->approximate_lattices.emplace(&rotated_lat, approx_rot);
+        Eigen::Matrix3d Td=L.inverse()*M;
+        matrix_type T=CASM::lround(Td);
+        approximate_moire_integer_transformations[lat]=T;
+    }
 
-    Lattice approx_aligned_moire(approx_moire.a(), approx_moire.b(), aligned_lat.c());
-    Lattice approx_rot_moire(approx_moire.a(), approx_moire.b(), rotated_lat.c());
+    //Find the approximate Moire lattice
+    auto aligned_S=cu::xtal::make_superlattice(aligned_lat,approximate_moire_integer_transformations[&aligned_lat].cast<int>());
+    auto rotated_S=cu::xtal::make_superlattice(rotated_lat,approximate_moire_integer_transformations[&rotated_lat].cast<int>());
+    Eigen::Matrix3d S_bar=(aligned_S.column_vector_matrix()+rotated_S.column_vector_matrix())/2.0;
+    this->approximate_moire_lattice=Lattice(S_bar);
 
-    // TODO: Make casmutils compatible
-    cu::xtal::Superlattice aligned_to_moire(approx_aligned.__get(), approx_aligned_moire.__get());
-    cu::xtal::Superlattice rot_to_moire(approx_rot.__get(), approx_rot_moire.__get());
-
-    this->approximate_moire_integer_transformations[&aligned_lat] = aligned_to_moire.transformation_matrix();
-    this->approximate_moire_integer_transformations[&rotated_lat] = rot_to_moire.transformation_matrix();
-
-    this->approximation_deformations[&aligned_lat] = approx_aligned.column_vector_matrix() * aligned_lat.column_vector_matrix().inverse();
-    this->approximation_deformations[&rotated_lat] = approx_rot.column_vector_matrix() * rotated_lat.column_vector_matrix().inverse();
+    //Determine the strain involved to make things purrfect
+    Eigen::Matrix3d aligned_F=S_bar*aligned_S.column_vector_matrix().inverse();
+    Eigen::Matrix3d rotated_F=S_bar*rotated_S.column_vector_matrix().inverse();
+    approximation_deformations[&aligned_lat]=aligned_F;
+    approximation_deformations[&rotated_lat]=rotated_F;
+   
+    //Determine the deformed tiling units
+    for(const Lattice* lat : {&aligned_lat,&rotated_lat})
+    {
+        const Eigen::Matrix3d& L=lat->column_vector_matrix();
+        Eigen::Matrix3d L_prime=S_bar*approximate_moire_integer_transformations[lat].cast<double>().inverse();
+        approximate_lattices.emplace(lat,L_prime);
+    }
 }
 
 Lattice make_prismatic_lattice(const Lattice& lat)
@@ -366,4 +346,21 @@ MoireGenerator::MoireGenerator(const Lattice& input_lat, double degrees):
 {
 }
 
+MoireStructureGenerator::MoireStructureGenerator(const Structure& slab_unit, double degrees):
+    MoireGenerator(slab_unit.lattice(),degrees),
+    slab_unit(slab_unit)
+{
+}
+
+MoireStructureGenerator::Structure MoireStructureGenerator::layer(ZONE brillouin,LATTICE lat)
+{
+    const auto& approx_lat=this->approximate_lattice(brillouin,lat);
+    const auto& T=this->approximate_moire_integer_transformation(brillouin,lat);
+
+    Structure approx_unit=slab_unit;
+    approx_unit.set_lattice(approx_lat,cu::xtal::FRAC);
+
+    auto layer=cu::xtal::make_superstructure(approx_unit,T.cast<int>());
+    return layer;
+}
 } // namespace mush
