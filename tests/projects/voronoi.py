@@ -78,6 +78,7 @@ def integer_transform_diff(L1,L2):
 
 def main1():
     dirs=glob.glob("./frames/1???")
+    dirs=[d for d in dirs if len(os.listdir(d))>0]
 
     Ms=[load_lattice(os.path.join(d,"M.txt")) for d in dirs]
     Mts=[load_lattice(os.path.join(d,"Mt.txt")) for d in dirs]

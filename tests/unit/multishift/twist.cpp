@@ -197,7 +197,9 @@ TEST_F(TwistTest, ApproximantMoireLattice)
     {
         for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
-            auto [moire_lat, aligned_lat, rot_lat] = make_approximant_moire_lattice(start_lat, angle);
+            MoireLattice moire(start_lat, angle);
+            auto [moire_lat, aligned_lat, rot_lat] =
+                make_approximant_moire_lattice(moire.aligned_moire_lattice, moire.aligned_lattice, moire.rotated_lattice);
 
             Eigen::Matrix3d aligned_to_moire_transform = aligned_lat.column_vector_matrix().inverse() * moire_lat.column_vector_matrix();
             Eigen::Matrix3d aligned_to_moire_transform_diff =
@@ -219,11 +221,20 @@ TEST_F(TwistTest, MoireApproximantVectorMatch)
     {
         for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
-            MoireApproximant moire(start_lat, angle);
+            MoireLattice moire(start_lat, angle);
+            const Lattice& moire_lat = moire.aligned_moire_lattice;
+            const Lattice& aligned_lat = moire.aligned_lattice;
+            const Lattice& rotated_lat = moire.rotated_lattice;
+
+            MoireApproximant approx_moire(moire_lat, aligned_lat, rotated_lat);
+
             Lattice aligned_super =
-                cu::xtal::make_superlattice(moire.approximate_lattices[0], moire.approximate_moire_integer_transformations[0].cast<int>());
+                cu::xtal::make_superlattice(approx_moire.approximate_lattices.at(&aligned_lat),
+                                            approx_moire.approximate_moire_integer_transformations.at(&aligned_lat).cast<int>());
+
             Lattice rot_super =
-                cu::xtal::make_superlattice(moire.approximate_lattices[1], moire.approximate_moire_integer_transformations[1].cast<int>());
+                cu::xtal::make_superlattice(approx_moire.approximate_lattices.at(&rotated_lat),
+                                            approx_moire.approximate_moire_integer_transformations.at(&rotated_lat).cast<int>());
 
             EXPECT_TRUE(almost_equal(aligned_super.a(), rot_super.a()));
             EXPECT_TRUE(almost_equal(aligned_super.b(), rot_super.b()));
@@ -250,7 +261,10 @@ TEST_F(TwistTest, ApproximantPrismaticMoireDeformation)
     {
         for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
-            auto [moire_lat, aligned_lat, rot_lat] = make_approximant_moire_lattice(start_lat, angle);
+            MoireLattice moire(start_lat, angle);
+
+            auto [moire_lat, aligned_lat, rot_lat] =
+                make_approximant_moire_lattice(moire.aligned_moire_lattice, moire.aligned_lattice, moire.rotated_lattice);
 
             Eigen::Matrix3d aligned_to_moire_transform = aligned_lat.column_vector_matrix().inverse() * moire_lat.column_vector_matrix();
             Eigen::Matrix3d aligned_to_moire_transform_diff =
@@ -278,28 +292,6 @@ TEST_F(TwistTest, PrismaticLattice)
 
             EXPECT_TRUE(almost_equal(prismatic_lat.a().dot(prismatic_lat.c()), 0.0));
             EXPECT_TRUE(almost_equal(prismatic_lat.b().dot(prismatic_lat.c()), 0.0));
-        }
-    }
-}
-
-TEST_F(TwistTest, MoirePrimaticApproximantDiagnoalization)
-{
-    for (const Lattice& start_lat : sliced_lattices)
-    {
-        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
-        {
-            MoirePrismaticApproximant moire(start_lat, angle);
-            auto [aligned_R, aligned_U] = cu::xtal::polar_decomposition(moire.approximation_deformations[0]);
-            auto [rot_R, rot_U] = cu::xtal::polar_decomposition(moire.approximation_deformations[1]);
-
-            for (const Eigen::Matrix3d& M : {aligned_R, aligned_U, rot_R, rot_U})
-            {
-                EXPECT_TRUE(almost_equal(M(0, 2), 0.0, 1e-8));
-                EXPECT_TRUE(almost_equal(M(1, 2), 0.0, 1e-8));
-                EXPECT_TRUE(almost_equal(M(2, 0), 0.0, 1e-8));
-                EXPECT_TRUE(almost_equal(M(2, 1), 0.0, 1e-8));
-                EXPECT_TRUE(almost_equal(M(2, 2), 1.0, 1e-8));
-            }
         }
     }
 }
@@ -360,85 +352,6 @@ protected:
 
     std::unique_ptr<Lattice> graphene_lat_ptr;
 };
-
-TEST_F(ReducedAngleGrapheneTwistTest, ModuloAnglesTest)
-{
-    for (int degrees = 0; degrees <= 180; degrees += 2)
-    {
-        // Freaks out if rotation results in identical lattice because moire lattice is infinite
-        if (degrees % 60 == 0)
-        {
-            continue;
-        }
-
-        ReducedAngleMoirePrismaticApproximant moire(*graphene_lat_ptr, degrees);
-        int expected_reduced = degrees % 60;
-        if (expected_reduced > 30)
-        {
-            expected_reduced -= 60;
-        }
-
-        EXPECT_TRUE(almost_equal(static_cast<double>(expected_reduced), moire.reduced_angle_moire.input_degrees));
-    }
-}
-
-/* #include <casmutils/xtal/frankenstein.hpp> */
-/* #include <casmutils/xtal/coordinate.hpp> */
-
-/* TEST_F(TwistTest, DirtyHacks) */
-/* { */
-/*     auto graph_path=autotools::input_filesdir/"graphene.vasp"; */
-/*     auto graph=cu::xtal::Structure::from_poscar(graph_path); */
-
-/*     std::vector<cu::xtal::Site> basis0; */
-/*     std::vector<cu::xtal::Site> basis1; */
-
-/*     for(const auto s : graph.basis_sites()) */
-/*     { */
-/*         cu::xtal::Coordinate c(s.cart()); */
-/*         basis0.emplace_back(c, "C0"); */
-/*         basis1.emplace_back(c, "C1"); */
-/*     } */
-
-/*     std::cout<<"Degrees aligned_error rotated_error\n"; */
-/*     for(double degrees=1.0; degrees<=60.1; degrees+=1.0) */
-/*     { */
-/*         MoirePrismaticApproximant graph_moire(graph.lattice(),degrees); */
-/*         auto [aligned_R,aligned_U]=cu::xtal::polar_decomposition(graph_moire.approximation_deformations[0]); */
-/*         auto [rot_R,rot_U]=cu::xtal::polar_decomposition(graph_moire.approximation_deformations[1]); */
-
-/*         auto rad_to_deg=[](double rad){return 180*rad/M_PI;}; */
-/*         std::cout<<degrees<<"    "; */
-/*         std::cout<<rad_to_deg(std::asin(rot_R(1,0)))<<"    "; */
-/*         std::cout<<rad_to_deg(std::asin(aligned_R(1,0)))<<"\n"; */
-
-/*         cu::xtal::Structure graph_aligned(graph.lattice(),basis0); */
-/*         cu::xtal::Structure graph_rotated(graph.lattice(),basis1); */
-
-/*         graph_aligned.set_lattice(graph_moire.approximate_lattices[0],cu::xtal::FRAC); */
-/*         graph_rotated.set_lattice(graph_moire.approximate_lattices[1],cu::xtal::FRAC); */
-
-/*         Lattice
- * aligned_superlat=cu::xtal::make_superlattice(graph_moire.approximate_lattices[0],graph_moire.approximate_moire_integer_transformations[0].cast<int>());
- */
-/*         Lattice
- * rotated_superlat=cu::xtal::make_superlattice(graph_moire.approximate_lattices[1],graph_moire.approximate_moire_integer_transformations[1].cast<int>());
- */
-
-/*         cu::xtal::write_poscar(graph_aligned,"./"+std::to_string(degrees)+"_aligned.vasp"); */
-/*         cu::xtal::write_poscar(graph_rotated,"./"+std::to_string(degrees)+"_rotated.vasp"); */
-
-/*         auto
- * graph_bottom=cu::xtal::make_superstructure(graph_aligned,graph_moire.approximate_moire_integer_transformations[0].cast<int>()); */
-/*         auto graph_top=cu::xtal::make_superstructure(graph_rotated,graph_moire.approximate_moire_integer_transformations[1].cast<int>());
- */
-
-/*         auto graph_twist=cu::xtal::frankenstein::stack({graph_bottom,graph_top}); */
-/*         cu::xtal::write_poscar(graph_twist,"./"+std::to_string(degrees)+"_graphstack.vasp"); */
-/*         cu::xtal::write_poscar(graph_bottom,"./"+std::to_string(degrees)+"_bottom.vasp"); */
-/*         cu::xtal::write_poscar(graph_top,"./"+std::to_string(degrees)+"_top.vasp"); */
-/*     } */
-/* } */
 
 namespace dirty
 {
@@ -553,12 +466,12 @@ void write_all_lattices(const mush::MoireLattice& moire, int frame)
     const auto& M = moire.aligned_moire_lattice;
     const auto& Mt = moire.rotated_moire_lattice;
 
-    std::cout << frame << " ";
-    std::cout << moire.input_degrees << " ";
-    std::cout << moire.is_within_brillouin_zone_overlap.at(&M).at(0) << " ";
-    std::cout << moire.is_within_brillouin_zone_overlap.at(&M).at(1) << " ";
-    std::cout << moire.is_within_brillouin_zone_overlap.at(&Mt).at(0) << " ";
-    std::cout << moire.is_within_brillouin_zone_overlap.at(&Mt).at(1) << "\n";
+    /* std::cout << frame << " "; */
+    /* std::cout << moire.input_degrees << " "; */
+    /* std::cout << moire.is_within_brillouin_zone_overlap.at(&M).at(0) << " "; */
+    /* std::cout << moire.is_within_brillouin_zone_overlap.at(&M).at(1) << " "; */
+    /* std::cout << moire.is_within_brillouin_zone_overlap.at(&Mt).at(0) << " "; */
+    /* std::cout << moire.is_within_brillouin_zone_overlap.at(&Mt).at(1) << "\n"; */
 
     /* xtal::Lattice Gd=make_moire_within_voronoi_overlap(G,K,Kt); */
     /* xtal::Lattice Md= Gd.reciprocal(); */
@@ -617,28 +530,106 @@ void write_all_lattices(const mush::MoireLattice& moire, int frame)
 /*     write_all_lattices(moire0, frame); */
 /* } */
 
+/* TEST_F(TwistTest, DirtyHacks) */
+/* { */
+/*     using namespace dirty; */
+/*     /1* auto L=make_hexagonal_lattice(); *1/ */
+/*     /1* auto L=make_rectangular_lattice(); *1/ */
+/*     /1* auto L = make_ugly_lattice(); *1/ */
+/*     auto L = make_almost_ugly_lattice(); */
+/*     /1* auto L = read_lattice(); *1/ */
+
+/*     int frame = 1000; */
+/*     for (int i = 0; i < 360; ++i) */
+/*     { */
+
+/*         double degrees = i + 0.25; */
+/*         mush::MoireLattice moire0(L, degrees); */
+/*         write_all_lattices(moire0, frame); */
+/*         ++frame; */
+
+/*         mush::MoireLattice moire1(L, degrees); */
+/*         degrees = i + 0.75; */
+/*         write_all_lattices(moire1, frame); */
+/*         ++frame; */
+/*     } */
+/* } */
+#include <casmutils/xtal/coordinate.hpp>
+#include <casmutils/xtal/frankenstein.hpp>
+
 TEST_F(TwistTest, DirtyHacks)
 {
-    using namespace dirty;
-    /* auto L=make_hexagonal_lattice(); */
-    /* auto L=make_rectangular_lattice(); */
-    /* auto L = make_ugly_lattice(); */
-    auto L = make_almost_ugly_lattice();
-    /* auto L = read_lattice(); */
+    auto graph_path = autotools::input_filesdir / "graphene.vasp";
+    auto graph = cu::xtal::Structure::from_poscar(graph_path);
 
-    int frame = 1000;
-    for (int i = 0; i < 360; ++i)
+    std::vector<cu::xtal::Site> basis0;
+    std::vector<cu::xtal::Site> basis1;
+
+    for (const auto s : graph.basis_sites())
     {
+        cu::xtal::Coordinate c(s.cart());
+        basis0.emplace_back(c, "C0");
+        basis1.emplace_back(c, "C1");
+    }
 
-        double degrees = i + 0.25;
-        mush::MoireLattice moire0(L, degrees);
-        write_all_lattices(moire0, frame);
-        ++frame;
+    std::cout << "Degrees aligned_error rotated_error\n";
+    int frame=1000;
+    for (int degrees = 0; degrees < 361; degrees += 1.0)
+    {
+        if(degrees%60==0)
+        {
+            continue;
+        }
 
-        mush::MoireLattice moire1(L, degrees);
-        degrees = i + 0.75;
-        write_all_lattices(moire1, frame);
-        ++frame;
+        MoireGenerator graph_moire(graph.lattice(), degrees);
+
+        dirty::write_all_lattices(graph_moire.moire, frame++);
+        using ZONE = MoireGenerator::ZONE;
+        using LATTICE = MoireGenerator::LATTICE;
+
+        auto [aligned_R, aligned_U] = cu::xtal::polar_decomposition(graph_moire.approximation_deformation(ZONE::ALIGNED, LATTICE::ALIGNED));
+        auto [rot_R, rot_U] = cu::xtal::polar_decomposition(graph_moire.approximation_deformation(ZONE::ALIGNED, LATTICE::ROTATED));
+
+        /* std::cout<<rot_R<<"\n\n"; */
+
+        auto rad_to_deg = [](double rad) { return 180 * rad / M_PI; };
+        std::cout << degrees << "    ";
+        std::cout << rad_to_deg(std::asin(rot_R(1, 0))) << "    ";
+        std::cout<<std::endl;
+        /* std::cout << rad_to_deg(std::asin(aligned_R(1, 0))) << "    "; */
+        /* std::cout << rad_to_deg(rot_R(0, 0)) << "    "; */
+        /* std::cout << rad_to_deg(rot_R(0, 1)) << "    "; */
+        /* std::cout << rad_to_deg(rot_R(1, 0)) << "    "; */
+        /* std::cout << rad_to_deg(rot_R(1, 1)) << "\n"; */
+
+        cu::xtal::Structure graph_aligned(graph.lattice(), basis0);
+        cu::xtal::Structure graph_rotated(graph.lattice(), basis1);
+
+        const auto& approx_aligned_lat = graph_moire.approximate_lattice(ZONE::ALIGNED, LATTICE::ALIGNED);
+        const auto& approx_rotated_lat = graph_moire.approximate_lattice(ZONE::ALIGNED, LATTICE::ROTATED);
+
+        const MoireApproximant::matrix_type& approx_aligned_transform =
+            graph_moire.approximate_moire_integer_transformation(ZONE::ALIGNED, LATTICE::ALIGNED);
+        const MoireApproximant::matrix_type& approx_rotated_transform =
+            graph_moire.approximate_moire_integer_transformation(ZONE::ALIGNED, LATTICE::ROTATED);
+
+        graph_aligned.set_lattice(approx_aligned_lat, cu::xtal::FRAC);
+        graph_rotated.set_lattice(approx_rotated_lat, cu::xtal::FRAC);
+
+        Lattice aligned_superlat = cu::xtal::make_superlattice(approx_aligned_lat, approx_aligned_transform.cast<int>());
+
+        Lattice rotated_superlat = cu::xtal::make_superlattice(approx_rotated_lat, approx_rotated_transform.cast<int>());
+
+        cu::xtal::write_poscar(graph_aligned, "./" + std::to_string(degrees) + "_aligned.vasp");
+        cu::xtal::write_poscar(graph_rotated, "./" + std::to_string(degrees) + "_rotated.vasp");
+
+        auto graph_bottom = cu::xtal::make_superstructure(graph_aligned, approx_aligned_transform.cast<int>());
+        auto graph_top = cu::xtal::make_superstructure(graph_rotated, approx_rotated_transform.cast<int>());
+
+        auto graph_twist = cu::xtal::frankenstein::stack({graph_bottom, graph_top});
+        cu::xtal::write_poscar(graph_twist, "./" + std::to_string(degrees) + "_graphstack.vasp");
+        cu::xtal::write_poscar(graph_bottom, "./" + std::to_string(degrees) + "_bottom.vasp");
+        cu::xtal::write_poscar(graph_top, "./" + std::to_string(degrees) + "_top.vasp");
     }
 }
 

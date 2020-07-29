@@ -58,7 +58,7 @@ namespace mush
     ///the construction of a commensurate Moire supercell that can fit both the original
     ///and rotated orientations.
     ///Returns approximate moire, approximate aligned, and apprpximate rotated
-    std::tuple<Lattice,Lattice,Lattice> make_approximant_moire_lattice(const Lattice& lat, double degrees);
+    std::tuple<Lattice,Lattice,Lattice> make_approximant_moire_lattice(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rot_lat);
 
     ///Returns the same lattice, but the c vector has been modified to be orthogonal to the
     ///ab vectors. This will break periodicity, but not the thickness of the slab.
@@ -138,108 +138,102 @@ namespace mush
             bool is_within_voronoi(const Eigen::Vector2d& v, const cu::xtal::Lattice& lat) const;
     };
 
-   ///representation of a Moire lattice, given an input lattice and rotation angle, as well
-    ///as approximant versions of the same Moire lattice, where some strain has been introduced
-    ///to enforce periodicity.
+    ///Helper struct to convert an aligned and rotated lattice to a superlattice that's as close
+    ///as possible to the Moire lattice. The superlattices are calculated by finding the closest
+    ///integer transformation for each of the aligned and rotated lattices, then applying a deformation
+    ///to make them coincident. This class makes no checks whatsoever on the input parameters, and assumes
+    ///that you're giving something sensible that came from the MoireLattice class.
+    ///Members include unordered maps that use Lattice pointers as keys, the expected pointers are the
+    ///addresses of the aligned and rotated lattices given at construction.
     struct MoireApproximant
     {
         typedef Eigen::Matrix3l matrix_type;
 
-        MoireApproximant(const Lattice& lat, double degrees);
+        MoireApproximant(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rotated_lat);
 
-        ///Lattice given at construction
-        Lattice input_lattice;
-
-        //TODO: Rename to something that isn't "input" because later other classes transform it to something else
-        ///Degrees given at construction
-        double input_degrees;
-
-        ///Rotation matrix to go from the input lattice to the alinged lattice
-        Eigen::Matrix3d alignment_rotation;
-
-        ///Same as the input lattice, but rotated such that the a and b vectors span the x-y plane (no z component)
-        Lattice aligned_lattice;
-
-        ///Same as the aligned lattice, but rotated by the specified degrees.
-        Lattice rotated_lattice;
-
-        ///The true Moire lattice resulting from the superposition of the input lattice and it's rotated version.
-        ///The pattern resulting from this Moire lattice is only semi-periodic, and not useful for DFT calculations.
-        Lattice moire_lattice;
+        ///The moire lattice after straining it a bit to make the aligned and rotated lattices coincident
+        Lattice approximate_moire_lattice;
 
         ///The aligned and rotated lattices with some strain introduced, such creating superlattices
         ///from them results in fully periodic Moire lattices
-        std::array<Lattice,2> approximate_lattices;
+        std::unordered_map<const Lattice*,Lattice> approximate_lattices;
 
         ///Integer transformation matrices that convert the approximate lattices into the Moire lattice.
-        std::array<matrix_type,2> approximate_moire_integer_transformations;
+        std::unordered_map<const Lattice*, matrix_type> approximate_moire_integer_transformations;
 
         ///Deformation introduced by making the approximations to introduce complete periodicity
-        std::array<Eigen::Matrix3d,2> approximation_deformations;
+        std::unordered_map<const Lattice*, Eigen::Matrix3d> approximation_deformations;
 
         private:
-
-        Lattice make_default_lattice()
+        Lattice default_lattice()
         {
-            return cu::xtal::Lattice(Eigen::Matrix3d::Zero());
+            return Lattice(Eigen::Matrix3d::Zero());
         }
     };
 
-    ///Identical to MoireApproximant, but makes the lattice prismatic, so that the deformation matrix
-    ///only requires looking at the 2x2 upper left block.
-    struct MoirePrismaticApproximant : public MoireApproximant
+    ///Interface class to access the Moire lattice, which can be relative do different Brillouin zones,
+    ///as well as relevant deformations on each lattice. Basically just a wrapper class for everythin
+    ///in MoireLattice and MoireApproximant
+    class MoireGenerator
     {
-        MoirePrismaticApproximant(const Lattice& lat, double degrees);
-    };
+        public:
+            enum class ZONE {ALIGNED, ROTATED};
+            enum class LATTICE {ALIGNED, ROTATED};
 
-    ///After constructing the MoirePrismaticApproximant, this class will also find an alternative
-    ///degree rotation that results in an equivalent superposition of lattice point after applying
-    ///a point group operation to the rotated lattice that results in a smaller rotation.
-    struct ReducedAngleMoirePrismaticApproximant
-    {
-        typedef cu::sym::CartOp CartOp;
+            MoireLattice moire;
+
+            ///Approximations made using the Moire lattice generated using the fixed (aligned)
+            ///Brillouin zone
+            MoireApproximant aligned_moire_approximant;
+
+            ///Approximations made using the Moire lattice generated using the rotated
+            ///Brillouin zone
+            MoireApproximant rotated_moire_approximant;
+
+            ///Conveniece pointer to the aligned lattice, used as a key in the maps inside MoireApproximant
+            const Lattice* aligned_key;
+
+            ///Conveniece pointer to the rotated lattice, used as a key in the maps inside MoireApproximant
+            const Lattice* rotated_key;
 
         private:
+            const Lattice* requested_key(LATTICE lat)
+            {
+                return lat==LATTICE::ALIGNED?aligned_key:rotated_key;
+            }
 
-        ///The lattice given at construction, but transformed to be aligned properly and made
-        ///to have the c vector perpendicular to the rotation plane
-        Lattice prismatic_aligned_lattice;
-        
-        ///The prismatic aligned lattice after being rotated by the degrees given at construction
-        Lattice prismatic_rotated_lattice;
-
-        public:
-        
-        ///The symmetry operation that reorients the rotated lattice to an equivalent lattice that
-        ///corresponds to a smaller rotation angle (column vector matrix)
-        CartOp reduced_angle_operation;
-
-        private:
-        
-        ///A smaller, equivalent rotation angle
-        double reduced_angle;
-
-        ///Returns subset of point group of lattice that are proper rotations that keep the
-        ///c vector intact
-        std::vector<CartOp> in_plane_rotation_point_operations(const Lattice& lat) const;
-
-        ///Returns in plane point operation that results in an equivalent rotated lattice, but
-        ///has the smallest rotation angle relative to the aligned one, also returns the angle itself
-        CartOp find_reduced_angle_operation(const Lattice& aligned_lat, const Lattice& rotated_lat) const;
-
-        ///Assuming alinged prismatice lattices, calculates the rotation angle between the two
-        double calculate_rotation_angle(const Lattice& aligned_lat, const Lattice& rotated_lat) const;
+            const MoireApproximant& requested_zone(ZONE brillouin)
+            {
+                return brillouin==ZONE::ALIGNED?aligned_moire_approximant:rotated_moire_approximant;
+            }
 
         public:
+            MoireGenerator(const Lattice& input_lat, double degrees);
 
-        ReducedAngleMoirePrismaticApproximant(const Lattice& lat, double degrees);
+            const Lattice& aligned_lattice() const
+            {
+                return *aligned_key;
+            }
 
-        ///The original angle given at construction
-        double original_degrees;
+            const Lattice& rotated_lattice() const
+            {
+                return *rotated_key;
+            }
 
-        ///The approximated Moire lattice that results from the reduced angle rotation
-        MoirePrismaticApproximant reduced_angle_moire;
+            const Lattice& approximate_lattice(ZONE brillouin, LATTICE lat)
+            {
+                return requested_zone(brillouin).approximate_lattices.at(requested_key(lat));
+            }
 
+            const MoireApproximant::matrix_type& approximate_moire_integer_transformation(ZONE bz, LATTICE lat)
+            {
+                return requested_zone(bz).approximate_moire_integer_transformations.at(requested_key(lat));
+            }
+
+            const Eigen::Matrix3d& approximation_deformation(ZONE bz, LATTICE lat)
+            {
+                return requested_zone(bz).approximation_deformations.at(requested_key(lat));
+            }
     };
 }
 

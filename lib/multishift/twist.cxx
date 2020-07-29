@@ -67,7 +67,7 @@ Lattice make_reciprocal(const Lattice& real_lattice)
 std::pair<Eigen::Matrix3d, Eigen::Matrix3d> polar_decomposition(Eigen::Matrix3d const& F)
 {
     Eigen::Matrix3d U = Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d>(F.transpose() * F).operatorSqrt();
-    Eigen::Matrix3d R = F * U.inverse();
+    Eigen::Matrix3d R = F*U.inverse();
     return std::make_pair(R, U);
 }
 
@@ -292,10 +292,8 @@ std::tuple<Lattice, Lattice, Lattice> make_aligned_moire_lattice(const Lattice& 
     return std::make_tuple(moire_mat3d, aligned_lat, rotated_lat);
 }
 
-std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Lattice& lat, double degrees)
+std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rot_lat)
 {
-    const auto [moire_lat, aligned_lat, rot_lat] = make_aligned_moire_lattice(lat, degrees);
-
     Eigen::Matrix2d moire_lat_2d = ::make_2d_column_matrix(moire_lat);
     Eigen::Matrix2d aligned_lat_2d = ::make_2d_column_matrix(aligned_lat);
     Eigen::Matrix2d rot_lat_2d = ::make_2d_column_matrix(rot_lat);
@@ -329,33 +327,27 @@ std::tuple<Lattice, Lattice, Lattice> make_approximant_moire_lattice(const Latti
     return std::make_tuple(approx_superlattice_col_mat, approx_aligned_col_mat, approx_rot_col_mat);
 }
 
-MoireApproximant::MoireApproximant(const Lattice& lat, double degrees)
-    : input_lattice(lat),
-      input_degrees(degrees),
-      alignment_rotation(make_alignment_matrix(lat)),
-      aligned_lattice(this->make_default_lattice()),
-      rotated_lattice(this->make_default_lattice()),
-      moire_lattice(this->make_default_lattice()),
-      approximate_lattices({this->make_default_lattice(), this->make_default_lattice()})
+MoireApproximant::MoireApproximant(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rotated_lat):
+    approximate_moire_lattice(this->default_lattice())
 {
-    std::tie(moire_lattice, aligned_lattice, rotated_lattice) = make_aligned_moire_lattice(input_lattice, input_degrees);
+    auto [approx_moire, approx_aligned, approx_rot] = make_approximant_moire_lattice(moire_lat,aligned_lat,rotated_lat);
+    approximate_moire_lattice=approx_moire;
 
-    auto [approx_moire, approx_aligned, approx_rot] = make_approximant_moire_lattice(input_lattice, input_degrees);
-    this->approximate_lattices[0] = approx_aligned;
-    this->approximate_lattices[1] = approx_rot;
+    this->approximate_lattices.emplace(&aligned_lat, approx_aligned);
+    this->approximate_lattices.emplace(&rotated_lat, approx_rot);
 
-    Lattice approx_aligned_moire(approx_moire.a(), approx_moire.b(), aligned_lattice.c());
-    Lattice approx_rot_moire(approx_moire.a(), approx_moire.b(), rotated_lattice.c());
+    Lattice approx_aligned_moire(approx_moire.a(), approx_moire.b(), aligned_lat.c());
+    Lattice approx_rot_moire(approx_moire.a(), approx_moire.b(), rotated_lat.c());
 
     // TODO: Make casmutils compatible
     cu::xtal::Superlattice aligned_to_moire(approx_aligned.__get(), approx_aligned_moire.__get());
     cu::xtal::Superlattice rot_to_moire(approx_rot.__get(), approx_rot_moire.__get());
 
-    this->approximate_moire_integer_transformations[0] = aligned_to_moire.transformation_matrix();
-    this->approximate_moire_integer_transformations[1] = rot_to_moire.transformation_matrix();
+    this->approximate_moire_integer_transformations[&aligned_lat] = aligned_to_moire.transformation_matrix();
+    this->approximate_moire_integer_transformations[&rotated_lat] = rot_to_moire.transformation_matrix();
 
-    this->approximation_deformations[0] = approx_aligned.column_vector_matrix() * aligned_lattice.column_vector_matrix().inverse();
-    this->approximation_deformations[1] = approx_rot.column_vector_matrix() * rotated_lattice.column_vector_matrix().inverse();
+    this->approximation_deformations[&aligned_lat] = approx_aligned.column_vector_matrix() * aligned_lat.column_vector_matrix().inverse();
+    this->approximation_deformations[&rotated_lat] = approx_rot.column_vector_matrix() * rotated_lat.column_vector_matrix().inverse();
 }
 
 Lattice make_prismatic_lattice(const Lattice& lat)
@@ -365,82 +357,13 @@ Lattice make_prismatic_lattice(const Lattice& lat)
     return Lattice(lat.a(), lat.b(), new_c);
 }
 
-MoirePrismaticApproximant::MoirePrismaticApproximant(const Lattice& lat, double degrees)
-    : MoireApproximant(make_prismatic_lattice(lat), degrees)
+MoireGenerator::MoireGenerator(const Lattice& input_lat, double degrees):
+    moire(input_lat, degrees),
+    aligned_moire_approximant(moire.aligned_moire_lattice,moire.aligned_lattice, moire.rotated_lattice),
+    rotated_moire_approximant(moire.rotated_moire_lattice,moire.aligned_lattice,moire.rotated_lattice),
+    aligned_key(&moire.aligned_lattice),
+    rotated_key(&moire.rotated_lattice)
 {
 }
 
-ReducedAngleMoirePrismaticApproximant::ReducedAngleMoirePrismaticApproximant(const Lattice& lat, double degrees)
-    : original_degrees(degrees),
-      prismatic_aligned_lattice(make_prismatic_lattice(make_aligned_lattice(lat))),
-      prismatic_rotated_lattice(make_twisted_lattice(prismatic_aligned_lattice, degrees)),
-      reduced_angle_operation(this->find_reduced_angle_operation(prismatic_aligned_lattice, prismatic_rotated_lattice)),
-      reduced_angle(calculate_rotation_angle(prismatic_aligned_lattice,
-                                             make_transformed_lattice(prismatic_rotated_lattice, reduced_angle_operation.matrix))),
-      reduced_angle_moire(lat, reduced_angle)
-{
-}
-
-ReducedAngleMoirePrismaticApproximant::CartOp
-ReducedAngleMoirePrismaticApproximant::find_reduced_angle_operation(const Lattice& aligned_lat, const Lattice& rotated_lat) const
-{
-    auto in_plane_ops = in_plane_rotation_point_operations(rotated_lat);
-
-    const CartOp* best_op;
-    double smallest_angle = 100000;
-
-    for (const CartOp& op : in_plane_ops)
-    {
-        Lattice rerotated_lat = make_transformed_lattice(rotated_lat, op.matrix);
-        double candidate_angle = calculate_rotation_angle(aligned_lat, rerotated_lat);
-        if (std::abs(candidate_angle) < std::abs(smallest_angle))
-        {
-            smallest_angle = candidate_angle;
-            best_op = &op;
-        }
-    }
-
-    return *best_op;
-}
-
-double ReducedAngleMoirePrismaticApproximant::calculate_rotation_angle(const Lattice& aligned_lat, const Lattice& rotated_lat) const
-{
-    Eigen::MatrixXd rotation = rotated_lat.column_vector_matrix() * aligned_lat.column_vector_matrix().inverse();
-
-    // This stuff better be aligned along all the right directions:
-    assert(almost_equal(rotation(0, 2), 0.0, 1e-8));
-    assert(almost_equal(rotation(1, 2), 0.0, 1e-8));
-    assert(almost_equal(rotation(2, 0), 0.0, 1e-8));
-    assert(almost_equal(rotation(2, 1), 0.0, 1e-8));
-    assert(almost_equal(rotation(2, 2), 1.0, 1e-8));
-
-    return std::atan2(rotation(1, 0), rotation(0, 0)) * 180 / M_PI;
-}
-
-std::vector<ReducedAngleMoirePrismaticApproximant::CartOp>
-ReducedAngleMoirePrismaticApproximant::in_plane_rotation_point_operations(const Lattice& lat) const
-{
-    // TODO: Allow setting tol?
-    auto point_group = cu::xtal::make_point_group(lat, 1e-5);
-    std::vector<CartOp> point_group_subset;
-    for (const CartOp& op : point_group)
-    {
-        // Discard anything improper
-        if (op.matrix.determinant() < 0.5)
-        {
-            continue;
-        }
-
-        // Discard anything that alters the c vector (you're using prismatic lattices remember?)
-        Eigen::Vector3d rotated_c = op.matrix * lat.c();
-        if (!almost_equal(lat.c(), rotated_c))
-        {
-            continue;
-        }
-
-        point_group_subset.push_back(op);
-    }
-
-    return point_group_subset;
-}
 } // namespace mush
