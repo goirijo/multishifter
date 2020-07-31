@@ -9,21 +9,13 @@
 #include <ostream>
 #include <unordered_map>
 #include <vector>
+#include <CLI/CLI.hpp>
 
 using Structure = casmutils::xtal::Structure;
 
 void write_slicer_structures(const mush::Slicer& slicer, const mush::fs::path& slices_path, std::ostream& log);
 
-std::unordered_map<std::string, MultiRecord> write_cleaver_structures(const std::vector<Structure>& cleaved_structures,
-                                                                         const std::vector<double>& cleavage_values,
-                                                                         const mush::fs::path& cleaved_root,
-                                                                         std::ostream& log,
-                                                                         const MultiRecord& starting_state);
+void setup_subcommand_slice(CLI::App& app);
+void run_subcommand_slice(const mush::fs::path& settings_path, std::ostream& log);
 
-std::unordered_map<std::string, MultiRecord> write_shifter_structures(const std::vector<Structure>& shifted_structures,
-                                                                      const std::vector<mush::ShiftRecord>& shift_records,
-                                                                      const std::vector<std::vector<std::size_t>>& equivalence_map,
-                                                                      const mush::fs::path& shifted_root,
-                                                                      std::ostream& log,
-                                                                      const MultiRecord& starting_state);
 #endif

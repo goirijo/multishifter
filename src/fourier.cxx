@@ -39,6 +39,7 @@ std::vector<mush::InterPoint> read_unrolled_data(const mush::fs::path& data_path
 void setup_subcommand_fourier(CLI::App& app)
 {
     auto settings_path_ptr = std::make_shared<mush::fs::path>();
+
     CLI::App* fourier_sub = app.add_subcommand("fourier", "Perform Fourier decomposition and get analytical expression for data set.");
     fourier_sub->add_option("-s,--settings", *settings_path_ptr, "Settings file with slab, resolution, and lattice periodic data.");
 

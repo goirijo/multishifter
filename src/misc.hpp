@@ -11,6 +11,16 @@
 #include <unordered_map>
 #include <vector>
 
+using json = nlohmann::json;
+using Structure = mush::cu::xtal::Structure;
+
+enum class COMMAND
+{
+    SHIFT,
+    CLEAVE,
+    TWIST
+};
+
 /**
  * Keeps all the info for a particular structure, cleavage,
  * shifts, and twists.
@@ -30,9 +40,6 @@ struct MultiRecord
     std::vector<std::string> equivalent_structures;
 };
 
-
-using json = nlohmann::json;
-using Structure=mush::cu::xtal::Structure;
 
 json load_json(const mush::fs::path& json_path);
 void write_json(const json& json, const mush::fs::path& target);

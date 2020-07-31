@@ -1,8 +1,0 @@
-bin_PROGRAMS += multishift-shift
-
-multishift_shift_SOURCES =\
-						  cxxopts/include/cxxopts.hpp\
-						  src/shift/shift.cpp
-
-multishift_shift_LDADD =\
-						libmultishift.la

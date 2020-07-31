@@ -2,7 +2,7 @@
     "name" : "debug",
     "prim" : "../input_files/b2.vasp",
     "miller_indexes" : [1,1,0],
-    "slab_unit": "./debug.slices/sliced_prim_floor.1.vasp",
+    "slab_unit": "./debug.slices/aligned_sliced_prim_floor.1.vasp",
     "stacks" : 6,
     "cleave": [ -0.2, 0, 0.5, 1.0, 10.0],
     "shift_grid" : [6,8],

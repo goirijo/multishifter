@@ -4,9 +4,17 @@ multishift_SOURCES =\
 					CLI11/include/CLI/CLI.hpp\
 					src/misc.cxx\
 					src/misc.hpp\
-					src/multishifter.cpp\
+					src/slice.hpp\
 					src/slice.cxx\
-					src/slice.hpp
+					src/cleave.hpp\
+					src/cleave.cxx\
+					src/shift.hpp\
+					src/shift.cxx\
+					src/chain.hpp\
+					src/chain.cxx\
+					src/fourier.hpp\
+					src/fourier.cxx\
+					src/multishifter.cpp
 
 multishift_LDADD =\
 					libmultishift.la

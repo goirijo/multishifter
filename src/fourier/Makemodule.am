@@ -1,8 +1,0 @@
-bin_PROGRAMS += multishift-fourier
-
-multishift_fourier_SOURCES =\
-						  cxxopts/include/cxxopts.hpp\
-						  src/fourier/fourier.cpp
-
-multishift_fourier_LDADD =\
-						libmultishift.la
