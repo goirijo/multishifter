@@ -14,6 +14,8 @@ multishift_SOURCES =\
 					src/chain.cxx\
 					src/fourier.hpp\
 					src/fourier.cxx\
+					src/twist.hpp\
+					src/twist.cxx\
 					src/multishifter.cpp
 
 multishift_LDADD =\

@@ -197,11 +197,12 @@ TEST_F(TwistTest, ApproximantMoireLattice)
     {
         for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
+            using LATTICE=MoireApproximant::LATTICE;
             MoireLattice moire(start_lat, angle);
             MoireApproximant approx_moire(moire.aligned_moire_lattice,moire.aligned_lattice,moire.rotated_lattice);
             const auto& moire_lat=approx_moire.approximate_moire_lattice;
-            const auto& aligned_lat=approx_moire.approximate_lattices.at(&moire.aligned_lattice);
-            const auto& rot_lat=approx_moire.approximate_lattices.at(&moire.rotated_lattice);
+            const auto& aligned_lat=approx_moire.approximate_lattices.at(LATTICE::ALIGNED);
+            const auto& rot_lat=approx_moire.approximate_lattices.at(LATTICE::ROTATED);
 
             Eigen::Matrix3d aligned_to_moire_transform = aligned_lat.column_vector_matrix().inverse() * moire_lat.column_vector_matrix();
             Eigen::Matrix3d aligned_to_moire_transform_diff =
@@ -223,6 +224,7 @@ TEST_F(TwistTest, MoireApproximantStrainMatch)
     {
         for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
+            using LATTICE=MoireApproximant::LATTICE;
             MoireLattice moire(start_lat, angle);
             const Lattice& moire_lat = moire.aligned_moire_lattice;
             const Lattice& aligned_lat = moire.aligned_lattice;
@@ -230,9 +232,9 @@ TEST_F(TwistTest, MoireApproximantStrainMatch)
 
             MoireApproximant approx_moire(moire_lat, aligned_lat, rotated_lat);
 
-            for(const Lattice* lat : {&aligned_lat,&rotated_lat})
+            for(LATTICE lat : {LATTICE::ALIGNED,LATTICE::ROTATED})
             {
-                const Eigen::Matrix3d& L=lat->column_vector_matrix();
+                const Eigen::Matrix3d& L=moire.real(lat).column_vector_matrix();
                 const Eigen::Matrix3d& L_prime=approx_moire.approximate_lattices.at(lat).column_vector_matrix();
 
                 Eigen::Matrix3d F=L_prime*L.inverse();
@@ -248,6 +250,7 @@ TEST_F(TwistTest, MoireApproximantVectorMatch)
     {
         for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
+            using LATTICE=MoireApproximant::LATTICE;
             MoireLattice moire(start_lat, angle);
             const Lattice& moire_lat = moire.aligned_moire_lattice;
             const Lattice& aligned_lat = moire.aligned_lattice;
@@ -256,12 +259,12 @@ TEST_F(TwistTest, MoireApproximantVectorMatch)
             MoireApproximant approx_moire(moire_lat, aligned_lat, rotated_lat);
 
             Lattice aligned_super =
-                cu::xtal::make_superlattice(approx_moire.approximate_lattices.at(&aligned_lat),
-                                            approx_moire.approximate_moire_integer_transformations.at(&aligned_lat).cast<int>());
+                cu::xtal::make_superlattice(approx_moire.approximate_lattices.at(LATTICE::ALIGNED),
+                                            approx_moire.approximate_moire_integer_transformations.at(LATTICE::ALIGNED).cast<int>());
 
             Lattice rot_super =
-                cu::xtal::make_superlattice(approx_moire.approximate_lattices.at(&rotated_lat),
-                                            approx_moire.approximate_moire_integer_transformations.at(&rotated_lat).cast<int>());
+                cu::xtal::make_superlattice(approx_moire.approximate_lattices.at(LATTICE::ROTATED),
+                                            approx_moire.approximate_moire_integer_transformations.at(LATTICE::ROTATED).cast<int>());
 
             EXPECT_TRUE(almost_equal(aligned_super.a(), rot_super.a()));
             EXPECT_TRUE(almost_equal(aligned_super.b(), rot_super.b()));
@@ -312,11 +315,12 @@ TEST_F(TwistTest, ApproximantPrismaticMoireDeformation)
     {
         for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 22.0})
         {
+            using LATTICE=MoireLattice::LATTICE;
             MoireLattice moire(start_lat, angle);
             MoireApproximant approx_moire(moire.aligned_moire_lattice,moire.aligned_lattice,moire.rotated_lattice);
             const auto& moire_lat=approx_moire.approximate_moire_lattice;
-            const auto& aligned_lat=approx_moire.approximate_lattices.at(&moire.aligned_lattice);
-            const auto& rot_lat=approx_moire.approximate_lattices.at(&moire.rotated_lattice);
+            const auto& aligned_lat=approx_moire.approximate_lattices.at(LATTICE::ALIGNED);
+            const auto& rot_lat=approx_moire.approximate_lattices.at(LATTICE::ROTATED);
 
             Eigen::Matrix3d aligned_to_moire_transform = aligned_lat.column_vector_matrix().inverse() * moire_lat.column_vector_matrix();
             Eigen::Matrix3d aligned_to_moire_transform_diff =
@@ -363,7 +367,7 @@ TEST(HexagonalTwistTest, BrillouinOverlapMoiresRelatedByIntegerTransform)
         bool full_brillouin_overlap = true;
 
         MoireLattice moire(triangular, degrees);
-        for (const Lattice* lat : {&moire.aligned_moire_lattice, &moire.rotated_moire_lattice})
+        for (auto  lat : {MoireLattice::LATTICE::ALIGNED, MoireLattice::LATTICE::ROTATED})
         {
             for (int i = 0; i < 2; ++i)
             {
@@ -542,10 +546,12 @@ void write_all_lattices(const mush::MoireLattice& moire, int frame)
 
     std::ofstream degstream(dir + "degrees.txt");
     degstream << moire.input_degrees << "\n";
-    degstream << moire.is_within_brillouin_zone_overlap.at(&M).at(0) << "\n";
-    degstream << moire.is_within_brillouin_zone_overlap.at(&M).at(1) << "\n";
-    degstream << moire.is_within_brillouin_zone_overlap.at(&Mt).at(0) << "\n";
-    degstream << moire.is_within_brillouin_zone_overlap.at(&Mt).at(1) << "\n";
+    auto A=MoireLattice::LATTICE::ALIGNED;
+    auto R=MoireLattice::LATTICE::ROTATED;
+    degstream << moire.is_within_brillouin_zone_overlap.at(A).at(0) << "\n";
+    degstream << moire.is_within_brillouin_zone_overlap.at(A).at(1) << "\n";
+    degstream << moire.is_within_brillouin_zone_overlap.at(R).at(0) << "\n";
+    degstream << moire.is_within_brillouin_zone_overlap.at(R).at(1) << "\n";
     degstream.close();
 
     return;

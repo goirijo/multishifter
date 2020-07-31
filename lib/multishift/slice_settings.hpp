@@ -87,6 +87,19 @@ namespace mush
         fs::path data_path;
         double resolution;
     };
+
+    /**
+     * Holds settings for twisting. Just a list of angles to rotate.
+     */
+
+    struct TwisterSettings
+    {
+        TwisterSettings(const std::vector<double>& angles):angles(angles){}
+
+        static TwisterSettings from_json(const json& input_settings);
+
+        std::vector<double> angles;
+    };
 };
 
 #endif

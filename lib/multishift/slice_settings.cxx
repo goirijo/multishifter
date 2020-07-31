@@ -38,4 +38,10 @@ namespace mush
             }
             return FourierSettings(data_path,resolution);
         }
+
+        TwisterSettings TwisterSettings::from_json(const json& input_settings)
+        {
+            std::vector<double> angles=input_settings["angles"];
+            return TwisterSettings(angles);
+        }
 }

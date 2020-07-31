@@ -196,24 +196,13 @@ MoireLattice::MoireLattice(const Lattice& lat, double degrees)
       aligned_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, reciprocal_aligned_lattice)),
       rotated_brillouin_zone_reciprocal_difference(this->bring_vectors_into_voronoi(full_reciprocal_difference, reciprocal_rotated_lattice)),
       aligned_moire_lattice(make_moire_lattice_from_reciprocal_difference(aligned_brillouin_zone_reciprocal_difference, aligned_lattice.c())),
-      rotated_moire_lattice(make_moire_lattice_from_reciprocal_difference(rotated_brillouin_zone_reciprocal_difference, aligned_lattice.c())),
-      moire_lattice(nullptr)
+      rotated_moire_lattice(make_moire_lattice_from_reciprocal_difference(rotated_brillouin_zone_reciprocal_difference, aligned_lattice.c()))
 {
     //calculate overlap
     for(int i=0; i<2; ++i)
     {
-        this->is_within_brillouin_zone_overlap[&aligned_moire_lattice][i]=this->is_within_voronoi(aligned_brillouin_zone_reciprocal_difference.col(i),reciprocal_rotated_lattice);
-        this->is_within_brillouin_zone_overlap[&rotated_moire_lattice][i]=this->is_within_voronoi(rotated_brillouin_zone_reciprocal_difference.col(i),reciprocal_aligned_lattice);
-    }
-    
-    //Point to appropriate moire lattice
-    for(const Lattice* moire_ptr : {&aligned_moire_lattice, &rotated_moire_lattice})
-    {
-        if(is_within_brillouin_zone_overlap[moire_ptr][0] && is_within_brillouin_zone_overlap[moire_ptr][1])
-        {
-            moire_lattice=moire_ptr;
-            break;
-        }
+        this->is_within_brillouin_zone_overlap[LATTICE::ALIGNED][i]=this->is_within_voronoi(aligned_brillouin_zone_reciprocal_difference.col(i),reciprocal_rotated_lattice);
+        this->is_within_brillouin_zone_overlap[LATTICE::ROTATED][i]=this->is_within_voronoi(rotated_brillouin_zone_reciprocal_difference.col(i),reciprocal_aligned_lattice);
     }
 }
 
@@ -298,11 +287,15 @@ std::tuple<Lattice, Lattice, Lattice> make_aligned_moire_lattice(const Lattice& 
 MoireApproximant::MoireApproximant(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rotated_lat):
     approximate_moire_lattice(this->default_lattice())
 {
+    std::unordered_map<LATTICE,const Lattice*> real_lattices;
+    real_lattices.emplace(LATTICE::ALIGNED,&aligned_lat);
+    real_lattices.emplace(LATTICE::ROTATED,&rotated_lat);
+
     //Figure out the integer transformations
-    for(const Lattice* lat : {&aligned_lat,&rotated_lat})
+    for(LATTICE lat : {LATTICE::ALIGNED,LATTICE::ROTATED})
     {
         const Eigen::Matrix3d& M=moire_lat.column_vector_matrix();
-        const Eigen::Matrix3d& L=lat->column_vector_matrix();
+        const Eigen::Matrix3d& L=real_lattices[lat]->column_vector_matrix();
 
         Eigen::Matrix3d Td=L.inverse()*M;
         matrix_type T=CASM::lround(Td);
@@ -310,21 +303,21 @@ MoireApproximant::MoireApproximant(const Lattice& moire_lat, const Lattice& alig
     }
 
     //Find the approximate Moire lattice
-    auto aligned_S=cu::xtal::make_superlattice(aligned_lat,approximate_moire_integer_transformations[&aligned_lat].cast<int>());
-    auto rotated_S=cu::xtal::make_superlattice(rotated_lat,approximate_moire_integer_transformations[&rotated_lat].cast<int>());
+    auto aligned_S=cu::xtal::make_superlattice(aligned_lat,approximate_moire_integer_transformations[LATTICE::ALIGNED].cast<int>());
+    auto rotated_S=cu::xtal::make_superlattice(rotated_lat,approximate_moire_integer_transformations[LATTICE::ROTATED].cast<int>());
     Eigen::Matrix3d S_bar=(aligned_S.column_vector_matrix()+rotated_S.column_vector_matrix())/2.0;
     this->approximate_moire_lattice=Lattice(S_bar);
 
     //Determine the strain involved to make things purrfect
     Eigen::Matrix3d aligned_F=S_bar*aligned_S.column_vector_matrix().inverse();
     Eigen::Matrix3d rotated_F=S_bar*rotated_S.column_vector_matrix().inverse();
-    approximation_deformations[&aligned_lat]=aligned_F;
-    approximation_deformations[&rotated_lat]=rotated_F;
+    approximation_deformations[LATTICE::ALIGNED]=aligned_F;
+    approximation_deformations[LATTICE::ROTATED]=rotated_F;
    
     //Determine the deformed tiling units
-    for(const Lattice* lat : {&aligned_lat,&rotated_lat})
+    for(LATTICE lat : {LATTICE::ALIGNED,LATTICE::ROTATED})
     {
-        const Eigen::Matrix3d& L=lat->column_vector_matrix();
+        const Eigen::Matrix3d& L=real_lattices[lat]->column_vector_matrix();
         Eigen::Matrix3d L_prime=S_bar*approximate_moire_integer_transformations[lat].cast<double>().inverse();
         approximate_lattices.emplace(lat,L_prime);
     }
@@ -340,9 +333,7 @@ Lattice make_prismatic_lattice(const Lattice& lat)
 MoireGenerator::MoireGenerator(const Lattice& input_lat, double degrees):
     moire(input_lat, degrees),
     aligned_moire_approximant(moire.aligned_moire_lattice,moire.aligned_lattice, moire.rotated_lattice),
-    rotated_moire_approximant(moire.rotated_moire_lattice,moire.aligned_lattice,moire.rotated_lattice),
-    aligned_key(&moire.aligned_lattice),
-    rotated_key(&moire.rotated_lattice)
+    rotated_moire_approximant(moire.rotated_moire_lattice,moire.aligned_lattice,moire.rotated_lattice)
 {
 }
 
@@ -352,7 +343,7 @@ MoireStructureGenerator::MoireStructureGenerator(const Structure& slab_unit, dou
 {
 }
 
-MoireStructureGenerator::Structure MoireStructureGenerator::layer(ZONE brillouin,LATTICE lat)
+MoireStructureGenerator::Structure MoireStructureGenerator::layer(ZONE brillouin,LATTICE lat) const
 {
     const auto& approx_lat=this->approximate_lattice(brillouin,lat);
     const auto& T=this->approximate_moire_integer_transformation(brillouin,lat);

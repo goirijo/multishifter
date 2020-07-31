@@ -22,6 +22,7 @@ std::unordered_map<std::string, MultiRecord> run<COMMAND::CLEAVE>(
     auto cleavage_settings = mush::CleavageSettings::from_json(settings);
     auto slaber_settings = mush::SlabSettings::from_json(settings);
 
+    log << "Stacking slab...\n";
     auto slab = mush::make_stacked_slab(Structure::from_poscar(slaber_settings.slab_unit_path), slaber_settings.stacks);
 
     log << "Cleaving structures...\n";
