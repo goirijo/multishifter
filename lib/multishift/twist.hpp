@@ -17,6 +17,10 @@ namespace casmutils
 {
 namespace xtal
 {
+namespace frankenstein
+{
+xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs);
+}
 /// Retrun the reciprocal of the given lattice, where each reciprocal vector
 /// is perpendicular to the other two real ones
 Lattice make_reciprocal(const Lattice& real_lattice);

@@ -7,6 +7,8 @@
 #include "./chain.hpp"
 #include "./fourier.hpp"
 #include "./twist.hpp"
+#include "./stack.hpp"
+#include "./mutate.hpp"
 
 int main(int argc, char** argv)
 {
@@ -20,6 +22,9 @@ int main(int argc, char** argv)
     setup_subcommand_chain(app);
     setup_subcommand_fourier(app);
     setup_subcommand_twist(app);
+    setup_subcommand_stack(app);
+    setup_subcommand_mutate(app);
+
 
     app.require_subcommand();
 

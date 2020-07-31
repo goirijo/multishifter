@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./multishift twist -s ./settings.json
