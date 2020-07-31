@@ -105,8 +105,8 @@ int main(int argc, char** argv)
 {
     mush::fs::path settings_path;
 
-    CLI::App app{"Slice, stack, shift, and rotate crystal slabs"};
-    app.add_option("-s,--settings", settings_path, "Settings file for all possible operations");
+    CLI::App app{"Slice, stack, and shift crystal slabs for gamma surface calculations"};
+    app.add_option("-s,--settings", settings_path, "Union of slice, cleave, and shift settings");
 
     CLI::App* slice_sub = app.add_subcommand("slice", "Slice unit cell to expose desired plane. Creates input structures for shift/twist.");
     slice_sub->add_option("-s,--settings", settings_path, "Settings file slicing primitive structure.")->required();
@@ -120,8 +120,6 @@ int main(int argc, char** argv)
     shift_sub->add_option("-s,--settings", settings_path, "Settings file with path to slab unit, slab thickness, and grid density.")
         ->required();
 
-    CLI::App* fourier_sub = app.add_subcommand("fourier", "Perform Fourier decomposition and get analytical expression for data set.");
-    fourier_sub->add_option("-s,--settings", settings_path, "Settings file with slab, resolution, and lattice periodic data.");
 
 
     CLI11_PARSE(app, argc, argv);
@@ -131,10 +129,8 @@ int main(int argc, char** argv)
     {
         constexpr auto* run_cleave = run<COMMAND::CLEAVE>;
         constexpr auto* run_shift = run<COMMAND::SHIFT>;
-        constexpr auto* run_twist = run<COMMAND::TWIST>;
 
-        std::unordered_map<std::string, decltype(run_cleave)> command_dispacher{
-            {"cleave", run_cleave}, {"shift", run_shift}, {"twist", run_twist}};
+        auto commands={run_cleave,run_shift};
 
         json settings = load_json(settings_path);
         std::string project_name = extract_name_from_settings(settings);
@@ -147,7 +143,7 @@ int main(int argc, char** argv)
         log << "Project name: " << project_name << std::endl;
 
         std::vector<std::unordered_map<std::string, MultiRecord>> full_records_data;
-        for (const std::string& command : executions)
+        for (auto command : commands)
         {
             decltype(root_dirs) next_dirs;
             decltype(full_records_data)::value_type single_record;
@@ -160,7 +156,7 @@ int main(int argc, char** argv)
                     settings["slab_unit"] = mush::fs::path(root) / "POSCAR";
                     root_already_exists = true;
                 }
-                auto partial_record_data = command_dispacher[command](settings, root, state, log, root_already_exists);
+                auto partial_record_data = command(settings, root, state, log, root_already_exists);
 
                 single_record.insert(partial_record_data.begin(),
                                      partial_record_data.end());
@@ -234,65 +230,6 @@ int main(int argc, char** argv)
 
     if (fourier_sub->count("--settings"))
     {
-        json settings = load_json(settings_path);
-
-        auto slaber_settings = mush::SlabSettings::from_json(settings);
-        auto fourier_settings = mush::FourierSettings::from_json(settings);
-
-        log << "Reading surface lattice vectors from "<<slaber_settings.slab_unit_path<<"...\n";
-        auto slab_unit=mush::cu::xtal::Structure::from_poscar(slaber_settings.slab_unit_path);
-        const auto& slab_lattice=slab_unit.lattice();
-
-        std::vector<mush::InterPoint> unrolled_data;
-
-        log << "Reading data from "<<fourier_settings.data_path<<"...\n";
-        json data_dump=load_json(fourier_settings.data_path);
-
-        std::vector<double> a_frac=data_dump["a_frac"];
-        std::vector<double> b_frac=data_dump["b_frac"];
-        std::vector<double> values=data_dump["values"];
-
-        if(a_frac.size()!=b_frac.size() || a_frac.size() != values.size())
-        {
-            throw std::runtime_error("Data was not properly formatted");
-        }
-
-        for(int i=0; i<a_frac.size(); ++i)
-        {
-            unrolled_data.emplace_back(a_frac[i],b_frac[i],values[i]);
-        }
-
-        mush::Interpolator ipolator(slab_lattice,unrolled_data);
-
-        const auto& start_values=ipolator.sampled_values();
-        auto [lat, ipolvalues]=ipolator.interpolate(start_values.size(),start_values[0].size());
-
-        for(int i=0; i<ipolvalues.size(); ++i)
-        {
-            for(int j=0; j<ipolvalues[i].size(); ++j)
-            {
-                const auto& r=start_values[i][j].value;
-                const auto& p=ipolvalues[i][j].value;
-                auto diff=r-p;
-                std::cout<<diff<<std::endl;
-            }
-        }
-
-
-        mush::Analytiker analyzer(ipolator);
-
-        log << "Crushing functions to a resolution of "<<fourier_settings.resolution<<"...\n";
-        auto [real_functions,imag_functions]=analyzer.python_cart("x","y","np",fourier_settings.resolution);
-
-        log<<"Real functions:\n";
-        log<<real_functions;
-        log<<"\n\n\n";
-        log<<"Imaginary functions:\n";
-        log<<imag_functions;
-        log<<"\n";
-        log<<"Surface lattice vectors:\n";
-        log<<"a: "<<ipolator.real_lattice().a()(0)<<", "<<ipolator.real_lattice().a()(1)<<"\n";
-        log<<"b: "<<ipolator.real_lattice().b()(0)<<", "<<ipolator.real_lattice().b()(1)<<"\n";
     }
 
     return 0;

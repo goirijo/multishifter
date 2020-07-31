@@ -52,6 +52,7 @@ config.h*
 #personal things
 .vimrc.local
 *.bak
+*.old
 multishift-sidekick.py
 multishift-plot.py
 tests/projects/Al-mush
