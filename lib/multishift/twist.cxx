@@ -1,6 +1,7 @@
 #include "./twist.hpp"
 #include "casmutils/xtal/coordinate.hpp"
 #include "casmutils/xtal/site.hpp"
+#include "casmutils/xtal/structure.hpp"
 #include "casmutils/xtal/structure_tools.hpp"
 #include "multishift/slab.hpp"
 #include <casmutils/xtal/lattice.hpp>
@@ -11,6 +12,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -113,6 +115,18 @@ xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs)
     }
     return Structure(stacked_lat, stacked_basis);
 }
+
+xtal::Structure translate_basis(const xtal::Structure& struc, const Eigen::Vector3d& shift)
+{
+    std::vector<xtal::Site> translated_basis;
+    for(const auto& s : struc.basis_sites())
+    {
+        translated_basis.emplace_back(xtal::Coordinate(s.cart()+shift),s.label());
+    }
+
+    return xtal::Structure(struc.lattice(),translated_basis);
+}
+
 } // namespace frankenstein
 } // namespace xtal
 } // namespace casmutils

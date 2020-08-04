@@ -19,7 +19,12 @@ namespace xtal
 {
 namespace frankenstein
 {
+///Stack a series of structres by adjusting the ab-vectors to match, and then concatenatig
+///along the c axis
 xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs);
+
+///Translate the entire basis of the structure by the specified amount
+xtal::Structure translate_basis(const xtal::Structure& struc, const Eigen::Vector3d& shift);
 }
 /// Retrun the reciprocal of the given lattice, where each reciprocal vector
 /// is perpendicular to the other two real ones

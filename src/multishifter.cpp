@@ -9,6 +9,7 @@
 #include "./twist.hpp"
 #include "./stack.hpp"
 #include "./mutate.hpp"
+#include "./translate.hpp"
 
 int main(int argc, char** argv)
 {
@@ -23,7 +24,7 @@ int main(int argc, char** argv)
     setup_subcommand_fourier(app);
     setup_subcommand_twist(app);
     setup_subcommand_stack(app);
-    setup_subcommand_mutate(app);
+    setup_subcommand_translate(app);
 
 
     app.require_subcommand();

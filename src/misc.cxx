@@ -10,12 +10,13 @@ std::string MultiRecord::id() const
     std::stringstream cleavestream;
     cleavestream << std::fixed << std::setprecision(6) << cleavage;
 
-    id+=cleavestream.str()+":";
+    id+=cleavestream.str();
+    /* id+=cleavestream.str()+":"; */
 
-    std::stringstream twiststream;
-    twiststream << std::fixed << std::setprecision(6) << angle;
+    /* std::stringstream twiststream; */
+    /* twiststream << std::fixed << std::setprecision(6) << angle; */
 
-    id+=twiststream.str();
+    /* id+=twiststream.str(); */
     return id;
 }
 
@@ -65,7 +66,7 @@ json record_to_json(const std::unordered_map<std::string, MultiRecord>& record)
         mr_json["cleavage"] = mr.cleavage;
         mr_json["a_index"] = mr.a_index;
         mr_json["b_index"] = mr.b_index;
-        mr_json["angle"] = mr.angle;
+        /* mr_json["angle"] = mr.angle; */
         mr_json["id"] = mr.id();
         mr_json["equivalent_structures"] = mr.equivalent_structures;
 

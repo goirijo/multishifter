@@ -35,7 +35,7 @@ struct MultiRecord
     /* double b_frac=0; */
     /* double a_cart=0; */
     /* double b_cart=0; */
-    double angle=0.0;
+    /* double angle=0.0; */
     std::string id() const;
     std::vector<std::string> equivalent_structures;
 };
