@@ -17,12 +17,18 @@ void setup_subcommand_translate(CLI::App& app)
     translate_sub
         ->add_option("-s,--settings", *settings_path_ptr, "Settings file with path to slab unit, slab thickness, and grid density.")
         ->required();
+    /* translate_sub->add_flag("--test","just a test"); */
 
-    translate_sub->callback([settings_path_ptr]() { run_subcommand_translate(*settings_path_ptr, std::cout); });
+    translate_sub->callback([=]() { run_subcommand_translate(*settings_path_ptr, *translate_sub, std::cout); });
 }
 
-void run_subcommand_translate(const mush::fs::path& settings_path, std::ostream& log)
+void run_subcommand_translate(const mush::fs::path& settings_path, const CLI::App& sub, std::ostream& log)
 {
+    /* if(sub.count("--test")) */
+    /* { */
+    /*     log<<"HIT THE TEST\n"; */
+    /* } */
+
     json settings = load_json(settings_path);
     std::string project_name = extract_name_from_settings(settings);
     mush::fs::path translate_root(project_name + ".translate");
