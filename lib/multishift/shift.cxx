@@ -8,29 +8,6 @@
 #include <utility>
 #include <cassert>
 
-namespace casmutils
-{
-namespace xtal
-{
-Eigen::Vector3d make_fractional(const Eigen::Vector3d& cart_coord, const xtal::Lattice& lat)
-{
-    return Coordinate::from_fractional(cart_coord, lat).cart();
-}
-
-Eigen::Vector3d bring_within(const Eigen::Vector3d cart_coord, const xtal::Lattice& unit_cell)
-{
-    const xtal::Coordinate casted_cart(cart_coord);
-    return casted_cart.bring_within(unit_cell).cart();
-}
-
-Eigen::Vector3d bring_within_wigner_seitz(const Eigen::Vector3d cart_coord, const xtal::Lattice& unit_cell)
-{
-    const xtal::Coordinate casted_cart(cart_coord);
-    return casted_cart.bring_within_wigner_seitz(unit_cell).cart();
-}
-} // namespace xtal
-} // namespace casmutils
-
 namespace mush
 {
 std::vector<cu::xtal::Structure> make_cleaved_structures(const cu::xtal::Structure& slab, const std::vector<double>& cleavage_values)

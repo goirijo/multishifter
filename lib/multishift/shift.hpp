@@ -7,23 +7,6 @@
 #include <utility>
 #include <vector>
 
-namespace casmutils
-{
-namespace xtal
-{
-class Structure;
-
-/// Converts Cartesian coordinates to fractional
-Eigen::Vector3d make_fractional(const Eigen::Vector3d& cart_coord, const xtal::Lattice& lat);
-
-/// Brings the given Cartesian coordinate inside the unit cell
-Eigen::Vector3d bring_within(const Eigen::Vector3d cart_coord, const xtal::Lattice& unit_cell);
-
-/// Brings the given Cartesian coordinate inside the Wigner-Seitz cell of the given unit cell
-Eigen::Vector3d bring_within_wigner_seitz(const Eigen::Vector3d cart_coord, const xtal::Lattice& unit_cell);
-}
-} // namespace casmutils
-
 namespace mush
 {
 /// Simple data structure to keep track of what index corresponds to a particular shift.
