@@ -7,12 +7,8 @@ libmultishift_la_SOURCES=\
 				   lib/multishift/slice_settings.cxx\
 				   lib/multishift/slicer.hpp\
 				   lib/multishift/slicer.cxx\
-				   lib/multishift/slaber.hpp\
-				   lib/multishift/slaber.cxx\
 				   lib/multishift/shifter.hpp\
 				   lib/multishift/shifter.cxx\
-				   lib/multishift/cleaver.hpp\
-				   lib/multishift/cleaver.cxx\
 				   lib/multishift/fourier.hpp\
 				   lib/multishift/fourier.cxx\
 				   lib/multishift/twist.hpp\
