@@ -15,16 +15,6 @@
 #include <tuple>
 #include <vector>
 
-namespace casmutils::xtal
-{
-xtal::Lattice make_sliced_lattice(const xtal::Lattice& unit_lattice, const Eigen::Vector3i& miller_indexes);
-
-namespace frankenstein
-{
-xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs);
-}
-} // namespace casmutils::xtal
-
 using namespace mush;
 
 class TwistTest : public testing::Test
@@ -43,7 +33,7 @@ protected:
                 for (int k : {1, -4, 2})
                 {
                     Eigen::Vector3i millers(i, j, k);
-                    sliced_lattices.emplace_back(cu::xtal::make_sliced_lattice(ortho_lat, millers));
+                    sliced_lattices.emplace_back(cu::xtal::slice_along_plane(ortho_lat, millers));
                 }
             }
         }
@@ -158,37 +148,6 @@ TEST_F(TwistTest, AlginLattice)
         EXPECT_TRUE(almost_equal(start_lat.b().norm(), aligned_lat.b().norm(), tol));
         EXPECT_TRUE(almost_equal(start_lat.c().norm(), aligned_lat.c().norm(), tol));
     }
-}
-
-TEST_F(TwistTest, MoireLattice)
-{
-    std::ofstream dumpstream("./moirelatticeout.txt");
-    for (const Lattice& start_lat : sliced_lattices)
-    {
-        for (double angle : {-3.00, -2.0, -1.0, -0.50, 0.50, 2.00, 5.00, 25.0})
-        {
-            auto [moire_lat, aligned_lat, rot_lat] = make_aligned_moire_lattice(start_lat, angle);
-
-            Eigen::Matrix3d aligned_to_moire_transform = aligned_lat.column_vector_matrix().inverse() * moire_lat.column_vector_matrix();
-            Eigen::Matrix3d aligned_to_moire_transform_diff =
-                aligned_to_moire_transform - aligned_to_moire_transform.unaryExpr([](double x) { return std::round(x); });
-
-            Eigen::Matrix3d rot_to_moire_transform = rot_lat.column_vector_matrix().inverse() * moire_lat.column_vector_matrix();
-            Eigen::Matrix3d rot_to_moire_transform_diff =
-                rot_to_moire_transform - rot_to_moire_transform.unaryExpr([](double x) { return std::round(x); });
-
-            // TODO: How to test the moire lattice? Plotting the two lattices seems
-            // to give the correct results. I THINK this check makes sense
-            EXPECT_TRUE(rot_to_moire_transform_diff.isApprox(rot_to_moire_transform_diff));
-
-            // This block is for using a dumb python script for visualization
-            dumpstream << "****************************\n\n";
-            dumpstream << aligned_lat.column_vector_matrix() << "\n\n";
-            dumpstream << rot_lat.column_vector_matrix() << "\n\n";
-            dumpstream << moire_lat.column_vector_matrix() << "\n\n";
-        }
-    }
-    dumpstream.close();
 }
 
 TEST_F(TwistTest, ApproximantMoireLattice)

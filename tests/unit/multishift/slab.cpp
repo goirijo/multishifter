@@ -33,16 +33,16 @@ protected:
 
     auto make_sliced_structures(const Eigen::Vector3i& miller_indexes)
     {
-        return std::make_tuple(cu::xtal::make_sliced_structure(*hcp_ptr, miller_indexes),
-                               cu::xtal::make_sliced_structure(*fcc_ptr, miller_indexes),
-                               cu::xtal::make_sliced_structure(*b2_ptr, miller_indexes));
+        return std::make_tuple(cu::xtal::slice_along_plane(*hcp_ptr, miller_indexes),
+                               cu::xtal::slice_along_plane(*fcc_ptr, miller_indexes),
+                               cu::xtal::slice_along_plane(*b2_ptr, miller_indexes));
     }
 
     auto make_sliced_lattices(const Eigen::Vector3i& miller_indexes)
     {
-        return std::make_tuple(cu::xtal::make_sliced_lattice(hcp_ptr->lattice(), miller_indexes),
-                               cu::xtal::make_sliced_lattice(fcc_ptr->lattice(), miller_indexes),
-                               cu::xtal::make_sliced_lattice(b2_ptr->lattice(), miller_indexes));
+        return std::make_tuple(cu::xtal::slice_along_plane(hcp_ptr->lattice(), miller_indexes),
+                               cu::xtal::slice_along_plane(fcc_ptr->lattice(), miller_indexes),
+                               cu::xtal::slice_along_plane(b2_ptr->lattice(), miller_indexes));
     }
 
     std::unique_ptr<Structure> hcp_ptr;
@@ -83,11 +83,11 @@ TEST_F(SlicingTest, LatticeSlice001)
 
 TEST_F(SlicingTest, LatticeSlice_fcc_111)
 {
-    cu::xtal::Lattice fcc_slice_lat = cu::xtal::make_sliced_lattice(fcc_ptr->lattice(), millers_111);
+    cu::xtal::Lattice fcc_slice_lat = cu::xtal::slice_along_plane(fcc_ptr->lattice(), millers_111);
     Eigen::Matrix3i prim_to_3layer_fcc_mat;
     prim_to_3layer_fcc_mat << -1, 0, 1, 1, -1, 1, 0, 1, 1;
 
-    Structure sliced_struc = cu::xtal::make_sliced_structure(*fcc_ptr, millers_111);
+    Structure sliced_struc = cu::xtal::slice_along_plane(*fcc_ptr, millers_111);
 
     cu::xtal::Lattice fcc_3layer = cu::xtal::make_superlattice(fcc_ptr->lattice(), prim_to_3layer_fcc_mat);
     EXPECT_TRUE(cu::is_equal<cu::xtal::LatticeEquals_f>(fcc_slice_lat, fcc_3layer, tol));
@@ -95,7 +95,7 @@ TEST_F(SlicingTest, LatticeSlice_fcc_111)
 
 TEST_F(SlicingTest, StructureSlice_b2_101)
 {
-    Structure b2_slice = cu::xtal::make_sliced_structure(*b2_ptr, millers_101);
+    Structure b2_slice = cu::xtal::slice_along_plane(*b2_ptr, millers_101);
 
     EXPECT_EQ(b2_slice.basis_sites().size(), 4);
 

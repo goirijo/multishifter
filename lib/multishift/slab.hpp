@@ -11,37 +11,12 @@ namespace casmutils
 {
 namespace xtal
 {
-        /// Invert the directions of the lattice vectors if necessary, such that
-        /// the column vector matrix has a positive determinant
-        Lattice make_right_handed(const Lattice& left_handed_lattice);
-
-/// Create a superlattice using the provided integer transformation matrix
-xtal::Lattice make_superlattice(const xtal::Lattice& tiling_unit, const Eigen::Matrix3i col_transf_mat);
-
-/// Calculates the transformation matrix that takes the tiling unit to the superlattice.
-/// Throws exceptions if the superlattice isn't compatible with its tiling unit
-/* Eigen::Matrix3l make_transformation_matrix_to_super(const Lattice &tiling_unit, const Lattice &superlattice, double tol); */
-
-/// Given a lattice and a vector of integer Miller indices, return the smallest superlattice
-/// that has the a and b vectors spanning the specified plane
-xtal::Lattice make_sliced_lattice(const xtal::Lattice& unit_lattice, const Eigen::Vector3i& miller_indexes);
-
-/// Given a structure and a vector of integer Miller indices, return the smallest superstructure
-/// that has the a and b vectors spanning the specified plane
-xtal::Structure make_sliced_structure(const xtal::Structure& unit_structure, const Eigen::Vector3i& miller_indexes);
-
-/// Translate the given basis by the specified cartesian value
-std::vector<xtal::Site> make_translated_basis(const std::vector<xtal::Site>& basis, const Eigen::Vector3d& shift);
 } // namespace xtal
 } // namespace casmutils
 
 namespace mush
 {
 namespace cu = casmutils;
-/// Given the primitive structure, create the smallest unit possible that exposes the surface
-/// of the specified miller indices along the a-b vectors
-constexpr auto make_slab_unit=cu::xtal::make_sliced_structure;
-
 /// Given a slab, where the surface plane has already been exposed to the a-b vectors, create a
 /// superstructure by stacking units along the c direction
 cu::xtal::Structure make_stacked_slab(const cu::xtal::Structure& slab_unit, int stacks);

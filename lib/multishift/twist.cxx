@@ -3,7 +3,7 @@
 #include "casmutils/xtal/site.hpp"
 #include "casmutils/xtal/structure.hpp"
 #include "casmutils/xtal/structure_tools.hpp"
-#include "multishift/slab.hpp"
+/* #include "multishift/slab.hpp" */
 #include <casmutils/xtal/lattice.hpp>
 #include <casmutils/xtal/symmetry.hpp>
 #include <cassert>
@@ -201,27 +201,6 @@ Lattice MoireLattice::make_moire_lattice_from_reciprocal_difference(const Eigen:
 
     return Lattice(final_real_moire_mat.col(0),final_real_moire_mat.col(1),final_real_moire_mat.col(2));
 }
-
-std::tuple<Lattice, Lattice, Lattice> make_aligned_moire_lattice(const Lattice& lat, double degrees)
-{
-
-    const Lattice aligned_lat = make_aligned_lattice(lat);
-    const Lattice rotated_lat = make_twisted_lattice(aligned_lat, degrees);
-    assert(almost_equal(rotated_lat.a()(2), 0.0, 1e-10));
-    assert(almost_equal(rotated_lat.b()(2), 0.0, 1e-10));
-
-    const Eigen::Matrix2d aligned_mat2d = ::make_2d_column_matrix(aligned_lat);
-    const Eigen::Matrix2d rotated_mat2d = ::make_2d_column_matrix(rotated_lat);
-
-    const Eigen::Matrix2d moire_recip_mat = rotated_mat2d.inverse() - aligned_mat2d.inverse();
-    const Eigen::Matrix2d moire_mat = moire_recip_mat.inverse();
-
-    Eigen::Matrix3d moire_mat3d(Eigen::Matrix3d::Identity());
-    moire_mat3d.block<2, 2>(0, 0) = moire_mat;
-
-    return std::make_tuple(moire_mat3d, aligned_lat, rotated_lat);
-}
-
 
 MoireApproximant::MoireApproximant(const Lattice& moire_lat, const Lattice& aligned_lat, const Lattice& rotated_lat):
     approximate_moire_lattice(this->default_lattice())

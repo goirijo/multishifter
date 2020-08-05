@@ -13,16 +13,6 @@
 #include <casm/crystallography/Superlattice.hh>
 #include <vector>
 
-namespace casmutils
-{
-namespace xtal
-{
-namespace frankenstein
-{
-}
-} // namespace xtal
-} // namespace casmutils
-
 namespace mush
 {
 namespace cu = casmutils;
@@ -34,15 +24,6 @@ Eigen::Matrix3d make_twist_rotation_matrix(const Lattice& lat, double degrees);
 
 /// Create a new lattice that has been rotated about the ab normal by the specified angle
 Lattice make_twisted_lattice(const Lattice& lat, double degrees);
-
-/// Creates a lattice whose lattice points follow the Moire pattern that results from
-/// twisting the given lattice by the specified angle.
-/// Because the lattice will be rotated in the ab plane, the resulting Moire lattice
-/// will be two dimensional. The c vector of the returned lattice is therefore meaningless,
-/// and the a and b vectors will be aligned along the xy plane
-/// The second and thrid returned lattices are the original lattice and rotated
-/// lattice after alignment along the ab-plane.
-std::tuple<Lattice, Lattice, Lattice> make_aligned_moire_lattice(const Lattice& lat, double degrees);
 
 /// Returns the same lattice, but rotated such that the a vector points along the
 /// Cartesian x direction, and the b vector is parallel to the xy plane.
@@ -65,6 +46,8 @@ struct MoireLattice
         ALIGNED,
         ROTATED
     };
+
+    using ZONE = LATTICE;
 
     MoireLattice(const Lattice& lat, double degrees);
 
@@ -109,6 +92,9 @@ struct MoireLattice
     /// rotated lattice brillouin zone (this is equivalent to using the aligned
     /// lattice brillouin zone, but results in different lattice vectors)
     Lattice rotated_moire_lattice;
+    
+    /// Returns the moire lattice of either ALIGNED or ROTATED Brillouin zone
+     const Lattice& moire(LATTICE lat) const { return lat == LATTICE::ALIGNED ? aligned_moire_lattice : rotated_moire_lattice; }
 
     /// Maps the address of a Moire lattice to an array that specifies if its reciprocal vectors
     /// fall within the Brillouin zone of the other (rotated/aligned) lattice. For example
@@ -171,8 +157,8 @@ private:
 class MoireGenerator
 {
 public:
-    using LATTICE = MoireApproximant::LATTICE;
-    using ZONE = MoireApproximant::LATTICE;
+    using LATTICE = MoireLattice::LATTICE;
+    using ZONE = MoireLattice::ZONE;
 
     MoireLattice moire;
 
@@ -184,12 +170,6 @@ public:
     /// Brillouin zone
     MoireApproximant rotated_moire_approximant;
 
-    /* /// Conveniece pointer to the aligned lattice, used as a key in the maps inside MoireApproximant */
-    /* const Lattice* aligned_key; */
-
-    /* /// Conveniece pointer to the rotated lattice, used as a key in the maps inside MoireApproximant */
-    /* const Lattice* rotated_key; */
-
 private:
     /* const Lattice* requested_key(LATTICE lat) { return lat == LATTICE::ALIGNED ? aligned_key : rotated_key; } */
 
@@ -200,10 +180,6 @@ private:
 
 public:
     MoireGenerator(const Lattice& input_lat, double degrees);
-
-    /* const Lattice& aligned_lattice() const { return *aligned_key; } */
-
-    /* const Lattice& rotated_lattice() const { return *rotated_key; } */
 
     const Lattice& approximate_lattice(ZONE brillouin, LATTICE lat) const { return requested_zone(brillouin).approximate_lattices.at(lat); }
 
