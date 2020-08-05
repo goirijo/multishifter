@@ -1,5 +1,6 @@
 #include "./translate.hpp"
 #include "casmutils/xtal/structure_tools.hpp"
+#include "casmutils/xtal/frankenstein.hpp"
 #include "misc.hpp"
 #include "multishift/slab.hpp"
 #include <filesystem>
@@ -58,7 +59,7 @@ void run_subcommand_translate(const mush::fs::path& settings_path, const CLI::Ap
         mush::fs::path ttarget = translate_root / make_translate_dirname(sr.a, sr.b);
         /* final_record[ttarget]=sr_json; */
 
-        auto translated_struc = mush::cu::xtal::frankenstein::translate_basis(slab, translations[i]);
+        auto translated_struc = mush::cu::frankenstein::translate_basis(slab, translations[i]);
 
         cautious_create_directory(ttarget);
         mush::cu::xtal::write_poscar(translated_struc, ttarget / "POSCAR");

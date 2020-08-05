@@ -2,6 +2,7 @@
 #include "./common_options.hpp"
 #include "casmutils/xtal/structure.hpp"
 #include "casmutils/xtal/structure_tools.hpp"
+#include "casmutils/xtal/frankenstein.hpp"
 #include "multishift/slice_settings.hpp"
 #include <multishift/twist.hpp>
 #include <filesystem>
@@ -29,7 +30,7 @@ void run_subcommand_stack(const std::vector<mush::fs::path>& input_paths, const 
     }
 
     log << "Stacking structures ...\n";
-    auto stacked=mush::cu::xtal::frankenstein::stack(strucs);
+    auto stacked=mush::cu::frankenstein::stack(strucs);
 
     log << "Write to "+output_path.string()<<std::endl;
     mush::cu::xtal::write_poscar(stacked,output_path);

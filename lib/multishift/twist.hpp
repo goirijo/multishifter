@@ -19,20 +19,7 @@ namespace xtal
 {
 namespace frankenstein
 {
-///Stack a series of structres by adjusting the ab-vectors to match, and then concatenatig
-///along the c axis
-xtal::Structure stack(const std::vector<xtal::Structure>& sub_strucs);
-
-///Translate the entire basis of the structure by the specified amount
-xtal::Structure translate_basis(const xtal::Structure& struc, const Eigen::Vector3d& shift);
 }
-/// Retrun the reciprocal of the given lattice, where each reciprocal vector
-/// is perpendicular to the other two real ones
-Lattice make_reciprocal(const Lattice& real_lattice);
-
-/// For a deformation matrix F, return the polar decomposition of its rotational and
-/// strain components R (first) and U (second), where F=R*U
-std::pair<Eigen::Matrix3d, Eigen::Matrix3d> polar_decomposition(Eigen::Matrix3d const& F);
 } // namespace xtal
 } // namespace casmutils
 
