@@ -4,7 +4,7 @@
 #include "misc.hpp"
 #include "multishift/slab.hpp"
 #include <filesystem>
-#include <multishift/shift.hpp>
+#include <casmutils/mush/shift.hpp>
 #include <multishift/slice_settings.hpp>
 #include <multishift/twist.hpp> //defines frankenstein
 

@@ -3,7 +3,7 @@
 
 #include "./misc.hpp"
 #include "casmutils/xtal/structure.hpp"
-#include "multishift/shift.hpp"
+#include <casmutils/mush/shift.hpp>
 #include "multishift/slicer.hpp"
 #include <filesystem>
 #include <ostream>

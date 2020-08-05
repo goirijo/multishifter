@@ -2,12 +2,14 @@
 #define SHIFTER_HH
 
 #include "./slab.hpp"
-#include "casmutils/xtal/structure.hpp"
-#include "multishift/shift.hpp"
+#include <casmutils/xtal/structure.hpp>
+#include <casmutils/mush/shift.hpp>
 #include <vector>
 
 namespace mush
 {
+    using namespace casmutils::mush;
+
     /**
      * Given a slab and the density along the a and b
      * vectors, generate all shift structures, and a record

@@ -16,9 +16,7 @@ libmultishift_la_SOURCES=\
 				   lib/multishift/fourier.hpp\
 				   lib/multishift/fourier.cxx\
 				   lib/multishift/twist.hpp\
-				   lib/multishift/twist.cxx\
-				   lib/multishift/shift.hpp\
-				   lib/multishift/shift.cxx
+				   lib/multishift/twist.cxx
 
 
 libmultishift_la_LIBADD=\

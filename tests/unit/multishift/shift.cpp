@@ -4,8 +4,9 @@
 #include "casmutils/xtal/structure_tools.hpp"
 
 #include <algorithm>
+#include <multishift/definitions.hpp>
 #include <gtest/gtest.h>
-#include <multishift/shift.hpp>
+#include <casmutils/mush/shift.hpp>
 #include <casmutils/mapping/structure_mapping.hpp>
 #include <vector>
 

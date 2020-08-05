@@ -3,6 +3,7 @@
 #include "casmutils/xtal/lattice.hpp"
 #include "casmutils/xtal/site.hpp"
 #include "casmutils/xtal/structure.hpp"
+#include <casmutils/mush/shift.hpp>
 #include <memory>
 #include <vector>
 #include <casmutils/xtal/structure_tools.hpp>
@@ -37,9 +38,11 @@ void run_subcommand_mutate(const mush::fs::path& input_path, const mush::fs::pat
         vec=mush::cu::xtal::Coordinate::from_fractional(vec,struc.lattice()).cart();
     }
 
-    Eigen::Vector3d new_c_vector=struc.lattice().c()+vec;
-    mush::cu::xtal::Lattice new_lattice(struc.lattice().a(),struc.lattice().b(),new_c_vector);
-    struc.set_lattice(new_lattice,mush::cu::xtal::CART);
+    struc=mush::mutate(struc,vec);
+
+    /* Eigen::Vector3d new_c_vector=struc.lattice().c()+vec; */
+    /* mush::cu::xtal::Lattice new_lattice(struc.lattice().a(),struc.lattice().b(),new_c_vector); */
+    /* struc.set_lattice(new_lattice,mush::cu::xtal::CART); */
 
     log << "Write to "+output_path.string()<<std::endl;
     mush::cu::xtal::write_poscar(struc,output_path);

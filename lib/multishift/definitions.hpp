@@ -12,6 +12,9 @@ namespace casmutils
     {
         class Lattice;
     }
+    namespace mush
+    {
+    }
 }
 
 namespace mush
@@ -22,6 +25,8 @@ namespace mush
     using nlohmann::json;
 
     using Lattice=cu::xtal::Lattice;
+
+    using namespace cu::mush;
 
     //TODO
     /* double degrees_to_radians(double degrees); */

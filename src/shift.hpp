@@ -2,7 +2,7 @@
 #define SHIFT_SUBCOMMAND_HH
 
 #include "misc.hpp"
-#include "multishift/shift.hpp"
+#include <casmutils/mush/shift.hpp>
 #include <multishift/definitions.hpp>
 #include <casmutils/xtal/structure.hpp>
 #include <CLI/CLI.hpp>

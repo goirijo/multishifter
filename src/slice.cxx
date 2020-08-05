@@ -1,7 +1,7 @@
 #include "./slice.hpp"
 #include "./misc.hpp"
 #include "casmutils/xtal/structure.hpp"
-#include "multishift/shift.hpp"
+#include <casmutils/mush/shift.hpp>
 #include "multishift/slice_settings.hpp"
 #include "multishift/twist.hpp"
 #include <casmutils/xtal/structure_tools.hpp>

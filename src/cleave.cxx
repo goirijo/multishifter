@@ -1,7 +1,7 @@
 #include "./cleave.hpp"
 #include "./misc.hpp"
 #include <casmutils/xtal/structure_tools.hpp>
-#include <multishift/shift.hpp>
+#include <casmutils/mush/shift.hpp>
 #include <multishift/slice_settings.hpp>
 
 std::string make_cleave_dirname(double cleavage)
