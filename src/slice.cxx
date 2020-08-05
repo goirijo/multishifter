@@ -1,9 +1,9 @@
 #include "./slice.hpp"
 #include "./misc.hpp"
 #include "casmutils/xtal/structure.hpp"
-#include <casmutils/mush/shift.hpp>
 #include "multishift/slice_settings.hpp"
-#include "multishift/twist.hpp"
+#include <casmutils/mush/shift.hpp>
+#include <casmutils/mush/twist.hpp>
 #include <casmutils/xtal/structure_tools.hpp>
 #include <cassert>
 #include <filesystem>
@@ -30,12 +30,12 @@ void write_slicer_structures(const mush::Slicer& slicer, const mush::fs::path& s
     for (int i = 0; i < slicer.floored_sliced_prims.size(); ++i)
     {
         log << "..";
-        const auto& floored_slice=slicer.floored_sliced_prims[i];
+        const auto& floored_slice = slicer.floored_sliced_prims[i];
         mush::fs::path target = slices_path / ("sliced_prim_floor." + std::to_string(i) + ".vasp");
         mush::cu::xtal::write_poscar(floored_slice, target);
 
-        auto aligned_floored_lat=mush::make_aligned_lattice(floored_slice.lattice());
-        mush::cu::xtal::Structure aligned_floored_slice=floored_slice.set_lattice(aligned_floored_lat,mush::cu::xtal::FRAC);
+        auto aligned_floored_lat = mush::make_aligned_lattice(floored_slice.lattice());
+        mush::cu::xtal::Structure aligned_floored_slice = floored_slice.set_lattice(aligned_floored_lat, mush::cu::xtal::FRAC);
         mush::fs::path aligned_target = slices_path / ("aligned_sliced_prim_floor." + std::to_string(i) + ".vasp");
         mush::cu::xtal::write_poscar(aligned_floored_slice, aligned_target);
     }
@@ -48,7 +48,8 @@ void setup_subcommand_slice(CLI::App& app)
 {
     auto settings_path_ptr = std::make_shared<mush::fs::path>();
 
-    CLI::App* slice_sub = app.add_subcommand("slice", "Slice unit cell to expose desired plane. Creates input structures for shift/cleave/twist.");
+    CLI::App* slice_sub =
+        app.add_subcommand("slice", "Slice unit cell to expose desired plane. Creates input structures for shift/cleave/twist.");
     slice_sub->add_option("-s,--settings", *settings_path_ptr, "Settings file slicing primitive structure.")->required();
 
     slice_sub->callback([settings_path_ptr]() { run_subcommand_slice(*settings_path_ptr, std::cout); });

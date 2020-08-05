@@ -1,8 +1,9 @@
 #ifndef SLICER_HH
 #define SLICER_HH
 
-#include "./slab.hpp"
+#include <casmutils/mush/slab.hpp>
 #include "casmutils/xtal/structure.hpp"
+#include "./definitions.hpp"
 #include <vector>
 
 namespace mush

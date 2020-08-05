@@ -4,7 +4,6 @@
 #include "casmutils/xtal/structure_tools.hpp"
 #include "casmutils/xtal/frankenstein.hpp"
 #include "multishift/slice_settings.hpp"
-#include <multishift/twist.hpp>
 #include <filesystem>
 #include <memory>
 

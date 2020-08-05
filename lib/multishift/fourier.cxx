@@ -1,5 +1,5 @@
 #include "./fourier.hpp"
-#include "./twist.hpp"  //Only here for the aligned lattice. refactor out
+#include <casmutils/mush/twist.hpp>
 #include "casmutils/xtal/site.hpp"
 #include <casmutils/xtal/coordinate.hpp>
 #include <stdexcept>

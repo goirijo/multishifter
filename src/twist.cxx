@@ -1,7 +1,7 @@
 #include "./twist.hpp"
 #include "./misc.hpp"
 #include <filesystem>
-#include <multishift/twist.hpp>
+#include <casmutils/mush/twist.hpp>
 #include <multishift/slice_settings.hpp>
 #include <casmutils/xtal/structure_tools.hpp>
 #include <ostream>

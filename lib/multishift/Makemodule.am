@@ -1,8 +1,6 @@
 noinst_LTLIBRARIES += libmultishift.la
 
 libmultishift_la_SOURCES=\
-				   lib/multishift/slab.hpp\
-				   lib/multishift/slab.cxx\
 				   lib/multishift/slice_settings.hpp\
 				   lib/multishift/slice_settings.cxx\
 				   lib/multishift/slicer.hpp\
@@ -10,9 +8,7 @@ libmultishift_la_SOURCES=\
 				   lib/multishift/shifter.hpp\
 				   lib/multishift/shifter.cxx\
 				   lib/multishift/fourier.hpp\
-				   lib/multishift/fourier.cxx\
-				   lib/multishift/twist.hpp\
-				   lib/multishift/twist.cxx
+				   lib/multishift/fourier.cxx
 
 
 libmultishift_la_LIBADD=\

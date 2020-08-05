@@ -2,7 +2,6 @@
 #define SLICE_SETTINGS_HH
 
 #include "./definitions.hpp"
-#include "./slab.hpp"
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <vector>

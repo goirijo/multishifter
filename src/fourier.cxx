@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <memory>
 #include <multishift/fourier.hpp>
-#include <multishift/slab.hpp>
+#include <casmutils/mush/slab.hpp>
 #include <multishift/slice_settings.hpp>
 #include <ostream>
 #include <tuple>

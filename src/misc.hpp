@@ -2,7 +2,6 @@
 #define MAIN_MISC_HH
 
 #include <multishift/definitions.hpp>
-#include <multishift/slab.hpp>
 #include <multishift/slicer.hpp>
 #include <casmutils/xtal/structure.hpp>
 #include <nlohmann/json.hpp>

@@ -1,7 +1,7 @@
 #include "./slicer.hpp"
 #include "casmutils/xtal/site.hpp"
 #include "casmutils/xtal/structure_tools.hpp"
-#include "multishift/slab.hpp"
+#include <casmutils/mush/slab.hpp>
 #include <algorithm>
 #include <vector>
 

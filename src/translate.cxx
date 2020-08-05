@@ -1,12 +1,11 @@
 #include "./translate.hpp"
 #include "casmutils/xtal/structure_tools.hpp"
-#include "casmutils/xtal/frankenstein.hpp"
 #include "misc.hpp"
-#include "multishift/slab.hpp"
-#include <filesystem>
 #include <casmutils/mush/shift.hpp>
+#include <casmutils/mush/slab.hpp>
+#include <casmutils/xtal/frankenstein.hpp>
+#include <filesystem>
 #include <multishift/slice_settings.hpp>
-#include <multishift/twist.hpp> //defines frankenstein
 
 std::string make_translate_dirname(int a, int b) { return "translate__" + std::to_string(a) + "." + std::to_string(b); }
 
@@ -71,10 +70,10 @@ void run_subcommand_translate(const mush::fs::path& settings_path, const CLI::Ap
     /* write_json(final_record,translate_root/"record.json"); */
 
     log << "Save record of slab " << translate_root << "\n";
-    mush::cu::xtal::write_poscar(slab,translate_root/"slab.vasp");
+    mush::cu::xtal::write_poscar(slab, translate_root / "slab.vasp");
 
     log << "Back up settings used...\n";
-    write_json(settings,translate_root/"settings.json");
+    write_json(settings, translate_root / "settings.json");
 
     return;
 }
