@@ -24,6 +24,8 @@ multishift_SOURCES =\
 					src/mutate.cxx\
 					src/translate.hpp\
 					src/translate.cxx\
+					src/align.hpp\
+					src/align.cxx\
 					src/multishifter.cpp
 
 multishift_LDADD =\

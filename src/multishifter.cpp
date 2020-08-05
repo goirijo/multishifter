@@ -10,6 +10,7 @@
 #include "./stack.hpp"
 #include "./mutate.hpp"
 #include "./translate.hpp"
+#include "./align.hpp"
 
 int main(int argc, char** argv)
 {
@@ -25,6 +26,7 @@ int main(int argc, char** argv)
     setup_subcommand_twist(app);
     setup_subcommand_stack(app);
     setup_subcommand_translate(app);
+    setup_subcommand_align(app);
 
 
     app.require_subcommand();
