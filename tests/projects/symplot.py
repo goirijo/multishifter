@@ -311,16 +311,18 @@ def plot_shifted_uber_fit(ax,unwinded_slice,popt):
     ax.set_ylabel("Energy $\mathrm{[J/m^2]}$")
     # ax.scatter(unwinded_slice["cleavage"]-popt[0], unwinded_slice["energy"])
     # ax.plot(deltas-popt[0], fitenergy, "g--")
-    ax.scatter(unwinded_slice["cleavage"], unwinded_slice["energy"]-popt[3])
-    ax.plot(deltas, fitenergy-popt[3], "g--")
-    ax.axvline(x=popt[0],ls="-.",c='k')
+    ax.plot(deltas, fitenergy-popt[3], "g--", color='k',zorder=1)
+    ax.scatter(unwinded_slice["cleavage"], unwinded_slice["energy"]-popt[3],zorder=2)
 
     # ax.set_ylim([-1.8,0.1]) #Al
     # ax.set_ylim([-1.4,0.1]) #Mg prismatic
     ax.set_ylim([-1.5,0.1]) #Mg pyramidal2
     # -25.359233540234765 -23.931949647554593
 
-    ax.annotate("$d_0$",(popt[0]+0.2,0.0-0.05))
+    vertical_dash=False
+    if vertical_dash:
+        ax.axvline(x=popt[0],ls="-.",c='k')
+        ax.annotate("$d_0$",(popt[0]+0.2,0.0-0.05))
 
     return ax
 
@@ -346,21 +348,21 @@ def plot_gamma_surface_heatmap(ax,unwinded_slice,avec,bvec):
 def main():
 
     project="Al-FCC"
-    project="Mg-pyramidal1"
-    project="Mg-prismatic"
+    # project="Mg-pyramidal1"
+    # project="Mg-prismatic"
     # project="Mg-pyramidal2"
 
-    # records = load_record("./Al-FCC.chain/record.json")
+    records = load_record("./Al-FCC.chain/record.json")
     # records = load_record("./Mg-prismatic.chain/record.json")
     # records = load_record("./Mg-pyramidal1.chain/record.json")
-    records = load_record(os.path.join(project+".chain","record.json"))
+    # records = load_record(os.path.join(project+".chain","record.json"))
     # records = load_record("./Mg-pyramidal2.chain/record.json")
 
     # print(json.dumps(records["shift-cleave"],indent=4,sort_keys=True))
 
-    # avec, bvec = load_slab_plane_vectors("./Al-FCC.chain/slab.vasp")
+    avec, bvec = load_slab_plane_vectors("./Al-FCC.chain/slab.vasp")
     # avec, bvec = load_slab_plane_vectors("./Mg-prismatic.slices/aligned_sliced_prim.vasp")
-    avec, bvec = load_slab_plane_vectors(os.path.join(project+".slices","aligned_sliced_prim.vasp"))
+    # avec, bvec = load_slab_plane_vectors(os.path.join(project+".slices","aligned_sliced_prim.vasp"))
     # avec, bvec = load_slab_plane_vectors("./Mg-pyramidal2.slices/aligned_sliced_prim.vasp")
 
     unwinded = unwind_data(records)
@@ -401,6 +403,32 @@ def main():
     #     ax.set_ylim(min(noshift["energy"]),max(noshift["energy"]))
     #     plt.savefig("./figs/{}.raw{}.{}.pdf".format(project,a,b),bbox_inches='tight',pad_inches=0)
 
+    #stack 0,0; 4,4; 8,8 UBER plots
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for a,b in prototypes:
+        if a != b:
+            continue
+        if a not in [0,4,8]:
+            continue
+
+        shiftdata=unwinded.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b)]
+        popt, pcov = uber_fit(shiftdata)
+
+        uberfits.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b),"_d0"]=popt[0]
+        uberfits.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b),"_gamma"]=popt[1]
+        uberfits.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b),"_lambda"]=popt[2]
+        uberfits.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b),"_shift"]=popt[3]
+
+        uberfits.loc[(unwinded["a_index"]==a)&(unwinded["b_index"]==b),"_tmp"]=uber(popt[0],*popt)
+
+        ax=plot_shifted_uber_fit(ax,shiftdata,popt)
+        # ax.set_ylim(min(noshift["energy"]),max(noshift["energy"]))
+    ax.set_ylim((-1.75,0.1))
+    plt.savefig("./figs/{}.uberstack.pdf".format(project),bbox_inches='tight',pad_inches=0)
+    plt.show()
+    exit()
+
     for a,b in prototypes:
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -420,6 +448,7 @@ def main():
         ax=plot_shifted_uber_fit(ax,shiftdata,popt)
         # ax.set_ylim(min(noshift["energy"]),max(noshift["energy"]))
         plt.savefig("./figs/{}.uber{}.{}.pdf".format(project,a,b),bbox_inches='tight',pad_inches=0)
+
 
     # plt.show()
     uberfits=unfold_orbits(uberfits,"_d0")

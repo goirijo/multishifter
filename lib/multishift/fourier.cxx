@@ -1,5 +1,6 @@
 #include "./fourier.hpp"
 #include <casmutils/mush/twist.hpp>
+#include <casmutils/mush/slab.hpp>
 #include "casmutils/xtal/site.hpp"
 #include <casmutils/xtal/coordinate.hpp>
 #include <stdexcept>

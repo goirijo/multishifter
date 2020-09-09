@@ -1,9 +1,4 @@
-#include "casmutils/xtal/structure.hpp"
 #include "gtest/gtest.h"
-#include <multishift/twist.hpp>
-#include <multishift/slab.hpp>
-#include <multishift/definitions.hpp>
-#include <casmutils/xtal/structure_tools.hpp>
 
 TEST(CategoryTest, SpecificTest)
 {

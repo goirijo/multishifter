@@ -4,6 +4,7 @@
 #include "casmutils/xtal/structure_tools.hpp"
 #include <multishift/definitions.hpp>
 #include <casmutils/mush/twist.hpp>
+#include <casmutils/mush/slab.hpp>
 #include <memory>
 
 void setup_subcommand_align(CLI::App& app)
