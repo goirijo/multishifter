@@ -1,5 +1,4 @@
 #include "../../autotools.hh"
-#include <multishift/slaber.hpp>
 
 #include <gtest/gtest.h>
 #include <memory>

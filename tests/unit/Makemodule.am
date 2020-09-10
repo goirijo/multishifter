@@ -7,33 +7,33 @@ check_trivial_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
-TESTS+=check_slab
-check_PROGRAMS += check_slab
-check_slab_SOURCES =\
-					   tests/unit/multishift/slab.cpp
+# TESTS+=check_slab
+# check_PROGRAMS += check_slab
+# check_slab_SOURCES =\
+# 					   tests/unit/multishift/slab.cpp
 
-check_slab_LDADD=\
-					libgtest.la\
-					libmultishift.la
+# check_slab_LDADD=\
+# 					libgtest.la\
+# 					libmultishift.la
 
 
-TESTS+=check_shift
-check_PROGRAMS += check_shift
-check_shift_SOURCES =\
-					   tests/unit/multishift/shift.cpp
+# TESTS+=check_shift
+# check_PROGRAMS += check_shift
+# check_shift_SOURCES =\
+# 					   tests/unit/multishift/shift.cpp
 
-check_shift_LDADD=\
-					libgtest.la\
-					libmultishift.la
+# check_shift_LDADD=\
+# 					libgtest.la\
+# 					libmultishift.la
 
-TESTS+=check_twist
-check_PROGRAMS += check_twist
-check_twist_SOURCES =\
-					   tests/unit/multishift/twist.cpp
+# TESTS+=check_twist
+# check_PROGRAMS += check_twist
+# check_twist_SOURCES =\
+# 					   tests/unit/multishift/twist.cpp
 
-check_twist_LDADD=\
-					libgtest.la\
-					libmultishift.la
+# check_twist_LDADD=\
+# 					libgtest.la\
+# 					libmultishift.la
 
 TESTS+=check_slice_settings
 check_PROGRAMS += check_slice_settings
