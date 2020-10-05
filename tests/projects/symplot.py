@@ -129,8 +129,11 @@ def scatter_equivalent_shifts(ax,data_slice,avec,bvec):
 
     ax.set_aspect('equal')
 
-    ax.set_xlabel("x $\mathrm{[\AA]}$")
-    ax.set_ylabel("y $\mathrm{[\AA]}$")
+    # ax.set_xlabel("x $\mathrm{[\AA]}$")
+    # ax.set_ylabel("y $\mathrm{[\AA]}$")
+    
+    ax.set_xticks([])
+    ax.set_yticks([])
 
     return ax
 
