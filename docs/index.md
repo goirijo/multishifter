@@ -6,33 +6,38 @@ title: "multishift guide"
 
 # What is multishift for?
 A common technique for investigating dislocations, stacking faults, and slip planes in crystals involves the calculation of $$\gamma$$-surface energies.
-The software provided in in the `multishifter` toolbox facilitate the creation of crystal structures for calculations of UBER curves and surface energies along arbitrary slip planes.
+The software provided in the `multishifter` toolbox facilitate the creation of crystal structures for calculations of UBER curves and surface energies along arbitrary slip planes.
+The `multishifter` libraries also have tools aid in the construction of twisted bilayers to create periodic Moir&#233; structures.
 
 # Basic usage
-Most `multishift` commands will take a settings file as input in a `json` format, where you will specify how to construct slabs, shift, interpolate, etc.
-In order to keep data structured, a single settings file can be used for any of the `multishift` tools that requires one.
-The settings file must contain a `name`, which will be used as a prefix for generated directories, and entries for each of the individual `multishift` tools you'll be calling.
+The `multishift` executable is a suite of command line tools that can manipulate and create crystal structures for slab model calculations.
+Each tool is specialized to complete a particular task, and accepts arguments either directly from the command line.
+Input and output files of crystal structures use the [VASP](https://www.vasp.at/wiki/index.php/POSCAR) format.
 
-For example, a settings file that will be used for `multishift-base` and `multishift-shift` might look like:
+A typical use case example is the calculation of a $$\gamma$$-surface, which requires generating slab structures that have been shifted along a particular crystallographic plane. 
+Starting from a primitive structure, several steps must be taken to create the slab models, each accomplished using a `multishifter` tool:
+1. Slice the primitive structure to expose the desired surface plane (`slice`).
+2. Specify the thickness of the slabs (`stack`).
+3. Rigidly translate the basis of the slab, to expose the desired atomic layer (`translate`).
+4. Generate set of shifted slab structures, one for each point on the $$\gamma$$-surface (`shift`).
 
-    {
-        "name" : "Mg-pyramidal1"
-        "base" :
-        {
-            "prim" : "Mg.vasp",
-            "millers" : [1,0,1],
-            "stacks" : 6
-        },
-        "shift" :
-        {
-            "slab" : "Mg-pyramidal1.vasp",
-            "a" : 19,
-            "b" : 21
-        }
-    }
+Each of these commands takes the form
+```bash
+multishift <command> --args
+```
+
+[comment]: <> TODO: How do you do it with ini file? (I think you just don't)
 
 # Feature overview
-`multishift` comes as a collection of tools, each meant to handle different stages of $$\gamma$$-surface calculations.
+`multishift` comes as a collection of tools, each meant to manipulate crystal structures a particular way.
+
+## slice
+`multishift slice` will create a supercell of a primitive cell that exposes a particular slip plane.
+
+### Parameters
+- input: path to starting structure
+- output: output file path
+- millers: defines slip plane
 
 ## multishift-base
 The `multishift-base` tool will create a supercell of a primitive cell that exposes a particular slip plane.

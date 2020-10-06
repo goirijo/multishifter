@@ -1,75 +1,62 @@
 #include "./slice.hpp"
+#include "./common_options.hpp"
 #include "./misc.hpp"
-#include "casmutils/xtal/structure.hpp"
-#include "multishift/slice_settings.hpp"
 #include <casmutils/mush/shift.hpp>
 #include <casmutils/mush/twist.hpp>
+#include <casmutils/xtal/structure.hpp>
 #include <casmutils/xtal/structure_tools.hpp>
-#include <cassert>
 #include <filesystem>
+#include <memory>
+#include <multishift/slice_settings.hpp>
+#include <stdexcept>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
+#include <vector>
 
-void write_slicer_structures(const mush::Slicer& slicer, const mush::fs::path& slices_path, std::ostream& log)
-{
-    log << "Back up prim used...\n";
-    mush::cu::xtal::write_poscar(slicer.prim, slices_path / "prim.vasp");
-
-    log << "Write sliced prim...\n";
-    mush::cu::xtal::write_poscar(slicer.sliced_prim, slices_path / "sliced_prim.vasp");
-
-    log << "Write aligned sliced prim...\n";
-    auto aligned_sliced_lat = mush::make_aligned_lattice(slicer.sliced_prim.lattice());
-    mush::cu::xtal::Structure aligned_sliced_prim = slicer.sliced_prim;
-    // TODO: Is this really how it works?
-    aligned_sliced_prim.set_lattice(aligned_sliced_lat, mush::cu::xtal::FRAC);
-    mush::cu::xtal::write_poscar(aligned_sliced_prim, slices_path / "aligned_sliced_prim.vasp");
-
-    log << "Write all possible basis translations...";
-    for (int i = 0; i < slicer.floored_sliced_prims.size(); ++i)
-    {
-        log << "..";
-        const auto& floored_slice = slicer.floored_sliced_prims[i];
-        mush::fs::path target = slices_path / ("sliced_prim_floor." + std::to_string(i) + ".vasp");
-        mush::cu::xtal::write_poscar(floored_slice, target);
-
-        auto aligned_floored_lat = mush::make_aligned_lattice(floored_slice.lattice());
-        mush::cu::xtal::Structure aligned_floored_slice = floored_slice.set_lattice(aligned_floored_lat, mush::cu::xtal::FRAC);
-        mush::fs::path aligned_target = slices_path / ("aligned_sliced_prim_floor." + std::to_string(i) + ".vasp");
-        mush::cu::xtal::write_poscar(aligned_floored_slice, aligned_target);
-    }
-    log << std::endl;
-
-    return;
-}
 
 void setup_subcommand_slice(CLI::App& app)
 {
-    auto settings_path_ptr = std::make_shared<mush::fs::path>();
+    auto input_path_ptr = std::make_shared<mush::fs::path>();
+    auto output_path_ptr = std::make_shared<mush::fs::path>();
+    auto miller_indexes_ptr = std::make_shared<std::vector<int>>();
+    auto align_ptr = std::make_shared<bool>(true);
 
     CLI::App* slice_sub =
-        app.add_subcommand("slice", "Slice unit cell to expose desired plane. Creates input structures for shift/cleave/twist.");
-    slice_sub->add_option("-s,--settings", *settings_path_ptr, "Settings file slicing primitive structure.")->required();
+        app.add_subcommand("slice", "Slice unit cell to expose desired plane. Use output to construct slabs of a desired thickness.");
+    slice_sub
+        ->add_option("-m,--millers",
+                     *miller_indexes_ptr,
+                     "Miller indexes define the plane of your input structure that will be exposed on the facet of the output.")
+        ->required();
+    slice_sub->add_flag(
+        "-x,--dont-align", *align_ptr, "Prevent rigidnly rotating output structure so that the exposed plane is in the xy Cartesian plane.");
 
-    slice_sub->callback([settings_path_ptr]() { run_subcommand_slice(*settings_path_ptr, std::cout); });
+    populate_subcommand_input_option(slice_sub, input_path_ptr.get(), true);
+    populate_subcommand_output_option(slice_sub, output_path_ptr.get(), true);
+
+    slice_sub->callback([=]() { run_subcommand_slice(*input_path_ptr, *output_path_ptr, *miller_indexes_ptr, *align_ptr, std::cout); });
 }
 
-void run_subcommand_slice(const mush::fs::path& settings_path, std::ostream& log)
+void run_subcommand_slice(
+    const mush::fs::path& input_path, const mush::fs::path& output_path, const std::vector<int>& millers, bool align, std::ostream& log)
 {
-    json settings = load_json(settings_path);
-    std::string project_name = extract_name_from_settings(settings);
+    log << "Reading " << input_path << "...\n";
+    auto prim = mush::cu::xtal::Structure::from_poscar(input_path);
 
-    log << "Project name: " << project_name << std::endl;
-    auto slice_settings = mush::SliceSettings::from_json(settings);
+    if (millers.size() != 3)
+    {
+        throw std::runtime_error("Exactly 3 miller indexes are required, but received " + std::to_string(millers.size()) + ".");
+    }
 
-    mush::Slicer slicer(Structure::from_poscar(slice_settings.prim_path), slice_settings.miller_indexes);
+    log << "Slice along (" << millers[0]<<", "<<millers[1]<<", "<<millers[2]<<")...\n";
+    auto sliced_prim=mush::cu::xtal::slice_along_plane(prim, Eigen::Vector3i(millers[0],millers[1],millers[2]));
 
-    mush::fs::path slices_path(project_name + ".slices");
-    cautious_create_directory(slices_path);
+    if(align)
+    {
+        log<<"Align exposed plane to xy plane...\n";
+        auto aligned_lat=mush::make_aligned_lattice(sliced_prim.lattice());
+        sliced_prim.set_lattice(aligned_lat,mush::cu::xtal::FRAC);
+    }
 
-    log << "Back up settings used...\n";
-    write_json(settings, slices_path / "slice.json");
-
-    write_slicer_structures(slicer, slices_path, log);
+    log << "Write final structure to "<<output_path<<"...\n";
+    mush::cu::xtal::write_poscar(sliced_prim,output_path);
 }
