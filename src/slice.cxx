@@ -18,7 +18,7 @@ void setup_subcommand_slice(CLI::App& app)
     auto input_path_ptr = std::make_shared<mush::fs::path>();
     auto output_path_ptr = std::make_shared<mush::fs::path>();
     auto miller_indexes_ptr = std::make_shared<std::vector<int>>();
-    auto align_ptr = std::make_shared<bool>(true);
+    auto align_ptr = std::make_shared<bool>(false);
 
     CLI::App* slice_sub =
         app.add_subcommand("slice", "Slice unit cell to expose desired plane. Use output to construct slabs of a desired thickness.");

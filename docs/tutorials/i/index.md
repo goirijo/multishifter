@@ -26,7 +26,7 @@ This is the slip plane we're interested in, and has miller indices $$(0,\bar{1},
 
 | ![Primitive structure of Mg](./mg.png){:width="70%"} | ![Pyramidal slip plane in HCP](./pyraslip.svg){: width="70%"} |
 
-## Run "multishift slice"
+## Slice the structure
 From your working directory, run
 
 ```

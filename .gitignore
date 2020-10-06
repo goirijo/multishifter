@@ -51,11 +51,13 @@ config.h*
 
 #personal things
 .vimrc.local
+vimrc.local
 *.bak
 *.old
 multishift-sidekick.py
 multishift-plot.py
 tests/projects/Al-mush
+bak
 
 #jekyll
 _site
