@@ -43,3 +43,31 @@ This final rotation can be supressed by using the flag `--dont-align`.
 The rotation can also be applied to any structure using `multishift align`.
 
 | ![Sliced Mg along 0-11](./mg_pyramidal.png){:width="100%"} | ![Pyramidal slip plane in HCP](./pyraslip_unit.svg){:width="70%"} |
+
+## Slicing graphite
+In the previous example, the sliced structure was still a primitive cell, albeit with an unconventional definition.
+If we slice the primitive cell of graphite along the $$(1,1,1)$$ layers, we'll see this isn't always the case.
+
+Download the primitive cell for graphite [here]("./graphite.vasp"), or create a file called `graphite.vasp` with the following cyrstallographic data:
+
+    multishifter tutorial i.b
+    1.0
+            4.2654600143         0.0000000000         0.0000000000
+            3.5512614760         2.3627719025         0.0000000000
+            3.5512614760         1.0734450299         2.1048531614
+        C
+        2
+    Direct
+         0.166667989         0.166668006         0.166667997
+         0.833331925         0.833332067         0.833331971
+
+You can repeat the slice command with new parameters now:
+
+```
+multishift slice --input graphite.vasp --millers 1 1 1 --output graphite_sliced.vasp
+```
+
+The resulting structure is a size 3 superstructure of the starting primitive structure, but has $$ab$$ vectors parallel to the individual graphene layers.
+The two figures below contrast the primitive cell with the sliced structure (scaling not consistent).
+
+| ![Primitive C cell inside sliced cell](./graphite_intersection.png){:width="70%"} |
