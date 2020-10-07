@@ -1,0 +1,18 @@
+#!/bin/bash
+
+source @abs_top_builddir@/tests/regress/common.rc
+prepare_root translate
+
+input="licoo2_stack5.vasp"
+target="licoo2_stack5_floor8.vasp"
+
+multishift translate --input ${input} --floor 8 --output ${target}
+check_target ${target}
+
+rm ${target}
+
+multishift translate --input ${input} --value 0.0 0.5 0.5 --fractional --output ${target}
+check_target ${target}
+
+
+echo "All good!"

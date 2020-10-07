@@ -80,6 +80,7 @@ void run_subcommand_translate(const mush::fs::path& input_path,
 
     log<<"Translating basis by "<<shift.transpose()<<" (Cartesian) or "<<frac_shift.transpose()<<" (fractional)...\n";
     auto translated_struc=mush::cu::frankenstein::translate_basis(struc,shift);
+    translated_struc.within();
 
     log<<"Write final structure to "<<output_path<<"...\n";
     mush::cu::xtal::write_poscar(translated_struc,output_path);
