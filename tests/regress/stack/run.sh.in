@@ -1,0 +1,24 @@
+#!/bin/bash
+
+source @abs_top_builddir@/tests/regress/common.rc
+prepare_root stack
+
+input="./licoo2.vasp"
+target="./licoo2_stack5.vasp"
+
+multishift stack --inputs ${input} ${input} ${input} ${input} ${input} --output ${target}
+check_target ${target}
+
+
+target="hetero_BN-C.vasp"
+
+multishift stack -i BN.vasp graphite_sliced.vasp -o ${target}
+check_target ${target}
+
+
+target="hetero_BN-BN-C.vasp"
+
+multishift stack -i BN.vasp BN.vasp graphite_sliced.vasp -o ${target}
+check_target ${target}
+
+echo "All good!"
