@@ -125,6 +125,8 @@ For example, if we want to have two h-BN units followed by a single graphite uni
 multishift stack -i BN.vasp BN.vasp graphite_sliced.vasp -o hetero_BN-BN-C.vasp
 ```
 
+| ![BN unit](./BN.png){:width="100%"} | ![Graphene unit](./graphite_sliced.png){:width="100%"} | ![BN-Graphene stack](./hetero_BN-C.png){:width="100%"} | ![BN-BN-Graphene stack](./hetero_BN-BN-C.png){:width="100%"} |
+
 <div class="warning">
 <b>WARNING:</b>
 <br>The final lattice vectors will always be taken from the first structure in the list.
