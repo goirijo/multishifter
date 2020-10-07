@@ -56,7 +56,7 @@ Interpolator::Interpolator(const Lattice& init_lat, const std::vector<InterPoint
 
 Interpolator::Lattice make_phony_aligned_lattice(const Interpolator::Lattice& real_lat)
 {
-    Interpolator::Lattice real_aligned=make_aligned_lattice(real_lat);
+    Interpolator::Lattice real_aligned=make_aligned(real_lat);
     return Interpolator::Lattice(real_aligned.a(),real_aligned.b(),Eigen::Vector3d(0,0,1));
 }
 

@@ -8,6 +8,8 @@
 #include <filesystem>
 #include <memory>
 
+namespace cu=casmutils;
+
 void setup_subcommand_stack(CLI::App& app)
 {
     auto input_paths_ptr=std::make_shared<std::vector<mush::fs::path>>();
@@ -26,7 +28,8 @@ void run_subcommand_stack(const std::vector<mush::fs::path>& input_paths, const 
     std::vector<mush::cu::xtal::Structure> strucs;
     for(const auto& p : input_paths)
     {
-        strucs.emplace_back(mush::cu::xtal::Structure::from_poscar(p));
+        auto struc_in=cu::xtal::Structure::from_poscar(p);
+        strucs.emplace_back(mush::make_aligned(struc_in));
     }
 
     log << "Stacking structures ...\n";

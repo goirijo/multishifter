@@ -7,6 +7,8 @@
 #include <casmutils/mush/slab.hpp>
 #include <memory>
 
+namespace cu=casmutils;
+
 void setup_subcommand_align(CLI::App& app)
 {
     auto input_path_ptr=std::make_shared<mush::fs::path>();
@@ -25,7 +27,7 @@ void setup_subcommand_align(CLI::App& app)
 void run_subcommand_align(const mush::fs::path& input_path, const mush::fs::path& output_path, bool prismatic, std::ostream& log)
 {
     auto struc=mush::cu::xtal::Structure::from_poscar(input_path);
-    struc.set_lattice(mush::make_aligned_lattice(struc.lattice()),mush::cu::xtal::FRAC);
+    mush::make_aligned(&struc);
 
     if(prismatic)
     {

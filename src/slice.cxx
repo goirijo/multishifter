@@ -53,8 +53,7 @@ void run_subcommand_slice(
     if(align)
     {
         log<<"Align exposed plane to xy plane...\n";
-        auto aligned_lat=mush::make_aligned_lattice(sliced_prim.lattice());
-        sliced_prim.set_lattice(aligned_lat,mush::cu::xtal::FRAC);
+        mush::make_aligned(&sliced_prim);
     }
 
     log << "Write final structure to "<<output_path<<"...\n";

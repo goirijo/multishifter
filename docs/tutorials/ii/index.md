@@ -52,7 +52,7 @@ This problem is remedied by `multishift translate`.
 ## Translate the basis
 There are two ways to translate the basis: either spefifying a shift vector (accepted as both Cartesian or fractional), or specifying the index of a basis atom.
 When specifying an index, a translation will be applied that brings that basis atom to the origin.
-Note that indexing of the basis begins at 1 *not* 0 (PRO tip: use VESTA to click on the atom you want, the given index will be in the right format).
+Note that indexing of the basis begins at 1 *not* 0.
 
 <div class="note">
 <b>Pro tip:</b>

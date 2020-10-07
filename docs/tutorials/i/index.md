@@ -4,7 +4,7 @@ title: "Tutorial I: Slicing a Structure"
 {% include head.html %}
 
 # Tutorial I: Slicing a structure
-In this tutorial we'll use `multishift slice` to create a structure of $$\mathrm{Mg}$$ with ab-vectors in the $$(1,0,1)$$ plane (pyramidal slip plane).
+In this tutorial we'll use `multishift slice` to create a structure of $$\mathrm{Mg}$$ with ab-vectors in the $$(0,\bar{1},1)$$ plane (pyramidal slip plane).
 
 ## Mg primitive cell
 Current implementations of `multishifter` work exclusively with the [VASP](https://cms.mpi.univie.ac.at/vasp/guide/node59.html) structure format.
@@ -68,6 +68,6 @@ multishift slice --input graphite.vasp --millers 1 1 1 --output graphite_sliced.
 ```
 
 The resulting structure is a size 3 superstructure of the starting primitive structure, but has $$ab$$ vectors parallel to the individual graphene layers.
-The two figures below contrast the primitive cell with the sliced structure (scaling not consistent).
+The figure below contrasts the primitive cell with the sliced structure.
 
 | ![Primitive C cell inside sliced cell](./graphite_intersection.png){:width="70%"} |
