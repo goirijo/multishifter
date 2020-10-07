@@ -1,0 +1,23 @@
+check_target()
+{
+    expected="../out/$1"
+    echo "Compare $1 and ${expected}..."
+    if ! cmp -s "$1" "${expected}"; then
+        echo "$1 mismatch"
+        exit 1
+    fi
+}
+
+prepare_root()
+{
+    root="@abs_top_builddir@/tests/regress/$1"
+    input_files="@abs_top_srcdir@/tests/regress/$1/in"
+    output_files="@abs_top_srcdir@/tests/regress/$1/out"
+    cd ${root}
+    cp -r ${output_files} .
+    rm -rf run
+    mkdir run
+    cd $input_files
+    cp * ${root}/run
+    cd ${root}/run
+}

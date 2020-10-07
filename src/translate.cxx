@@ -23,7 +23,7 @@ void setup_subcommand_translate(CLI::App& app)
     CLI::App* translate_sub =
         app.add_subcommand("translate", "Rigidly translate the entire basis of a structure to change the atomic layer at the interface.");
 
-    auto v_opt=translate_sub->add_option("-v,--value", *shift_ptr, "Vector specifying by which amount to translate the basis");
+    auto v_opt=translate_sub->add_option("-v,--value", *shift_ptr, "Vector specifying by which amount to translate the basis")->expected(3);
     
     translate_sub
         ->add_option("-f,--floor",
@@ -31,13 +31,9 @@ void setup_subcommand_translate(CLI::App& app)
                      "Index of basis atom that should end up at the origin on the unit cell after translating (indexing begins at 1).")
         ->excludes(v_opt);
 
-    translate_sub
-        ->add_flag(
-            "--fractional", *frac_ptr, "Specifies that the parameters passed to --value are in fractional coordinates, not Cartesian.")
-        ->needs(v_opt);
-
     populate_subcommand_input_option(translate_sub, input_path_ptr.get(), true);
     populate_subcommand_output_option(translate_sub, output_path_ptr.get(), true);
+    populate_subcommand_fractional(translate_sub, frac_ptr.get(), v_opt);
 
     translate_sub->callback(
         [=]() { run_subcommand_translate(*input_path_ptr, *output_path_ptr, *shift_ptr, *floor_ix_ptr, *frac_ptr, std::cout); });
@@ -52,11 +48,6 @@ void run_subcommand_translate(const mush::fs::path& input_path,
 {
     log<<"Reading "<<input_path<<"...\n";
     auto struc = mush::cu::xtal::Structure::from_poscar(input_path);
-    if(_shift.size()!=3)
-    {
-        throw std::runtime_error("Translation vector must have exactly 3 values/");
-    }
-
     Eigen::Vector3d shift(_shift[0],_shift[1],_shift[2]);
 
     if (floor_ix != 0)

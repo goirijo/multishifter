@@ -11,6 +11,7 @@ struct StructureIOOptions
     mush::fs::path output;
 };
 
+void populate_subcommand_fractional(CLI::App* sub, bool* frac_ptr, CLI::Option* needed);
 void populate_subcommand_output_option(CLI::App* sub, mush::fs::path* out, bool require);
 void populate_subcommand_input_option(CLI::App* sub, mush::fs::path* in, bool require);
 

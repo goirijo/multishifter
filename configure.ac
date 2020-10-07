@@ -53,4 +53,6 @@ else
 fi
 
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([tests/regress/common.rc])
+AC_CONFIG_FILES([tests/regress/slice/run.sh],[chmod +x tests/regress/slice/run.sh])
 AC_OUTPUT

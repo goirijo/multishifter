@@ -9,3 +9,4 @@ libgtest_la_LDFLAGS = -lpthread
 # libgtest_la_LDFLAGS = -pthread
 
 include tests/unit/Makemodule.am
+include tests/regress/Makemodule.am

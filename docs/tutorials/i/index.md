@@ -48,7 +48,7 @@ The rotation can also be applied to any structure using `multishift align`.
 In the previous example, the sliced structure was still a primitive cell, albeit with an unconventional definition.
 If we slice the primitive cell of graphite along the $$(1,1,1)$$ layers, we'll see this isn't always the case.
 
-Download the primitive cell for graphite [here]("./graphite.vasp"), or create a file called `graphite.vasp` with the following cyrstallographic data:
+Download the primitive cell for graphite [here](./graphite.vasp), or create a file called `graphite.vasp` with the following cyrstallographic data:
 
     multishifter tutorial i.b
     1.0
