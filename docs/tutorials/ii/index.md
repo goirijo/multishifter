@@ -67,7 +67,7 @@ Remember that indexing begins at 1, not 0!
 For our example we'll select a $$\mathrm{Li}$$ atom, such as atom 8:
 
 ```bash
-multishift translate -i licoo2_stack5.vasp -f 8 -o licoo2_stack5_floor8.vasp
+multishift translate --input licoo2_stack5.vasp -floor 8 --output licoo2_stack5_floor8.vasp
 ```
 
 The figure below shows the difference between the slab structure before (left) and after translating (right).
@@ -75,7 +75,7 @@ After the translation has been applied, the $$ab$$ plane goes between the octahe
 
 | ![Slab before shifting](./licoo2_stack5.png){:width="80%"} | ![Slab after shifting](./licoo2_stack5_floor8.png){:width="80%"} |
 
-# Tutorial II.a: Stacking a heterostructure
+# Tutorial II.b: Stacking a heterostructure
 We can also choose to combine two different chemistries to create a heterostructure.
 We'll use [h-BN](./BN.vasp) and [graphite](../i/graphite_sliced.vasp) from [the previous tutorial](../i) as an example, or you can make the files yourself using the following data:
 

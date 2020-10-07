@@ -57,4 +57,5 @@ AC_CONFIG_FILES([tests/regress/common.rc])
 AC_CONFIG_FILES([tests/regress/slice/run.sh],[chmod +x tests/regress/slice/run.sh])
 AC_CONFIG_FILES([tests/regress/stack/run.sh],[chmod +x tests/regress/stack/run.sh])
 AC_CONFIG_FILES([tests/regress/translate/run.sh],[chmod +x tests/regress/translate/run.sh])
+AC_CONFIG_FILES([tests/regress/mutate/run.sh],[chmod +x tests/regress/mutate/run.sh])
 AC_OUTPUT

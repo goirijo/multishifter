@@ -68,9 +68,18 @@ The stack is created by fusing unit cells together along the $$ab$$ facet.
 - output: output file path.
 - prismatic: if given, the $$c$$ vector will also be rectified to be perpendicular to the $$ab$$ plane, creating a prismatic slab. This may break the periodicity of your crystal.
 
+## [mutate](./tutorials/iii)
+`multishift mutate` will alter the $$c$$ vector of the lattice, while retaining all Cartesian values of the basis. Useful for stacking faults and surface energy calculations.
+
+### Parameters
+- input: path to starting structure.
+- output: output file path.
+- mutation: value to add to the third lattice vector.
+- fractional: if given, "mutation" will be interpreted as a fractional value relative to the lattice vectors.
+
 
 # Tutorials
 [Tutorial I: Slicing a structure](./tutorials/i/)<br/>
 [Tutorial II: Stacking structures](./tutorials/ii/)<br/>
-[Tutorial III: A $$\gamma$$-surface for Li](./tutorials/iii)<br/>
+[Tutorial III: Stacking faults and surfaces](./tutorials/iii)<br/>
 [Tutorial IV: A better $$\gamma$$-surface for Mg]()<br/>

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+source @abs_top_builddir@/tests/regress/common.rc
+prepare_root mutate
+
+input="./mg_stack4.vasp"
+target="./mg_stack4_fault.vasp"
+
+multishift mutate -i ${input} -m 0.33333333 0.33333333 0.0 --fractional -o ${target}
+check_target ${target}
+
+target="./mg_stack4_cleave.vasp"
+multishift mutate -i ${input} -m 0.0 0.0 5.0 -o ${target}
+check_target ${target}

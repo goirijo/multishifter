@@ -28,23 +28,27 @@ void setup_subcommand_mutate(CLI::App& app)
 
 void run_subcommand_mutate(const mush::fs::path& input_path, const mush::fs::path& output_path, const std::vector<double>& mutation, bool frac, std::ostream& log)
 {
-    /* log << "Loading structure ...\n"; */
-    /* auto struc=mush::cu::xtal::Structure::from_poscar(input_path); */
+    log << "Loading structure...\n";
+    auto struc=mush::cu::xtal::Structure::from_poscar(input_path);
 
-    /* Eigen::Vector3d vec(mutation[0],mutation[1],mutation[2]); */
+    Eigen::Vector3d vec_cart(mutation[0],mutation[1],mutation[2]);
+    Eigen::Vector3d vec_frac=mush::cu::xtal::Coordinate::from_fractional(vec_cart,struc.lattice()).cart();
 
-    /* log << "Using coordinate mode "<<coord_mode<<" ...\n"; */
-    /* if(coord_mode=="frac") */
-    /* { */
-    /*     vec=mush::cu::xtal::Coordinate::from_fractional(vec,struc.lattice()).cart(); */
-    /* } */
+    if(frac)
+    {
+        vec_frac=Eigen::Vector3d(mutation[0],mutation[1],mutation[2]);
+        vec_cart=mush::cu::xtal::Coordinate::from_fractional(vec_frac,struc.lattice()).cart();
+    }
 
-    /* struc=mush::mutate(struc,vec); */
+    else
+    {
+        vec_cart=Eigen::Vector3d(mutation[0],mutation[1],mutation[2]);
+        vec_frac=mush::cu::xtal::Coordinate(vec_cart).frac(struc.lattice());
+    }
 
-    /* /1* Eigen::Vector3d new_c_vector=struc.lattice().c()+vec; *1/ */
-    /* /1* mush::cu::xtal::Lattice new_lattice(struc.lattice().a(),struc.lattice().b(),new_c_vector); *1/ */
-    /* /1* struc.set_lattice(new_lattice,mush::cu::xtal::CART); *1/ */
+    log << "Mutate c-vector by "<<vec_cart.transpose()<<" (Cartesian) or "<<vec_frac.transpose()<<" (fractional)...\n";
+    struc=mush::mutate(struc,vec_cart);
 
-    /* log << "Write to "+output_path.string()<<std::endl; */
-    /* mush::cu::xtal::write_poscar(struc,output_path); */
+    log << "Write to "+output_path.string()<<"...\n";
+    mush::cu::xtal::write_poscar(struc,output_path);
 }

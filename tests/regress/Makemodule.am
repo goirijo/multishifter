@@ -1,3 +1,4 @@
 TESTS += tests/regress/slice/run.sh
 TESTS += tests/regress/stack/run.sh
 TESTS += tests/regress/translate/run.sh
+TESTS += tests/regress/mutate/run.sh
