@@ -17,8 +17,8 @@ void setup_subcommand_align(CLI::App& app)
 
     CLI::App* align_sub = app.add_subcommand("align", "Reorient the structure so that the a and b vectors lie on the xy-plane.");
 
-    populate_subcommand_input_option(align_sub,input_path_ptr.get(),true);
-    populate_subcommand_output_option(align_sub,output_path_ptr.get(),true);
+    populate_subcommand_input_option(align_sub,input_path_ptr.get());
+    populate_subcommand_output_option(align_sub,output_path_ptr.get());
     align_sub->add_flag("-p,--prismatic",*prismatic_ptr,"Force the c vector to be perpendicular to the ab-plane (may break periodicity)");
 
     align_sub->callback([input_path_ptr,output_path_ptr,prismatic_ptr]() { run_subcommand_align(*input_path_ptr,*output_path_ptr,*prismatic_ptr,std::cout); });

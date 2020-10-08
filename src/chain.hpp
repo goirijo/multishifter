@@ -5,6 +5,6 @@
 #include <multishift/definitions.hpp>
 
 void setup_subcommand_chain(CLI::App& app);
-void run_subcommand_chain(const mush::fs::path& settings_path, std::ostream& log);
+void run_subcommand_chain(const mush::fs::path& input_path, const mush::fs::path& output_dir, const std::vector<double>& cleavages, const std::vector<int>& grid_dims, std::ostream& log);
 
 #endif

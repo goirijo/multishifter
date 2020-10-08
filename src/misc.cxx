@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <string>
 
+namespace mush
+{
 std::string MultiRecord::id() const
 {
     std::string id = std::to_string(a_index) + ":" + std::to_string(b_index) + ":";
@@ -11,12 +13,6 @@ std::string MultiRecord::id() const
     cleavestream << std::fixed << std::setprecision(6) << cleavage;
 
     id+=cleavestream.str();
-    /* id+=cleavestream.str()+":"; */
-
-    /* std::stringstream twiststream; */
-    /* twiststream << std::fixed << std::setprecision(6) << angle; */
-
-    /* id+=twiststream.str(); */
     return id;
 }
 
@@ -78,5 +74,6 @@ json record_to_json(const std::unordered_map<std::string, MultiRecord>& record)
         j[path] = mr_json;
     }
     return j;
+}
 }
 

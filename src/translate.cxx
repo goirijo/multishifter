@@ -31,8 +31,8 @@ void setup_subcommand_translate(CLI::App& app)
                      "Index of basis atom that should end up at the origin on the unit cell after translating (indexing begins at 1).")
         ->excludes(v_opt);
 
-    populate_subcommand_input_option(translate_sub, input_path_ptr.get(), true);
-    populate_subcommand_output_option(translate_sub, output_path_ptr.get(), true);
+    populate_subcommand_input_option(translate_sub, input_path_ptr.get());
+    populate_subcommand_output_option(translate_sub, output_path_ptr.get());
     populate_subcommand_fractional(translate_sub, frac_ptr.get(), v_opt);
 
     translate_sub->callback(

@@ -1,13 +1,13 @@
 #include "./common_options.hpp"
 
-void populate_subcommand_output_option(CLI::App* sub, mush::fs::path* out, bool require)
+void populate_subcommand_output_option(CLI::App* sub, mush::fs::path* out)
 {
-    sub->add_option("-o,--output",*out,"Target output file")->required(require);
+    sub->add_option("-o,--output",*out,"Target output file or directory.")->required();
 }
 
-void populate_subcommand_input_option(CLI::App* sub, mush::fs::path* in, bool require)
+void populate_subcommand_input_option(CLI::App* sub, mush::fs::path* in)
 {
-    sub->add_option("-i,--input",*in,"Source input file")->required(require);
+    sub->add_option("-i,--input",*in,"Source input structure or slab file.")->required();
 }
 
 void populate_subcommand_fractional(CLI::App* sub, bool* frac_ptr, CLI::Option* needed)

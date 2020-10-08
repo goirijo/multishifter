@@ -17,8 +17,8 @@ void setup_subcommand_mutate(CLI::App& app)
     auto frac_ptr = std::make_shared<bool>(false);
 
     CLI::App* mutate_sub=app.add_subcommand("mutate", "Break periodicity by altering the c vector to create a shiftor cleave.");
-    populate_subcommand_input_option(mutate_sub,input_path_ptr.get(),true);
-    populate_subcommand_output_option(mutate_sub,output_path_ptr.get(),true);
+    populate_subcommand_input_option(mutate_sub,input_path_ptr.get());
+    populate_subcommand_output_option(mutate_sub,output_path_ptr.get());
     auto opt_m=mutate_sub->add_option("-m,--mutation",*mutation_ptr,"Value to add to the c lattice vector.")->required()->expected(3);
 
     populate_subcommand_fractional(mutate_sub, frac_ptr.get(), opt_m);

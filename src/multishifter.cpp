@@ -23,9 +23,9 @@ int main(int argc, char** argv)
     setup_subcommand_translate(app);
     setup_subcommand_align(app);
     setup_subcommand_mutate(app);
+    setup_subcommand_chain(app);
     /* setup_subcommand_cleave(app); */
     /* setup_subcommand_shift(app); */
-    /* setup_subcommand_chain(app); */
     /* setup_subcommand_fourier(app); */
     /* setup_subcommand_twist(app); */
 

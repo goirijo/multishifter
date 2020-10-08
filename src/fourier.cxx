@@ -13,7 +13,7 @@ namespace
 {
 std::vector<mush::InterPoint> read_unrolled_data(const mush::fs::path& data_path)
 {
-    json data_dump = load_json(data_path);
+    auto data_dump = mush::load_json(data_path);
 
     std::vector<double> a_frac = data_dump["a_frac"];
     std::vector<double> b_frac = data_dump["b_frac"];
@@ -48,7 +48,7 @@ void setup_subcommand_fourier(CLI::App& app)
 
 void run_subcommand_fourier(const mush::fs::path& settings_path, std::ostream& log)
 {
-    json settings = load_json(settings_path);
+    auto settings = mush::load_json(settings_path);
 
     auto slaber_settings = mush::SlabSettings::from_json(settings);
     auto fourier_settings = mush::FourierSettings::from_json(settings);

@@ -5,7 +5,7 @@
 
 namespace mush
 {
-Shifter::Shifter(const Structure& slab, int a_max, int b_max)
+Shifter::Shifter(const Structure& slab, int a_max, int b_max): grid_dims{a_max,b_max}
 {
     const cu::xtal::Lattice& slab_lat = slab.lattice();
     auto [shift_vectors, _shift_records] = make_uniform_in_plane_shift_vectors(slab_lat, a_max, b_max);

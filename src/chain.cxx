@@ -1,76 +1,147 @@
 #include "./chain.hpp"
+#include "./common_options.hpp"
 #include "./misc.hpp"
+#include <casmutils/xtal/structure_tools.hpp>
+#include <multishift/shifter.hpp>
 #include <nlohmann/json.hpp>
 
-template <COMMAND>
-std::unordered_map<std::string, MultiRecord>
-run(const json& settings, const mush::fs::path& root, const MultiRecord& starting_state, std::ostream& log, bool root_exists);
+namespace cu = casmutils;
 
 void setup_subcommand_chain(CLI::App& app)
 {
-    auto settings_path_ptr = std::make_shared<mush::fs::path>();
+    auto input_path_ptr = std::make_shared<mush::fs::path>();
+    auto output_path_ptr = std::make_shared<mush::fs::path>();
+    auto celavages_ptr = std::make_shared<std::vector<double>>();
+    auto grid_dims_ptr = std::make_shared<std::vector<int>>();
 
-    CLI::App* chain_sub = app.add_subcommand("chain", "Combine slice, stack, cleave, and shift commands for gamma surface calculations.");
-    chain_sub->add_option("-s,--settings", *settings_path_ptr, "Union of slice, cleave, and shift settings");
+    CLI::App* chain_sub = app.add_subcommand("chain", "Combine cleave and shift commands for gamma surface calculations.");
 
-    chain_sub->callback([settings_path_ptr]() { run_subcommand_chain(*settings_path_ptr, std::cout); });
+    populate_subcommand_input_option(chain_sub, input_path_ptr.get());
+    populate_subcommand_output_option(chain_sub, output_path_ptr.get());
+
+    chain_sub->add_option("-c,--cleave", *celavages_ptr, "List of cleavage values to insert between slabs.")->required();
+    chain_sub
+        ->add_option("-s,--shift",
+                     *grid_dims_ptr,
+                     "Grid dimensions to divide the ab-lane of the slab into. Each grid point will correspond to a particular shift "
+                     "vector. Periodic image not counted in grid.")
+        ->expected(2)
+        ->required();
+
+    chain_sub->callback([=]() { run_subcommand_chain(*input_path_ptr, *output_path_ptr, *celavages_ptr, *grid_dims_ptr, std::cout); });
 }
 
-void run_subcommand_chain(const mush::fs::path& settings_path, std::ostream& log)
+std::string make_cleave_dirname(double cleavage)
 {
-    constexpr auto* run_cleave = run<COMMAND::CLEAVE>;
-    constexpr auto* run_shift = run<COMMAND::SHIFT>;
+    std::stringstream cleavestream;
+    cleavestream << std::fixed << std::setprecision(6) << cleavage;
+    return "cleave__" + cleavestream.str();
+}
 
-    std::unordered_map<std::string, decltype(run_cleave)> command_dispacher{
-            {"cleave", run_cleave}, {"shift", run_shift}};
+std::string make_shift_dirname(int a, int b) { return "shift__" + std::to_string(a) + "." + std::to_string(b); }
 
-    json settings = load_json(settings_path);
-    std::string project_name = extract_name_from_settings(settings);
+mush::MultiRecord make_multirecord(const double cleave, const mush::Shifter& shifter, int ix)
+{
+    auto make_partial = [](double _cleave, const mush::Shifter& _shifter, int _ix) {
+        mush::MultiRecord record;
+        record.cleavage = _cleave;
+        record.a_index = _shifter.shift_records[_ix].a;
+        record.b_index = _shifter.shift_records[_ix].b;
+        return record;
+    };
 
-    std::vector<std::string> executions{"shift","cleave"};
-    mush::fs::path true_root(project_name + ".chain");
-    bool root_already_exists = false;
-    std::unordered_map<std::string, MultiRecord> root_dirs{{true_root, MultiRecord()}};
-
-    log << "Project name: " << project_name << std::endl;
-
-    std::vector<std::unordered_map<std::string, MultiRecord>> full_records_data;
-    for (auto command : executions)
+    auto record = make_partial(cleave, shifter, ix);
+    for (int eqx : shifter.equivalence_map[ix])
     {
-        decltype(root_dirs) next_dirs;
-        decltype(full_records_data)::value_type single_record;
-        for (const auto& [root, state] : root_dirs)
+        record.equivalent_structures.emplace_back(make_partial(cleave, shifter, eqx).id());
+    }
+
+    return record;
+}
+
+mush::fs::path make_target_directory(const mush::MultiRecord& record)
+{
+    return mush::fs::path(make_shift_dirname(record.a_index, record.b_index)) / make_cleave_dirname(record.cleavage);
+}
+
+mush::json serialize(const mush::MultiRecord& record)
+{
+    mush::json j;
+
+    j["grid_point"] = std::vector<int>{record.a_index, record.b_index};
+    j["cleavage"] = record.cleavage;
+    j["equivalent_structures"] = record.equivalent_structures;
+
+    return j;
+}
+
+std::array<double,2> make_aligned_shift_vector(const mush::Shifter& shifter, int ix)
+{
+    auto aligned_lat=mush::make_aligned(shifter.shifted_structures[ix].lattice());
+    auto a_shift=static_cast<double>(shifter.shift_records[ix].a)/shifter.grid_dims[0]*aligned_lat.a();
+    auto b_shift=static_cast<double>(shifter.shift_records[ix].b)/shifter.grid_dims[1]*aligned_lat.b();
+    auto aligned_shift=a_shift+b_shift;
+
+    assert(cu::almost_equal(aligned_shift(2),0.0));
+
+    return {aligned_shift(0),aligned_shift(1)};
+}
+
+void run_subcommand_chain(const mush::fs::path& input_path,
+                          const mush::fs::path& output_dir,
+                          const std::vector<double>& cleavages,
+                          const std::vector<int>& grid_dims,
+                          std::ostream& log)
+{
+    mush::cautious_create_directory(output_dir);
+
+    log << "Reading slab from " << input_path << "...\n";
+    auto slab = cu::xtal::Structure::from_poscar(input_path);
+
+    mush::json full_record;
+    full_record["grid"] = grid_dims;
+    full_record["cleavages"] = cleavages;
+
+    log << "Shifting structures for " << grid_dims[0] << "x" << grid_dims[1] << " grid (please be patient)...\n";
+
+    mush::Shifter shifter(slab, grid_dims[0], grid_dims[1]);
+    assert(shifter.grid_dims[0] == grid_dims[0] && shifter.grid_dims[1] == grid_dims[1]);
+
+    std::vector<std::vector<std::string>> unique_equivalent_groups;
+    for (double cleave : cleavages)
+    {
+        std::unordered_set<int> recorded_equivalents;
+        log << "Cleaving " << cleave << " angstroms...\n";
+        for (int i = 0; i < shifter.size(); ++i)
         {
-            if (command != executions[0])
+            auto cleaved_shifted_structures = mush::make_cleaved_structures(shifter.shifted_structures[i], cleavages);
+            auto report = make_multirecord(cleave, shifter, i);
+
+            if (recorded_equivalents.count(i) == 0)
             {
-                settings["stacks"] = 1;
-                // TODO: Make the slab.json path a function, since it's used several places
-                settings["slab_unit"] = mush::fs::path(root) / "POSCAR";
-                root_already_exists = true;
+                unique_equivalent_groups.push_back(report.equivalent_structures);
+                recorded_equivalents.insert(shifter.equivalence_map[i].begin(), shifter.equivalence_map[i].end());
             }
-            auto partial_record_data = command_dispacher[command](settings, root, state, log, root_already_exists);
 
-            single_record.insert(partial_record_data.begin(), partial_record_data.end());
-            next_dirs.insert(partial_record_data.begin(), partial_record_data.end());
-        }
-        root_dirs = next_dirs;
-        full_records_data.push_back(single_record);
-    }
+            auto dir = make_target_directory(report);
+            log << "Write structure to " << output_dir / dir << "...\n";
+            mush::fs::create_directories(output_dir / dir);
+            cu::xtal::write_poscar(shifter.shifted_structures[i], output_dir / dir / "POSCAR");
 
-    log << "Save record of structures to " << true_root << "\n";
+            auto chunk = serialize(report);
+            chunk["directory"] = dir;
+            chunk["shift"]=make_aligned_shift_vector(shifter, i);
 
-    json full_record_json;
-    std::string chained_command;
-    assert(full_records_data.size() == executions.size());
-    for (int i = 0; i < full_records_data.size(); ++i)
-    {
-        chained_command += executions[i];
-        full_record_json[chained_command] = record_to_json(full_records_data[i]);
-        if (i != full_records_data.size() - 1)
-        {
-            chained_command += "-";
+            full_record[report.id()] = chunk;
         }
     }
-    write_json(full_record_json, true_root / "record.json");
+
+    full_record["equivalents"] = unique_equivalent_groups;
+
+    log << "Back up slab structure to " << output_dir / "slab.vasp"
+        << "...\n";
+    cu::xtal::write_poscar(slab, output_dir / "slab.vasp");
+    log << "Save record to "<<output_dir/"record.json"<<"...\n";
+    mush::write_json(full_record,output_dir/"record.json");
 }
 

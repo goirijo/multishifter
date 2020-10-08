@@ -30,8 +30,8 @@ void setup_subcommand_slice(CLI::App& app)
     slice_sub->add_flag(
         "-x,--dont-align", *align_ptr, "Prevent rigidnly rotating output structure so that the exposed plane is in the xy Cartesian plane.");
 
-    populate_subcommand_input_option(slice_sub, input_path_ptr.get(), true);
-    populate_subcommand_output_option(slice_sub, output_path_ptr.get(), true);
+    populate_subcommand_input_option(slice_sub, input_path_ptr.get());
+    populate_subcommand_output_option(slice_sub, output_path_ptr.get());
 
     slice_sub->callback([=]() { run_subcommand_slice(*input_path_ptr, *output_path_ptr, *miller_indexes_ptr, *align_ptr, std::cout); });
 }
