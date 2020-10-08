@@ -56,7 +56,7 @@ vimrc.local
 *.old
 multishift-sidekick.py
 multishift-plot.py
-tests/projects/Al-mush
+tests/projects/paper/Al-mush
 bak
 
 #jekyll

@@ -78,13 +78,25 @@ mush::json serialize(const mush::MultiRecord& record)
 std::array<double,2> make_aligned_shift_vector(const mush::Shifter& shifter, int ix)
 {
     auto aligned_lat=mush::make_aligned(shifter.shifted_structures[ix].lattice());
-    auto a_shift=static_cast<double>(shifter.shift_records[ix].a)/shifter.grid_dims[0]*aligned_lat.a();
-    auto b_shift=static_cast<double>(shifter.shift_records[ix].b)/shifter.grid_dims[1]*aligned_lat.b();
-    auto aligned_shift=a_shift+b_shift;
+    Eigen::Vector3d a_shift=static_cast<double>(shifter.shift_records[ix].a)/shifter.grid_dims[0]*aligned_lat.a();
+    Eigen::Vector3d b_shift=static_cast<double>(shifter.shift_records[ix].b)/shifter.grid_dims[1]*aligned_lat.b();
+    Eigen::Vector3d aligned_shift=a_shift+b_shift;
 
     assert(cu::almost_equal(aligned_shift(2),0.0));
 
     return {aligned_shift(0),aligned_shift(1)};
+}
+
+std::array<std::array<double,2>,2> make_shift_units(const mush::Shifter& shifter)
+{
+    auto aligned_lat=mush::make_aligned(shifter.shifted_structures[0].lattice());
+    Eigen::Vector3d a_shift=1.0/shifter.grid_dims[0]*aligned_lat.a();
+    Eigen::Vector3d b_shift=1.0/shifter.grid_dims[1]*aligned_lat.b();
+
+    std::array<double,2> a{a_shift(0),a_shift(1)};
+    std::array<double,2> b{b_shift(0),b_shift(1)};
+
+    return {a,b};
 }
 
 void run_subcommand_chain(const mush::fs::path& input_path,
@@ -106,8 +118,10 @@ void run_subcommand_chain(const mush::fs::path& input_path,
 
     mush::Shifter shifter(slab, grid_dims[0], grid_dims[1]);
     assert(shifter.grid_dims[0] == grid_dims[0] && shifter.grid_dims[1] == grid_dims[1]);
+    full_record["shift_units"]=make_shift_units(shifter);
 
     std::vector<std::vector<std::string>> unique_equivalent_groups;
+    std::unordered_map<int,int> equivalence_map_ix_to_group_label;
     for (double cleave : cleavages)
     {
         std::unordered_set<int> recorded_equivalents;
@@ -119,6 +133,10 @@ void run_subcommand_chain(const mush::fs::path& input_path,
 
             if (recorded_equivalents.count(i) == 0)
             {
+                for(int e : shifter.equivalence_map[i])
+                {
+                    equivalence_map_ix_to_group_label[e]=unique_equivalent_groups.size();
+                }
                 unique_equivalent_groups.push_back(report.equivalent_structures);
                 recorded_equivalents.insert(shifter.equivalence_map[i].begin(), shifter.equivalence_map[i].end());
             }
@@ -131,8 +149,9 @@ void run_subcommand_chain(const mush::fs::path& input_path,
             auto chunk = serialize(report);
             chunk["directory"] = dir;
             chunk["shift"]=make_aligned_shift_vector(shifter, i);
+            chunk["group"]=equivalence_map_ix_to_group_label[i];
 
-            full_record[report.id()] = chunk;
+            full_record["ids"][report.id()] = chunk;
         }
     }
 
