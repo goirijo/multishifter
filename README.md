@@ -2,8 +2,20 @@
 `mulstishift` is a [casm](https://github.com/prisms-center/CASMcode) and [casm-utilities](https://github.com/goirijo/casm-utilities) powered utility to create gamma surfaces and twisted bilayers along arbitrary crystallographic planes.
 For a tutorial on the features and workflow see the official [pages](https://goirijo.github.io/multishifter).
 
-This work is a product of the [Van der Ven research group](https://labs.materials.ucsb.edu/vanderven/anton/) at the UCSB Materials department, and is authored by @goirijo.
+This work is a product of the [Van der Ven research group](https://labs.materials.ucsb.edu/vanderven/anton/) at the UCSB Materials department.
 
+# Citing
+If this software helped your research please cite the following paper in addition to the papers listed in the [casm](https://github.com/prisms-center/CASMcode) repository.
+
+```
+__CITATION GOES HERE__
+```
+
+```bibtex
+__BIBTEX GOES HERE__
+```
+
+The [paper](link/to/paper) outlines how the algorithms of `multishifter` operate, and applies them to metallic systems.
 
 # Prerequisites
 `multishift` is written on top of [casm-utilities](https://github.com/goirijo/casm-utilities), which requires a c++ compiler with c++17 support (`g++-8` recommended).
