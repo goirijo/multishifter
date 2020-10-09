@@ -36,6 +36,6 @@ void run_subcommand_stack(const std::vector<mush::fs::path>& input_paths, const 
     auto stacked=mush::orthogonalize_c_vector(mush::cu::frankenstein::stack(strucs));
     stacked.within();
 
-    log << "Write to "+output_path.string()<<std::endl;
+    log << "Write to "+output_path.string()<<"...\n";
     mush::cu::xtal::write_poscar(stacked,output_path);
 }

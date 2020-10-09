@@ -1,7 +1,6 @@
 #include "./chain.hpp"
 #include "./common_options.hpp"
 #include "./misc.hpp"
-#include <casmutils/xtal/structure_tools.hpp>
 #include <multishift/shifter.hpp>
 #include <nlohmann/json.hpp>
 
@@ -28,17 +27,8 @@ void setup_subcommand_chain(CLI::App& app)
         ->expected(2)
         ->required();
 
-    chain_sub->callback([=]() { run_subcommand_chain(*input_path_ptr, *output_path_ptr, *celavages_ptr, *grid_dims_ptr, std::cout); });
+    chain_sub->callback([=]() { run_subcommand_chain<mush::SUBCOMMAND::CHAIN>(*input_path_ptr, *output_path_ptr, *celavages_ptr, *grid_dims_ptr, std::cout); });
 }
-
-std::string make_cleave_dirname(double cleavage)
-{
-    std::stringstream cleavestream;
-    cleavestream << std::fixed << std::setprecision(6) << cleavage;
-    return "cleave__" + cleavestream.str();
-}
-
-std::string make_shift_dirname(int a, int b) { return "shift__" + std::to_string(a) + "." + std::to_string(b); }
 
 mush::MultiRecord make_multirecord(const double cleave, const mush::Shifter& shifter, int ix)
 {
@@ -59,9 +49,10 @@ mush::MultiRecord make_multirecord(const double cleave, const mush::Shifter& shi
     return record;
 }
 
-mush::fs::path make_target_directory(const mush::MultiRecord& record)
+template<>
+mush::fs::path mush::make_target_directory<mush::SUBCOMMAND::CHAIN>(const mush::MultiRecord& record)
 {
-    return mush::fs::path(make_shift_dirname(record.a_index, record.b_index)) / make_cleave_dirname(record.cleavage);
+    return mush::fs::path(mush::make_shift_dirname(record.a_index, record.b_index)) / mush::make_cleave_dirname(record.cleavage);
 }
 
 mush::json serialize(const mush::MultiRecord& record)
@@ -99,68 +90,4 @@ std::array<std::array<double,2>,2> make_shift_units(const mush::Shifter& shifter
     return {a,b};
 }
 
-void run_subcommand_chain(const mush::fs::path& input_path,
-                          const mush::fs::path& output_dir,
-                          const std::vector<double>& cleavages,
-                          const std::vector<int>& grid_dims,
-                          std::ostream& log)
-{
-    mush::cautious_create_directory(output_dir);
-
-    log << "Reading slab from " << input_path << "...\n";
-    auto slab = cu::xtal::Structure::from_poscar(input_path);
-
-    mush::json full_record;
-    full_record["grid"] = grid_dims;
-    full_record["cleavages"] = cleavages;
-
-    log << "Shifting structures for " << grid_dims[0] << "x" << grid_dims[1] << " grid (please be patient)...\n";
-
-    mush::Shifter shifter(slab, grid_dims[0], grid_dims[1]);
-    assert(shifter.grid_dims[0] == grid_dims[0] && shifter.grid_dims[1] == grid_dims[1]);
-    full_record["shift_units"]=make_shift_units(shifter);
-
-    std::vector<std::vector<std::string>> unique_equivalent_groups;
-    std::unordered_map<int,int> equivalence_map_ix_to_group_label;
-    for (double cleave : cleavages)
-    {
-        std::unordered_set<int> recorded_equivalents;
-        log << "Cleaving " << cleave << " angstroms...\n";
-        for (int i = 0; i < shifter.size(); ++i)
-        {
-            auto cleaved_shifted_structures = mush::make_cleaved_structures(shifter.shifted_structures[i], cleavages);
-            auto report = make_multirecord(cleave, shifter, i);
-
-            if (recorded_equivalents.count(i) == 0)
-            {
-                for(int e : shifter.equivalence_map[i])
-                {
-                    equivalence_map_ix_to_group_label[e]=unique_equivalent_groups.size();
-                }
-                unique_equivalent_groups.push_back(report.equivalent_structures);
-                recorded_equivalents.insert(shifter.equivalence_map[i].begin(), shifter.equivalence_map[i].end());
-            }
-
-            auto dir = make_target_directory(report);
-            log << "Write structure to " << output_dir / dir << "...\n";
-            mush::fs::create_directories(output_dir / dir);
-            cu::xtal::write_poscar(shifter.shifted_structures[i], output_dir / dir / "POSCAR");
-
-            auto chunk = serialize(report);
-            chunk["directory"] = dir;
-            chunk["shift"]=make_aligned_shift_vector(shifter, i);
-            chunk["group"]=equivalence_map_ix_to_group_label[i];
-
-            full_record["ids"][report.id()] = chunk;
-        }
-    }
-
-    full_record["equivalents"] = unique_equivalent_groups;
-
-    log << "Back up slab structure to " << output_dir / "slab.vasp"
-        << "...\n";
-    cu::xtal::write_poscar(slab, output_dir / "slab.vasp");
-    log << "Save record to "<<output_dir/"record.json"<<"...\n";
-    mush::write_json(full_record,output_dir/"record.json");
-}
 

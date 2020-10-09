@@ -16,6 +16,16 @@ std::string MultiRecord::id() const
     return id;
 }
 
+std::string make_cleave_dirname(double cleavage)
+{
+    std::stringstream cleavestream;
+    cleavestream << std::fixed << std::setprecision(6) << cleavage;
+    return "cleave__" + cleavestream.str();
+}
+
+std::string make_shift_dirname(int a, int b) { return "shift__" + std::to_string(a) + "." + std::to_string(b); }
+
+
 json load_json(const mush::fs::path& json_path)
 {
     std::ifstream settings_stream(json_path);
@@ -42,38 +52,5 @@ void cautious_create_directory(const mush::fs::path new_dir)
     return;
 }
 
-std::string extract_name_from_settings(const json& settings)
-{
-    if (settings.count("name") == 0)
-    {
-        throw std::runtime_error("Could not find entry 'name' in settings file.");
-    }
-    return settings["name"];
-}
-/* json extract_slice_subsettings(const json& settings) { return settings["slice"];} */
-
-json record_to_json(const std::unordered_map<std::string, MultiRecord>& record)
-{
-    //TODO: Maybe it's better to have the path as a value, and the id as a key?
-    json j;
-    for (const auto& [path, mr] : record)
-    {
-        json mr_json;
-        mr_json["cleavage"] = mr.cleavage;
-        mr_json["a_index"] = mr.a_index;
-        mr_json["b_index"] = mr.b_index;
-        /* mr_json["angle"] = mr.angle; */
-        mr_json["id"] = mr.id();
-        mr_json["equivalent_structures"] = mr.equivalent_structures;
-
-        if(mr.equivalent_structures.size()==0)
-        {
-            mr_json["equivalent_structures"].push_back(mr_json["id"]);
-        }
-
-        j[path] = mr_json;
-    }
-    return j;
-}
 }
 

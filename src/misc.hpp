@@ -26,19 +26,19 @@ struct MultiRecord
     std::vector<std::string> equivalent_structures;
 };
 
+enum class SUBCOMMAND {CLEAVE,SHIFT,CHAIN};
+
+std::string make_cleave_dirname(double cleavage);
+std::string make_shift_dirname(int a, int b);
+template<SUBCOMMAND>
+mush::fs::path make_target_directory(const mush::MultiRecord& record);
+
 
 json load_json(const mush::fs::path& json_path);
 void write_json(const json& json, const mush::fs::path& target);
 
 ///If directory already exists, throw exception, otherwise continue normally
 void cautious_create_directory(const mush::fs::path new_dir);
-
-std::string extract_name_from_settings(const json& settings);
-/* json extract_slice_subsettings(const json& settings); */
-
-///Converts map from path to MultiRecord into the final json format, which
-///might include more information than what's in the MultiRecord objects
-json record_to_json(const std::unordered_map<std::string,MultiRecord>& record);
 
 }
 #endif

@@ -19,4 +19,5 @@ Shifter::Shifter(const Structure& slab, int a_max, int b_max): grid_dims{a_max,b
 
     equivalence_map=categorize_equivalently_shifted_structures(shifted_structures);
 }
+
 } // namespace mush
