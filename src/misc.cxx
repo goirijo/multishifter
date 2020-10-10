@@ -37,7 +37,7 @@ json load_json(const mush::fs::path& json_path)
 void write_json(const json& json, const mush::fs::path& target)
 {
     std::ofstream json_stream(target);
-    json_stream << json;
+    json_stream << json.dump(4);
     return;
 }
 

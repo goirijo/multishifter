@@ -88,6 +88,17 @@ Useful for Universal Binding Energy Relation (UBER) calculations.
 - values: vacuum spacings to insert between the periodic images of the slabs in $$\AA$$.
 Negative values will bring periodic slabs closer to each other.
 
+## [shift](./tutorials/v)
+`multishift shift` will generate a series of slab structures that have been shifted relative to each other along the $$ab$$-plane.
+Useful for $$\gamma$$-surface calculations.
+
+### Parameters
+- input: path to starting structure.
+- output: output directory (must not exist).
+- grid: divisions to make along the $$ab$$-plane.
+Each grid point will correspond to a particular shift applied to the slabs.
+Periodic images are not counted in the grid.
+
 
 # Tutorials
 [Tutorial I: Slicing a structure](./tutorials/i/)<br/>

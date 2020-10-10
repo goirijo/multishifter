@@ -68,14 +68,15 @@ void run_subcommand_chain(const mush::fs::path& input_path,
             }
 
             auto dir = mush::make_target_directory<subcommand>(report);
-            log << "Write structure to " << output_dir / dir << "...\n";
+            auto target_file=output_dir/dir/"POSCAR";
+            log << "Write structure to " << target_file << "...\n";
             mush::fs::create_directories(output_dir / dir);
-            cu::xtal::write_poscar(cleaved_shifted_structure, output_dir / dir / "POSCAR");
+            cu::xtal::write_poscar(cleaved_shifted_structure, target_file);
 
             auto chunk = serialize(report);
             chunk["directory"] = dir;
             chunk["shift"]=make_aligned_shift_vector(shifter, i);
-            chunk["group"]=equivalence_map_ix_to_group_label[i];
+            chunk["orbit"]=equivalence_map_ix_to_group_label[i];
 
             full_record["ids"][report.id()] = chunk;
         }

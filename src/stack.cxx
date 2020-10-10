@@ -24,7 +24,7 @@ void setup_subcommand_stack(CLI::App& app)
 
 void run_subcommand_stack(const std::vector<mush::fs::path>& input_paths, const mush::fs::path& output_path, std::ostream& log)
 {
-    log << "Loading structures ...\n";
+    log << "Loading structures...\n";
     std::vector<mush::cu::xtal::Structure> strucs;
     for(const auto& p : input_paths)
     {
@@ -32,7 +32,7 @@ void run_subcommand_stack(const std::vector<mush::fs::path>& input_paths, const 
         strucs.emplace_back(mush::make_aligned(struc_in));
     }
 
-    log << "Stacking structures ...\n";
+    log << "Stacking structures...\n";
     auto stacked=mush::orthogonalize_c_vector(mush::cu::frankenstein::stack(strucs));
     stacked.within();
 

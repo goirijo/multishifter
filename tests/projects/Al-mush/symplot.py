@@ -27,7 +27,7 @@ def tabulize_record(record):
 def scatter_equivalent_shifts(ax,record,**kwargs):
     unwinded=tabulize_record(record)
 
-    #Find shifts for any cleave entry
+    #Find shifts for any cleave entry (if you just ran "shift" you don't need this step)
     nocleave=unwinded.loc[unwinded["cleavage"]==unwinded["cleavage"].iloc[0]]
 
     #Get in plane shift vectors
