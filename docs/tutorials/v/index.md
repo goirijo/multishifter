@@ -1,5 +1,5 @@
 ---
-title: "Tutorial IV: Shifting for gamma-Surfaces"
+title: "Tutorial V: Shifting for gamma-Surfaces"
 ---
 {% include head.html %}
 
@@ -80,11 +80,11 @@ Generally speaking, for a $$N\times M$$ grid, `shift__n.m` corresponds to an in 
 This means `shift_2.2` has the slabs shifted by $$(\frac{2}{3},\frac{2}{3})$$, which is the same as the stacking fault we created in the [`mutate` tutorial](../iii).
 The figures below show the structures of `shift__0.0`, `shift__1.1`, and `shift__2.2`.
 
-Notice that for this $$3\times 3$$ grid, the next structure that would appear in this sequence is `shift__3.3`.
-This would be the same as `shift__0.0`, and so it is not outputted.
-
 
 | ![Slab with no shift](./mg_stack4.png){:width="100%"} | ![Slab double layer](./mg_stack4_double.png){:width="100%"} | ![Slab with stacking fault](./mg_stack4_fault.png){:width="100%"} |
+
+Notice that for this $$3\times 3$$ grid, the next structure that would appear in this sequence is `shift__3.3`.
+This would be the same as `shift__0.0`, and so it is not outputted.
 
 ## Equivalent shifts
 Due to the symmetry of the crystal, enumerating all the shifted slab structures on a grid often results in symmetrically equivalent structures.
@@ -101,3 +101,16 @@ We can visualize the symmetry of the glide plane with some minor python skills.
 [This script](./symplot.py) extracts the symmetry data from `record.json`, and plots the shift points, highlighting which orbit they each belong to with a different color.
 
 | ![Glide plane unit](./mg_stack4_plane.png){:width="100%"} | ![Shift points by orbit](./symplot.png){:width="100%"} |
+
+<div class="note">
+<b>Pro tip:</b>
+<br>
+Different grid densities can greatly alter the number of slab orbits, which influence how many calculations you need to perform.
+What a "good" way to divide the grid can be expecially tricky for lower symmetry unit cells.
+You can save a lot of calculation time by playing around with different grid divisions to find a ratio that bins your slabs into fewer orbits.
+<br>
+</div>
+<div>
+<br>
+</div>
+

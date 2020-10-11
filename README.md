@@ -5,7 +5,7 @@ For a tutorial on the features and workflow see the official [pages](https://goi
 This work is a product of the [Van der Ven research group](https://labs.materials.ucsb.edu/vanderven/anton/) at the UCSB Materials department.
 
 # Citing
-If this software helped your research please cite the following paper in addition to the papers listed in the [casm](https://github.com/prisms-center/CASMcode) repository.
+If this software helped your research please cite this repository and the following paper in addition to the papers listed in the [casm](https://github.com/prisms-center/CASMcode) repository.
 
 ```
 __CITATION GOES HERE__
@@ -16,6 +16,7 @@ __BIBTEX GOES HERE__
 ```
 
 The [paper](link/to/paper) outlines how the algorithms of `multishifter` operate, and applies them to metallic systems.
+If you like this repository, consider giving me a star!
 
 # Prerequisites
 `multishift` is written on top of [casm-utilities](https://github.com/goirijo/casm-utilities), which requires a c++ compiler with c++17 support (`g++-8` recommended).

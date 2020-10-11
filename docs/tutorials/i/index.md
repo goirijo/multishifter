@@ -70,4 +70,6 @@ multishift slice --input graphite.vasp --millers 1 1 1 --output graphite_sliced.
 The resulting structure is a size 3 superstructure of the starting primitive structure, but has $$ab$$ vectors parallel to the individual graphene layers.
 The figure below contrasts the primitive cell with the sliced structure.
 
-| ![Primitive C cell inside sliced cell](./graphite_intersection.png){:width="70%"} |
+<p align="center">
+  <img width="60%" src="./graphite_intersection.png">
+</p>

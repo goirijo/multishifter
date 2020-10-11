@@ -24,6 +24,13 @@ def tabulize_record(record):
     df=pd.read_json(json.dumps(record["ids"]), orient="index")
     return df
 
+def in_plane_vectors(record):
+    a,b=record["grid"]
+    au,bu=record["shift_units"]
+    avec,bvec=np.array(au)*a,np.array(bu)*b
+
+    return avec,bvec
+
 def scatter_equivalent_shifts(ax,record,**kwargs):
     unwinded=tabulize_record(record)
 
@@ -40,9 +47,8 @@ def scatter_equivalent_shifts(ax,record,**kwargs):
     points=np.hstack((ab,xy,c[:,np.newaxis]))
 
     #We'll duplicate the "walls" along a and b onto the next periodic image
+    avec,bvec=in_plane_vectors(record)
     a,b=record["grid"]
-    au,bu=record["shift_units"]
-    avec,bvec=np.array(au)*a,np.array(bu)*b
 
     #Get the walls and repeat them on the next boundary
     aarg=points[:,1].argsort()[0:a]

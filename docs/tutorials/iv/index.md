@@ -81,7 +81,8 @@ multishift cleave --input al_stack8.vasp --output al_cleave --values -0.15 -0.1 
 
 The image below shows the energy values of each structure calculated with DFT, as a function of separation distance for the $$Al$$ slab.
 As the cleavage value increases, the energy converges to twice the value of the surface energy of the material (two surfaces per slab).
+The [data for these calculations](./al_cleave.26.data.zip) and [the script used for the plot](./uberplot.py) are avaiable for you to download.
 
 <p align="center">
-  <img width="75%" src="./al.uber0.0.png">
+  <img width="75%" src="./uberplot.png">
 </p>
