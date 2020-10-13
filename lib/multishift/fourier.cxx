@@ -103,8 +103,6 @@ void Interpolator::_take_fourier_transform()
                     k_val.value += normalization * r_val.value * r_val.weight * std::exp(-im * k_vec.dot(r_vec));
                 }
             }
-            std::cout<<"DEBUGGING: k_val.value is "<<k_val.value<<std::endl;
-            
         }
     }
 

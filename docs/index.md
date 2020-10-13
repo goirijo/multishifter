@@ -111,6 +111,16 @@ Useful for $$\gamma$$-surface calculations.
 Each grid point will correspond to a particular shift applied to the slabs.
 Periodic images are not counted in the grid.
 
+## [fourier](./tutorials/vii)
+`multishift fourier` reads DFT or UBER parameters that you've assigned to each gridpoint from a `chain` or `shift` command, and returns an analytical expression for your surface.
+The expression is printed as python code.
+
+### Parameters
+- data: path to `json` file that holds the data to interpolate.
+- cleavage-slice: specifies which cleavage values to read from the data set. Use this when your data set has multiple values per grid point.
+- key: string used to access the values to interpolate in your `json` file.
+- crush: minimum magnitude required for basis function to be included.
+
 
 # Tutorials
 Follow this series of tutorials to acquaint yourself with all of the available features.

@@ -7,7 +7,7 @@ title: "Tutorial V: Shifting for gamma-Surfaces"
 {% include warning.css %}
 </style>
 
-# Tutorial IV: Shifting for $$\gamma$$-surfaces
+# Tutorial V: Shifting for $$\gamma$$-surfaces
 In this tutorial we'll use `multishift shift` to generate many slab structures that have been shifted along the $$ab$$-plane of their unit cell (glide plane).
 Calculations of these structures can be used to calculate $$\gamma$$-surfaces.
 
