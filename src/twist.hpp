@@ -5,6 +5,6 @@
 #include <multishift/definitions.hpp>
 
 void setup_subcommand_twist(CLI::App& app);
-void run_subcommand_twist(const mush::fs::path& settings_path, std::ostream& log);
+void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path& output_dir, double angle, int max_lattice_sites, double error_tol, std::string zone, std::string supercells, std::ostream& log);
 
 #endif

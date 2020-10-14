@@ -87,6 +87,7 @@ void run_subcommand_chain(const mush::fs::path& input_path,
     log << "Back up slab structure to " << output_dir / "slab.vasp"
         << "...\n";
     cu::xtal::write_poscar(slab, output_dir / "slab.vasp");
+
     log << "Save record to "<<output_dir/"record.json"<<"...\n";
     mush::write_json(full_record,output_dir/"record.json");
 }

@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     setup_subcommand_cleave(app);
     setup_subcommand_shift(app);
     setup_subcommand_fourier(app);
-    /* setup_subcommand_twist(app); */
+    setup_subcommand_twist(app);
 
     app.require_subcommand();
 
