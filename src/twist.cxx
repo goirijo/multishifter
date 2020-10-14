@@ -14,7 +14,7 @@ void setup_subcommand_twist(CLI::App& app)
 {
     auto input_path_ptr = std::make_shared<mush::fs::path>();
     auto output_path_ptr = std::make_shared<mush::fs::path>();
-    auto angle_ptr = std::make_shared<double>();
+    auto angles_ptr = std::make_shared<std::vector<double>>();
     auto max_lattice_sites_ptr = std::make_shared<int>();
     auto error_tol_ptr = std::make_shared<double>();
     auto zone_ptr = std::make_shared<std::string>();
@@ -27,46 +27,22 @@ void setup_subcommand_twist(CLI::App& app)
     populate_subcommand_output_option(twist_sub, output_path_ptr.get());
 
     // clang-format off
-    twist_sub->add_option("-a,--angle", *angle_ptr, "Rotation angle to twist the structure with in degrees. Rotation is applied at the origin, perpendicular to the ab-plane.")->required();
+    twist_sub->add_option("-a,--angles", *angles_ptr, "Rotation angles to twist the structure with in degrees. Rotation is applied at the origin, perpendicular to the ab-plane.")->required();
     twist_sub->add_option("-m,--max-lattice-sites", *max_lattice_sites_ptr, "Sets the maximum search space for more commensurate Moire supercells. If zero, don't try looking for supercells.")->default_val(0);
     twist_sub->add_option("-e,--error-tol", *error_tol_ptr, "Minimum improvement necessary to consider a larger supercell better than a smaller one.")->default_val(1e-8);
-    twist_sub->add_option("-z,--brillouin-zone", *zone_ptr, "Which Brillouin zone to use when mapping reciprocal Moire lattice vectors back into the first Brillouin zone.")->default_val("aligned")->check(CLI::Validator({"aligned","rotated"}))->ignore_case();
-    twist_sub->add_option("-s,--supercells", *supercells_ptr, "Specify whether only the best supercell or every possible supercell that can hold max-lattice-sites should be saved.")->default_val("best")->check(CLI::Validator({"best","all"}))->ignore_case();
+    twist_sub->add_option("-z,--brillouin-zone", *zone_ptr, "Which Brillouin zone to use when mapping reciprocal Moire lattice vectors back into the first Brillouin zone.")->default_val("aligned")->check(CLI::IsMember({"aligned","rotated"},CLI::ignore_case));
+    twist_sub->add_option("-s,--supercells", *supercells_ptr, "Specify whether only the best supercell or every possible supercell that can hold max-lattice-sites should be saved.")->default_val("best")->check(CLI::IsMember({"best","all"},CLI::ignore_case));
     // clang-format off
 
     twist_sub->callback([=]() {run_subcommand_twist(*input_path_ptr,
             *output_path_ptr,
-            *angle_ptr,
+            *angles_ptr,
             *max_lattice_sites_ptr,
             *error_tol_ptr,
             *zone_ptr,
             *supercells_ptr,
             std::cout); });
 }
-
-/* void write_twisted_structures(const std::vector<mush::MoireStructureGenerator>& generators, const mush::fs::path& root, std::ostream& log) */
-/* { */
-/*     using LATTICE=mush::MoireStructureGenerator::LATTICE; */
-/*     std::pair<LATTICE,std::string> A{LATTICE::ALIGNED,"aligned"}; */
-/*     std::pair<LATTICE,std::string> R{LATTICE::ROTATED,"rotated"}; */
-
-/*     log<<"Write cleaved structures to..."<<root<<std::endl; */
-/*     for(const auto& gen : generators) */
-/*     { */
-/*         auto target=root/make_twist_dirname(gen.degrees()); */
-/*         cautious_create_directory(target); */
-
-/*         for(auto zone_pr : {A,R}) */
-/*         { */
-/*             for(auto lat_pr : {A,R}) */
-/*             { */
-/*                 auto layer=gen.layer(zone_pr.first,lat_pr.first); */
-/*                 std::string combo_name=zone_pr.second+"_zone_"+lat_pr.second+"_lattice.vasp"; */
-/*                 mush::cu::xtal::write_poscar(layer,target/combo_name); */
-/*             } */
-/*         } */
-/*     } */
-/* } */
 
 std::string lat_to_name(mush::MoireStructureReport::LATTICE lat)
 {
@@ -83,6 +59,13 @@ std::string make_twist_dirname(double twist)
     std::stringstream twiststream;
     twiststream << std::fixed << std::setprecision(6) << twist;
     return "twist__" + twiststream.str();
+}
+
+std::string make_twist_id(double twist)
+{
+    std::stringstream twiststream;
+    twiststream << std::fixed << std::setprecision(6) << twist;
+    return "t" + twiststream.str();
 }
 
 mush::fs::path make_target_structure_dir(double twist, mush::MoireStructureReport::LATTICE lat, int scel_ix)
@@ -139,7 +122,7 @@ mush::json serialize(const mush::MoireStructureReport& moire)
     return report;
 }
 
-void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path& output_dir, double angle, int max_lattice_sites, double error_tol, std::string zone, std::string supercells, std::ostream& log)
+void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path& output_dir, const std::vector<double>& angles, int max_lattice_sites, double error_tol, std::string zone, std::string supercells, std::ostream& log)
 {
     //GiVe ArGuMenTs LieK aN eDgY tEEn
     std::transform(zone.begin(),zone.end(),zone.begin(),::tolower);
@@ -155,7 +138,8 @@ void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path
         assert(zone=="rotated");
     }
                 
-    mush::cautious_create_directory(output_dir);
+    /* mush::cautious_create_directory(output_dir); */
+    mush::fs::create_directory(output_dir);
 
     log << "Reading slab from " << input_path << "...\n";
     auto slab = cu::xtal::Structure::from_poscar(input_path);
@@ -164,56 +148,64 @@ void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path
     mush::make_aligned(&slab);
 
     mush::json record;
-    record["angle"]=angle;
+    record["angles"]=angles;
     record["max_lattice_sites"]=max_lattice_sites;
     record["error_tolerance"]=error_tol;
 
-    log << "Twising by " << std::fixed << std::setprecision(6) << angle << " degrees...\n";
-    mush::MoireStructureApproximator moirenator(slab,angle);
-    log << "Allow up to "<< max_lattice_sites<<" lattice sites in bilayer...\n";
-    moirenator.expand(max_lattice_sites);
 
-    for(auto lat : {LATTICE::ALIGNED,LATTICE::ROTATED})
+    for(double twist : angles)
     {
-        if(supercells=="best")
+        log << "Twising by " << std::fixed << std::setprecision(6) << twist << " degrees ("<<zone<<" Brillouin zone)...\n";
+        mush::MoireStructureApproximator moirenator(slab,twist);
+        if(max_lattice_sites<moirenator.minimum_lattice_sites(bz))
         {
-            mush::fs::path root=mush::fs::path(make_twist_dirname(angle));
-            mush::fs::create_directories(output_dir/root);
-
-            auto best_report=moirenator.best_smallest(bz,lat,error_tol);
-            
-            record[lat_to_name(lat)]=serialize(best_report);
-            auto tile_path=root/(lat_to_name(lat)+"_tile.vasp");
-            record[lat_to_name(lat)]["tile"]=tile_path;
-
-            cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path);
-            cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp"));
-
+            log << "Allow minimum possible number of lattice sites in bilayer ("<<moirenator.minimum_lattice_sites(bz)<<")...\n";
         }
-
-        else if(supercells=="all")
+        else
         {
-            auto best_reports=moirenator.best_of_each_size(bz,lat);
-            for(int i=1; i<=best_reports.size(); ++i)
+            log << "Allow up to "<< max_lattice_sites<<" lattice sites in bilayer...\n";
+        }
+        moirenator.expand(max_lattice_sites);
+
+        mush::json twist_record;
+        for(auto lat : {LATTICE::ALIGNED,LATTICE::ROTATED})
+        {
+            if(supercells=="best")
             {
-                mush::json subrecord;
-                const auto& best_report=best_reports[i-1];
-                auto root=make_target_structure_dir(angle, lat, i);
+                mush::fs::path root=mush::fs::path(make_twist_dirname(twist));
                 mush::fs::create_directories(output_dir/root);
 
-                subrecord=serialize(best_report);
+                auto best_report=moirenator.best_smallest(bz,lat,error_tol);
+                
+                twist_record[lat_to_name(lat)]=serialize(best_report);
                 auto tile_path=root/(lat_to_name(lat)+"_tile.vasp");
-                subrecord["tile"]=tile_path;
+                twist_record[lat_to_name(lat)]["tile"]=tile_path;
 
                 cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path);
                 cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp"));
-                record[std::to_string(i)][lat_to_name(lat)]=subrecord;
-            }
-        }
 
-        else
-        {
-            throw std::runtime_error("'--supercells' tag was malformed.");
+            }
+
+            if(supercells=="all")
+            {
+                auto best_reports=moirenator.best_of_each_size(bz,lat);
+                for(int i=1; i<=best_reports.size(); ++i)
+                {
+                    mush::json subrecord;
+                    const auto& best_report=best_reports[i-1];
+                    auto root=make_target_structure_dir(twist, lat, i);
+                    mush::fs::create_directories(output_dir/root);
+
+                    subrecord=serialize(best_report);
+                    auto tile_path=root/(lat_to_name(lat)+"_tile.vasp");
+                    subrecord["tile"]=tile_path;
+
+                    cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path);
+                    cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp"));
+                    twist_record[std::to_string(i)][lat_to_name(lat)]=subrecord;
+                }
+            }
+            record[make_twist_id(twist)]=twist_record;
         }
     }
 
@@ -223,7 +215,6 @@ void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path
 
     log << "Save record to "<<output_dir/"record.json"<<"...\n";
     mush::write_json(record,output_dir/"record.json");
-
 
     return;
 }

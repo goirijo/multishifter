@@ -31,6 +31,9 @@ int main(int argc, char** argv)
 
     app.require_subcommand();
 
+    app.get_formatter()->column_width(40);
+    app.get_formatter()->label("REQUIRED","*");
+
     CLI11_PARSE(app, argc, argv);
 
     return 0;
