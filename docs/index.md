@@ -17,7 +17,7 @@ Documentation is being uploaded before features are available.
 <br>
 </div>
 
-# What is multishift for?
+# What is multishifter for?
 A common technique for investigating dislocations, stacking faults, and slip planes in crystals involves the calculation of $$\gamma$$-surface energies.
 The software provided in the `multishifter` toolbox facilitate the creation of crystal structures for calculations of UBER curves and surface energies along arbitrary slip planes.
 The `multishifter` libraries also have tools that aid in the construction of twisted bilayers to create periodic Moir&#233; structures.
