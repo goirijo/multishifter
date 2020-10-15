@@ -1,0 +1,46 @@
+.note {
+padding: 5px;
+border: 1px solid #DEDEDE;
+margin: 5px 0;
+background: #FFFFCC;
+color: #222222;
+text-align: left;
+}
+
+.info {
+padding: 5px;
+border: 1px solid #DEDEDE;
+margin: 5px 0;
+background: #EFEFEF;
+color: #222222;
+text-align: center;
+}
+
+.warning {
+padding: 5px;
+border: 1px solid #DEDEDE;
+margin: 5px 0;
+background: #FFFFCC;
+color: #222222;
+text-align: center;
+}
+
+.success {
+padding: 5px;
+border: 1px solid #349534;
+margin: 5px 0;
+background: #C9FFCA;
+color: #008000;
+font-weight: bold;
+text-align: center;
+}
+
+.error {
+padding: 5px;
+border: 1px solid #CC0000;
+margin: 5px 0;
+background: #F7CBCA;
+color: #CC0000;
+font-weight: bold;
+text-align: center;
+}

@@ -1,0 +1,9 @@
+{
+    "name" : "uber_tutorial",
+    "base":
+    {
+        "prim" : "./licoo2.vasp",
+        "millers" : [1,1,1],
+        "stacks" : 1
+    }
+}
