@@ -106,7 +106,7 @@ We can visualize the symmetry of the glide plane with some minor python skills.
 <b>Pro tip:</b>
 <br>
 Different grid densities can greatly alter the number of slab orbits, which influence how many calculations you need to perform.
-What a "good" way to divide the grid can be expecially tricky for lower symmetry unit cells.
+Finding a "good" way to divide the grid can be especially tricky for lower symmetry unit cells.
 You can save a lot of calculation time by playing around with different grid divisions to find a ratio that bins your slabs into fewer orbits.
 <br>
 </div>
