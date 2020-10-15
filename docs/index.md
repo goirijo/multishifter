@@ -20,11 +20,11 @@ Documentation is being uploaded before features are available.
 # What is multishift for?
 A common technique for investigating dislocations, stacking faults, and slip planes in crystals involves the calculation of $$\gamma$$-surface energies.
 The software provided in the `multishifter` toolbox facilitate the creation of crystal structures for calculations of UBER curves and surface energies along arbitrary slip planes.
-The `multishifter` libraries also have tools aid in the construction of twisted bilayers to create periodic Moir&#233; structures.
+The `multishifter` libraries also have tools that aid in the construction of twisted bilayers to create periodic Moir&#233; structures.
 
 # Basic usage
 The `multishift` executable is a suite of command line tools that can manipulate and create crystal structures for slab model calculations.
-Each tool is specialized to complete a particular task, and accepts arguments either directly from the command line.
+Each tool is specialized to complete a particular task, and accepts arguments directly from the command line.
 Input and output files of crystal structures use the [VASP](https://www.vasp.at/wiki/index.php/POSCAR) format.
 
 Starting from a primitive structure, several steps must be taken to create the slab models, each accomplished using a `multishifter` tool.
