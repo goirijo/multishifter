@@ -61,10 +61,12 @@ std::string make_twist_dirname(double twist)
     return "twist__" + twiststream.str();
 }
 
-std::string make_twist_id(double twist)
+std::string make_twist_id(double twist, const mush::MoireLatticeReport& report)
 {
     std::stringstream twiststream;
     twiststream << std::fixed << std::setprecision(6) << twist;
+
+    twiststream<<":"<<report.num_moirons();
     return "t" + twiststream.str();
 }
 
@@ -122,6 +124,24 @@ mush::json serialize(const mush::MoireStructureReport& moire)
     return report;
 }
 
+void commit_twisted_id(double twist, const mush::MoireStructureReport& best_report, mush::json* _record, const mush::fs::path& output_dir, const mush::fs::path& root, mush::MoireStructureReport::LATTICE lat)
+{
+    mush::json& twist_record=*_record;
+
+                auto id=make_twist_id(twist,best_report);
+                
+                twist_record[id][lat_to_name(lat)]=serialize(best_report);
+                auto tile_path=root/(lat_to_name(lat)+"_tile.vasp");
+                twist_record[id][lat_to_name(lat)]["tile"]=tile_path;
+                auto layer_path=root/(lat_to_name(lat)+"_layer.vasp");
+                twist_record[id][lat_to_name(lat)]["layer"]=layer_path;
+
+                cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path);
+                cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp"));
+
+    return;
+}
+
 void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path& output_dir, const std::vector<double>& angles, int max_lattice_sites, double error_tol, std::string zone, std::string supercells, std::ostream& log)
 {
     //GiVe ArGuMenTs LieK aN eDgY tEEn
@@ -153,7 +173,8 @@ void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path
     record["error_tolerance"]=error_tol;
 
 
-    for(double twist : angles)
+    mush::json twist_record;
+    for(const double twist : angles)
     {
         log << "Twising by " << std::fixed << std::setprecision(6) << twist << " degrees ("<<zone<<" Brillouin zone)...\n";
         mush::MoireStructureApproximator moirenator(slab,twist);
@@ -167,22 +188,28 @@ void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path
         }
         moirenator.expand(max_lattice_sites);
 
-        mush::json twist_record;
         for(auto lat : {LATTICE::ALIGNED,LATTICE::ROTATED})
         {
             if(supercells=="best")
             {
+
                 mush::fs::path root=mush::fs::path(make_twist_dirname(twist));
+
                 mush::fs::create_directories(output_dir/root);
+                const auto best_report=moirenator.best_smallest(bz,lat,error_tol);
 
-                auto best_report=moirenator.best_smallest(bz,lat,error_tol);
+                auto id=make_twist_id(twist,best_report);
                 
-                twist_record[lat_to_name(lat)]=serialize(best_report);
-                auto tile_path=root/(lat_to_name(lat)+"_tile.vasp");
-                twist_record[lat_to_name(lat)]["tile"]=tile_path;
+                /* twist_record[id][lat_to_name(lat)]=serialize(best_report); */
+                /* auto tile_path=root/(lat_to_name(lat)+"_tile.vasp"); */
+                /* twist_record[id][lat_to_name(lat)]["tile"]=tile_path; */
+                /* auto layer_path=root/(lat_to_name(lat)+"_layer.vasp"); */
+                /* twist_record[id][lat_to_name(lat)]["layer"]=layer_path; */
 
-                cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path);
-                cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp"));
+                /* cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path); */
+                /* cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp")); */
+
+                commit_twisted_id(twist,best_report,&twist_record,output_dir,root,lat);
 
             }
 
@@ -191,22 +218,26 @@ void run_subcommand_twist(const mush::fs::path& input_path, const mush::fs::path
                 auto best_reports=moirenator.best_of_each_size(bz,lat);
                 for(int i=1; i<=best_reports.size(); ++i)
                 {
-                    mush::json subrecord;
-                    const auto& best_report=best_reports[i-1];
                     auto root=make_target_structure_dir(twist, lat, i);
+
                     mush::fs::create_directories(output_dir/root);
+                    const auto& best_report=best_reports[i-1];
 
-                    subrecord=serialize(best_report);
-                    auto tile_path=root/(lat_to_name(lat)+"_tile.vasp");
-                    subrecord["tile"]=tile_path;
+                    /* auto id=make_twist_id(twist,best_report); */
 
-                    cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path);
-                    cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp"));
-                    twist_record[std::to_string(i)][lat_to_name(lat)]=subrecord;
+                    /* twist_record[id]=serialize(best_report); */
+                    /* auto tile_path=root/(lat_to_name(lat)+"_tile.vasp"); */
+                    /* twist_record[id]["tile"]=tile_path; */
+                    /* auto layer_path=root/(lat_to_name(lat)+"_layer.vasp"); */
+                    /* twist_record[id]["layer"]=layer_path; */
+
+                    /* cu::xtal::write_poscar(best_report.approximate_tiling_unit_structure,output_dir/tile_path); */
+                    /* cu::xtal::write_poscar(best_report.approximate_moire_structure,output_dir/root/(lat_to_name(lat)+"_layer.vasp")); */
+                    commit_twisted_id(twist,best_report,&twist_record,output_dir,root,lat);
                 }
             }
-            record[make_twist_id(twist)]=twist_record;
         }
+        record["ids"]=twist_record;
     }
 
     log << "Back up slab structure to " << output_dir / "slab.vasp"

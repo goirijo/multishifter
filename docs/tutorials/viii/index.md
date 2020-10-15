@@ -194,7 +194,7 @@ $$
 \end{equation}
 $$
 
-The application of a rotation $$\theta$$ to a lattice $$\mathbf{L}$$ around a rotation axis that is parallel to $\mathbf{C}$ produces a lattice  $$\mathbf{L_\theta}$$. 
+The application of a rotation $$\theta$$ to a lattice $$\mathbf{L}$$ around a rotation axis that is perpendicular to both $$\mathbf{A}$$ and $$\mathbf{B}$$ produces a lattice  $$\mathbf{L_\theta}$$. 
 The lattice vectors of the Moir&#233; pattern, $$\mathbf{M}$$, will have a reciprocal lattice
 
 $$
