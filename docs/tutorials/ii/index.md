@@ -37,7 +37,7 @@ We'll create a slab that is 5 units thick.
 In order to do this, run
 
 ```bash
-multishift stack --inputs licoo2.vasp licoo2.vasp licoo2.vasp licoo2.vasp licoo2.vasp --output licoo2_stack5.vasp
+multishift stack --input licoo2.vasp licoo2.vasp licoo2.vasp licoo2.vasp licoo2.vasp --output licoo2_stack5.vasp
 ```
 
 The resulting structure has the same orientation as the input, but is repeated 5 times along the $$c$$ direction.

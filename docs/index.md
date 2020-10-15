@@ -47,7 +47,7 @@ multhishift <command> --help
 The stack is created by fusing unit cells together along the $$ab$$ facet.
 
 ### Parameters
-- inputs: list of structures to stack together.
+- input: list of structures to stack together.
 - output: output file path.
 
 ## [translate](./tutorials/ii)
@@ -84,7 +84,7 @@ Useful for Universal Binding Energy Relation (UBER) calculations.
 
 ### Parameters
 - input: path to starting structure.
-- output: output directory (must not exist).
+- output: output directory.
 - values: vacuum spacings to insert between the periodic images of the slabs in $$\AA$$.
 Negative values will bring periodic slabs closer to each other.
 
@@ -94,7 +94,7 @@ Useful for $$\gamma$$-surface calculations.
 
 ### Parameters
 - input: path to starting structure.
-- output: output directory (must not exist).
+- output: output directory.
 - grid: divisions to make along the $$ab$$-plane.
 Each grid point will correspond to a particular shift applied to the slabs.
 Periodic images are not counted in the grid.
@@ -106,7 +106,7 @@ Useful for $$\gamma$$-surface calculations.
 
 ### Parameters
 - input: path to starting structure.
-- output: output directory (must not exist).
+- output: output directory.
 - grid: divisions to make along the $$ab$$-plane.
 Each grid point will correspond to a particular shift applied to the slabs.
 Periodic images are not counted in the grid.
@@ -120,6 +120,18 @@ The expression is printed as python code.
 - cleavage-slice: specifies which cleavage values to read from the data set. Use this when your data set has multiple values per grid point.
 - key: string used to access the values to interpolate in your `json` file.
 - crush: minimum magnitude required for basis function to be included.
+
+## [twist](./tutorials/viii)
+`multishift twist` creates twisted commensurate supercells that can be combined to create Moir&#233; patterns when stacked together.
+
+### Parameters
+- input: path to starting structure.
+- output: output directory.
+- angles: rotation angles to apply to the slab. Rotation axis is always perpedicular to the $$ab$$-plane, and goes through the origin.
+- max-lattice-sites: determines how large the search space for highly commensurate supercells should be. Larger values will result in less deformation of the final layers.
+- error-tol: minimum improvement necessary to consider a larger supcercell [better](./tutorials/ix).
+- brillouin-zone: select whether the rotated or the original (aligned) Brillouin zone should be used to map reciprocal vectors back into the first zone.
+- supercells: determines whether only the best supercell, or supercells of different sizes should be outputted. 
 
 
 # Tutorials
