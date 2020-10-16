@@ -1,3 +1,1 @@
-include lib/casmblob/Makemodule.am
-include lib/casmutils/Makemodule.am
-include lib/multishift/Makemodule.am
+include plugins/multishifter/lib/multishift/Makemodule.am

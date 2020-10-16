@@ -15,9 +15,9 @@ check_target()
 
 prepare_root()
 {
-    root="@abs_top_builddir@/tests/regress/$1"
-    input_files="@abs_top_srcdir@/tests/regress/$1/in"
-    output_files="@abs_top_srcdir@/tests/regress/$1/out"
+    root="@abs_top_builddir@/plugins/multishifter/tests/regress/$1"
+    input_files="@abs_top_srcdir@/plugins/multishifter/tests/regress/$1/in"
+    output_files="@abs_top_srcdir@/plugins/multishifter/tests/regress/$1/out"
     cd ${root}
     cp -r ${output_files} .
     rm -rf run

@@ -1,32 +1,33 @@
 bin_PROGRAMS += multishift
 
+multishift_CPPFLAGS = $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
+
 multishift_SOURCES =\
-					CLI11/include/CLI/CLI.hpp\
-					src/misc.cxx\
-					src/misc.hpp\
-					src/common_options.cxx\
-					src/common_options.hpp\
-					src/slice.hpp\
-					src/slice.cxx\
-					src/cleave.hpp\
-					src/cleave.cxx\
-					src/shift.hpp\
-					src/shift.cxx\
-					src/chain.hpp\
-					src/chain.cxx\
-					src/fourier.hpp\
-					src/fourier.cxx\
-					src/twist.hpp\
-					src/twist.cxx\
-					src/stack.hpp\
-					src/stack.cxx\
-					src/mutate.hpp\
-					src/mutate.cxx\
-					src/translate.hpp\
-					src/translate.cxx\
-					src/align.hpp\
-					src/align.cxx\
-					src/multishifter.cpp
+					plugins/multishifter/src/misc.cxx\
+					plugins/multishifter/src/misc.hpp\
+					plugins/multishifter/src/common_options.cxx\
+					plugins/multishifter/src/common_options.hpp\
+					plugins/multishifter/src/slice.hpp\
+					plugins/multishifter/src/slice.cxx\
+					plugins/multishifter/src/cleave.hpp\
+					plugins/multishifter/src/cleave.cxx\
+					plugins/multishifter/src/shift.hpp\
+					plugins/multishifter/src/shift.cxx\
+					plugins/multishifter/src/chain.hpp\
+					plugins/multishifter/src/chain.cxx\
+					plugins/multishifter/src/fourier.hpp\
+					plugins/multishifter/src/fourier.cxx\
+					plugins/multishifter/src/twist.hpp\
+					plugins/multishifter/src/twist.cxx\
+					plugins/multishifter/src/stack.hpp\
+					plugins/multishifter/src/stack.cxx\
+					plugins/multishifter/src/mutate.hpp\
+					plugins/multishifter/src/mutate.cxx\
+					plugins/multishifter/src/translate.hpp\
+					plugins/multishifter/src/translate.cxx\
+					plugins/multishifter/src/align.hpp\
+					plugins/multishifter/src/align.cxx\
+					plugins/multishifter/src/multishifter.cpp
 
 multishift_LDADD =\
 					libmultishift.la

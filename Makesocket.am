@@ -1,0 +1,3 @@
+include $(srcdir)/plugins/multishifter/lib/Makemodule.am    
+include $(srcdir)/plugins/multishifter/src/Makemodule.am    #this is where the actual executables are
+include $(srcdir)/plugins/multishifter/tests/Makemodule.am

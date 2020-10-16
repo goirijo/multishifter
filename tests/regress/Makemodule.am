@@ -1,4 +1,4 @@
-TESTS += tests/regress/slice/run.sh
-TESTS += tests/regress/stack/run.sh
-TESTS += tests/regress/translate/run.sh
-TESTS += tests/regress/mutate/run.sh
+TESTS += plugins/multishifter/tests/regress/slice/run.sh
+TESTS += plugins/multishifter/tests/regress/stack/run.sh
+TESTS += plugins/multishifter/tests/regress/translate/run.sh
+TESTS += plugins/multishifter/tests/regress/mutate/run.sh

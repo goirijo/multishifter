@@ -1,3 +1,0 @@
-dist_bin_SCRIPTS+=\
-				  python/multishift-sidekick\
-				  python/multishift-plot

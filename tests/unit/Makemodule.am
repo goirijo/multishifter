@@ -1,92 +1,70 @@
-TESTS+=check_trivial
-check_PROGRAMS += check_trivial
-check_trivial_SOURCES =\
-					   tests/unit/multishift/trivial.cpp
+TESTS+=MUSH_check_trivial
+check_PROGRAMS += MUSH_check_trivial
+MUSH_check_trivial_SOURCES =\
+					   plugins/multishifter/tests/unit/multishift/trivial.cpp
 
-check_trivial_LDADD=\
+MUSH_check_trivial_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
-# TESTS+=check_slab
-# check_PROGRAMS += check_slab
-# check_slab_SOURCES =\
-# 					   tests/unit/multishift/slab.cpp
+TESTS+=MUSH_check_slice_settings
+check_PROGRAMS += MUSH_check_slice_settings
+MUSH_check_slice_settings_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
+MUSH_check_slice_settings_SOURCES =\
+					   plugins/multishifter/tests/unit/multishift/slice_settings.cpp
 
-# check_slab_LDADD=\
-# 					libgtest.la\
-# 					libmultishift.la
-
-
-# TESTS+=check_shift
-# check_PROGRAMS += check_shift
-# check_shift_SOURCES =\
-# 					   tests/unit/multishift/shift.cpp
-
-# check_shift_LDADD=\
-# 					libgtest.la\
-# 					libmultishift.la
-
-# TESTS+=check_twist
-# check_PROGRAMS += check_twist
-# check_twist_SOURCES =\
-# 					   tests/unit/multishift/twist.cpp
-
-# check_twist_LDADD=\
-# 					libgtest.la\
-# 					libmultishift.la
-
-TESTS+=check_slice_settings
-check_PROGRAMS += check_slice_settings
-check_slice_settings_SOURCES =\
-					   tests/unit/multishift/slice_settings.cpp
-
-check_slice_settings_LDADD=\
+MUSH_check_slice_settings_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
-TESTS+=check_slicer
-check_PROGRAMS += check_slicer
-check_slicer_SOURCES =\
-					   tests/unit/multishift/slicer.cpp
+TESTS+=MUSH_check_slicer
+check_PROGRAMS += MUSH_check_slicer
+MUSH_check_slicer_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
+MUSH_check_slicer_SOURCES =\
+					   plugins/multishifter/tests/unit/multishift/slicer.cpp
 
-check_slicer_LDADD=\
+MUSH_check_slicer_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
-TESTS+=check_slaber
-check_PROGRAMS += check_slaber
-check_slaber_SOURCES =\
-					   tests/unit/multishift/slaber.cpp
+TESTS+=MUSH_check_slaber
+check_PROGRAMS += MUSH_check_slaber
+MUSH_check_slaber_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
+MUSH_check_slaber_SOURCES =\
+					   plugins/multishifter/tests/unit/multishift/slaber.cpp
 
-check_slaber_LDADD=\
+MUSH_check_slaber_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
-TESTS+=check_shifter
-check_PROGRAMS += check_shifter
-check_shifter_SOURCES =\
-					   tests/unit/multishift/shifter.cpp
+TESTS+=MUSH_check_shifter
+check_PROGRAMS += MUSH_check_shifter
+MUSH_check_shifter_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
+MUSH_check_shifter_SOURCES =\
+					   plugins/multishifter/tests/unit/multishift/shifter.cpp
 
-check_shifter_LDADD=\
+MUSH_check_shifter_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
-TESTS+=check_cleaver
-check_PROGRAMS += check_cleaver
-check_cleaver_SOURCES =\
-					   tests/unit/multishift/cleaver.cpp
+TESTS+=MUSH_check_cleaver
+check_PROGRAMS += MUSH_check_cleaver
+MUSH_check_cleaver_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
+MUSH_check_cleaver_SOURCES =\
+					   plugins/multishifter/tests/unit/multishift/cleaver.cpp
 
-check_cleaver_LDADD=\
+MUSH_check_cleaver_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
 
-TESTS+=check_fourier
-check_PROGRAMS += check_fourier
-check_fourier_SOURCES =\
-					   tests/unit/multishift/fourier.cpp
+TESTS+=MUSH_check_fourier
+check_PROGRAMS += MUSH_check_fourier
+MUSH_check_fourier_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
+MUSH_check_fourier_SOURCES =\
+					   plugins/multishifter/tests/unit/multishift/fourier.cpp
 
-check_fourier_LDADD=\
+MUSH_check_fourier_LDADD=\
 					libgtest.la\
 					libmultishift.la
 
