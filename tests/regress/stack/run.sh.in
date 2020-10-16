@@ -6,7 +6,7 @@ prepare_root stack
 input="./licoo2.vasp"
 target="./licoo2_stack5.vasp"
 
-multishift stack --inputs ${input} ${input} ${input} ${input} ${input} --output ${target}
+multishift stack --input ${input} ${input} ${input} ${input} ${input} --output ${target}
 check_target ${target}
 
 
