@@ -72,7 +72,6 @@ A positive cleavage value (right) inserts space bewtween the slabs, separating t
 ## A worked example
 With enough cleavage values, you can fit an UBER curve.
 The following command generates 26 cleavage values, with smaller increments concentrated around the equilibrium distance.
-`multishift` requires that output directories be named something nonexistent in the working directory.
 
 ```bash
 rm -r al_cleave
