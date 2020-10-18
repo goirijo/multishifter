@@ -11,7 +11,8 @@ TESTS+=MUSH_check_slice_settings
 check_PROGRAMS += MUSH_check_slice_settings
 MUSH_check_slice_settings_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
 MUSH_check_slice_settings_SOURCES =\
-					   plugins/multishifter/tests/unit/multishift/slice_settings.cpp
+					   plugins/multishifter/tests/unit/multishift/slice_settings.cpp\
+					   plugins/multishifter/tests/autotools.hh
 
 MUSH_check_slice_settings_LDADD=\
 					libgtest.la\
@@ -21,7 +22,8 @@ TESTS+=MUSH_check_slicer
 check_PROGRAMS += MUSH_check_slicer
 MUSH_check_slicer_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
 MUSH_check_slicer_SOURCES =\
-					   plugins/multishifter/tests/unit/multishift/slicer.cpp
+					   plugins/multishifter/tests/unit/multishift/slicer.cpp\
+					   plugins/multishifter/tests/autotools.hh
 
 MUSH_check_slicer_LDADD=\
 					libgtest.la\
@@ -31,7 +33,8 @@ TESTS+=MUSH_check_slaber
 check_PROGRAMS += MUSH_check_slaber
 MUSH_check_slaber_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
 MUSH_check_slaber_SOURCES =\
-					   plugins/multishifter/tests/unit/multishift/slaber.cpp
+					   plugins/multishifter/tests/unit/multishift/slaber.cpp\
+					   plugins/multishifter/tests/autotools.hh
 
 MUSH_check_slaber_LDADD=\
 					libgtest.la\
@@ -41,7 +44,8 @@ TESTS+=MUSH_check_shifter
 check_PROGRAMS += MUSH_check_shifter
 MUSH_check_shifter_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
 MUSH_check_shifter_SOURCES =\
-					   plugins/multishifter/tests/unit/multishift/shifter.cpp
+					   plugins/multishifter/tests/unit/multishift/shifter.cpp\
+					   plugins/multishifter/tests/autotools.hh
 
 MUSH_check_shifter_LDADD=\
 					libgtest.la\
@@ -51,7 +55,8 @@ TESTS+=MUSH_check_cleaver
 check_PROGRAMS += MUSH_check_cleaver
 MUSH_check_cleaver_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
 MUSH_check_cleaver_SOURCES =\
-					   plugins/multishifter/tests/unit/multishift/cleaver.cpp
+					   plugins/multishifter/tests/unit/multishift/cleaver.cpp\
+					   plugins/multishifter/tests/autotools.hh
 
 MUSH_check_cleaver_LDADD=\
 					libgtest.la\
@@ -62,7 +67,8 @@ TESTS+=MUSH_check_fourier
 check_PROGRAMS += MUSH_check_fourier
 MUSH_check_fourier_CPPFLAGS= $(AM_CPPFLAGS) -I$(srcdir)/plugins/multishifter/lib/
 MUSH_check_fourier_SOURCES =\
-					   plugins/multishifter/tests/unit/multishift/fourier.cpp
+					   plugins/multishifter/tests/unit/multishift/fourier.cpp\
+					   plugins/multishifter/tests/autotools.hh
 
 MUSH_check_fourier_LDADD=\
 					libgtest.la\

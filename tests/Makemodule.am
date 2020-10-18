@@ -1,2 +1,5 @@
 include plugins/multishifter/tests/unit/Makemodule.am
 include plugins/multishifter/tests/regress/Makemodule.am
+
+EXTRA_DIST += plugins/multishifter/tests/input_files
+EXTRA_DIST += plugins/multishifter/tests/regress

@@ -8,7 +8,8 @@ libmultishift_la_SOURCES=\
 				   plugins/multishifter/lib/multishift/shifter.hpp\
 				   plugins/multishifter/lib/multishift/shifter.cxx\
 				   plugins/multishifter/lib/multishift/fourier.hpp\
-				   plugins/multishifter/lib/multishift/fourier.cxx
+				   plugins/multishifter/lib/multishift/fourier.cxx\
+				   plugins/multishifter/lib/multishift/definitions.hpp
 
 
 libmultishift_la_LIBADD=\
