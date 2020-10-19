@@ -3,6 +3,7 @@
 For a tutorial on the features and workflow see the official [pages](https://goirijo.github.io/multishifter).
 
 This work is a product of the [Van der Ven research group](https://labs.materials.ucsb.edu/vanderven/anton/) at the UCSB Materials department.
+The repository is written and maintained by me, John Goiri.
 
 # Citing
 If this software helped your research please cite this repository and the following paper in addition to the papers listed in the [casm](https://github.com/prisms-center/CASMcode) repository.
@@ -29,31 +30,20 @@ Head over to the [releases](https://github.com/goirijo/multishifter/releases) pa
 
 Once you've downloaded it, unpack it and run
 
-    ./configure
-    make
-    make install
+```bash
+./configure
+make
+make install
+```
     
 The build involves compiling some relatively heavy libraries, so it may take a few minutes to finish. You can speed up the build running `make -j4`, which will parallize the compilation on 4 processors.
 Don't forget to specify a compiler with c++17 support if it's no the default on your system!
-
-## Installing from git repository
-Installing from the repository requires that you already have the [casm-utilities](https://github.com/goirijo/casm-utilities) libraries installed.
-Once it's installed on your system, you can install `multishifter` using
-
-    bash bootstrap.sh
-    ./configure
-    make
-    make install
-    
-The `bootstrap.sh` script introduces additional dependencies, as it uses autotools to create the `configure` file. In order for this to work you'll need to have the following installed:
-
-- autoconf
-- automake
-- libtool
-- autoconf-archive
+You can specify any compiler flags you want during the `configure` step as well.
 
 ## Installing as a casm-utilities plugin
-Documentation on the [casm-utilities](https://github.com/goirijo/casm-utilities) repository explains how to install plugins.
+Documentation on the [`casm-utilities`](https://github.com/goirijo/casm-utilities) repository explains how to install plugins.
+You'll have to clone the `casm-utilities` repository, and then this repository under the `plugins` directory.
+Once this is done, compiling `casm-utilities` will also insall `multishifter`.
 
 # Acknowledgements
 Initial development of this software package was possible thanks to the financial support from NSF DMREF program under grant DMR-1534264.
