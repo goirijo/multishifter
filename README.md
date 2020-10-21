@@ -20,7 +20,7 @@ The [paper](link/to/paper) outlines how the algorithms of `multishifter` operate
 If you like this repository, consider giving me a star!
 
 # Prerequisites
-`multishift` is written on top of [casm-utilities](https://github.com/goirijo/casm-utilities), which requires a c++ compiler with c++17 support (`g++-8` recommended).
+`multishift` is written on top of [casm-utilities](https://github.com/goirijo/casm-utilities), which requires a c++ compiler with c++17 support (`g++-9` recommended).
 
 # Installation
 You can install `multishift` by compiling from a tarball or zipball, you can install it from the git repository, or you can install it as a [casm-utilities](https://github.com/goirijo/casm-utilities) plugin.
