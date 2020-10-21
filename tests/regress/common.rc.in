@@ -5,9 +5,11 @@ multishift()
 
 check_target()
 {
+    comparator=@abs_top_builddir@/MUSH_compare_pos
+
     expected="../out/$1"
     echo "Compare $1 and ${expected}..."
-    if ! cmp -s "$1" "${expected}"; then
+    if ! ${comparator} "$1" "${expected}"; then
         echo "$1 mismatch"
         exit 1
     fi

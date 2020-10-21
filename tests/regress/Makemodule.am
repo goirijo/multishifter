@@ -2,3 +2,8 @@ TESTS += plugins/multishifter/tests/regress/slice/run.sh
 TESTS += plugins/multishifter/tests/regress/stack/run.sh
 TESTS += plugins/multishifter/tests/regress/translate/run.sh
 TESTS += plugins/multishifter/tests/regress/mutate/run.sh
+
+noinst_PROGRAMS += MUSH_compare_pos
+
+MUSH_compare_pos_SOURCES = plugins/multishifter/tests/regress/compare_pos.cpp
+MUSH_compare_pos_LDADD = libcasmutils.la
