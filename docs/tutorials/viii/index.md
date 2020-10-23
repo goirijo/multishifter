@@ -180,7 +180,7 @@ Each directory describes the number of moirons in the unit cells of the layers, 
 ## Swapping Brillouin zones
 The Moir&#233; lattice is constructed by applying mapping operations in reciprocal space.
 Because we are dealing with two structures (aligned and rotated), two Brillouin spaces emerge that we can use to determine the Moir&#233; lattice vectors.
-For a slab lattice with column vectors $$\mathbf{A}$$, $$\mathbf{B}$$, $$\mathbf{A}$$, we define the lattice and its reciprocal as
+For a slab lattice with column vectors $$\mathbf{A}$$, $$\mathbf{B}$$, $$\mathbf{C}$$, we define the lattice and its reciprocal as
 
 $$
 \begin{equation}
