@@ -23,9 +23,9 @@ If you like this repository, consider giving me a star!
 `multishift` is written on top of [casm-utilities](https://github.com/goirijo/casm-utilities), which requires a c++ compiler with c++17 support (`g++-9` recommended).
 
 # Installation
-You can install `multishift` by compiling from a tarball or zipball, you can install it from the git repository, or you can install it as a [casm-utilities](https://github.com/goirijo/casm-utilities) plugin.
+You can install `multishift` by compiling from a tarball or zipball, or you can install it as a [casm-utilities](https://github.com/goirijo/casm-utilities) plugin.
 
-## Installing from tarball or zipball (recommended)
+## Installing from tarball or zipball
 Head over to the [releases](https://github.com/goirijo/multishifter/releases) page and download the `tar.gz` or `zip` file of the latest version (*not* the "Source code" files, you want the attachment with the extension in the name).
 
 Once you've downloaded it, unpack it and run
