@@ -73,7 +73,7 @@ The individual structures and the stacked one are shown below.
 <br>
 You don't have to stack the layers as they are.
 You can always translate the basis, or mutate them (e.g. change the interlayer distance) with the appropriate commands covered in other tutorials.
-If you want to apply the twist at a particular coordinate in the slab, you can also translate the basis to bring that coordinate to the origin.
+If you want to apply the twist at a particular coordinate in the slab, you can translate the basis to bring that coordinate to the origin before you apply the twist.
 <br>
 </div>
 <div>
@@ -113,7 +113,7 @@ We've already seen that it's sometimes it's necessary to construct layer structu
 Generally speaking, the Moir&#233; lattice is *not* periodic, and so a deformation is introduced to to squeeze the layers into a truly periodic Moir&#233; lattice.
 What was a non special angle for the original slab, becomes a special angle after applying a slight deformation.
 These strained slabs are what the "tile" files are (`top_tile.vasp`, `bottom_tile.vasp`).
-The are are the primitive units of the individual twisted layers, and are related to each other by a rigid rotation.
+They are are the primitive units of the individual twisted layers, and are related to each other by a rigid rotation.
 
 When constructing supercells of the Moir&#233; lattice, what is considered a better supercell is determined by the amount that the original slab must be deformed to fit into it.
 For the case above, a particular size 3 supercell results in virtually zero deformation, and so that is the one that gets selected.

@@ -23,7 +23,7 @@ There are 5 entries at the top level:
 * equivalents
 
 ### "cleavages" and "grid"
-These are simply the parameters when you called the relevant `multishift` command.
+These are simply the parameters you specified when you called the relevant `multishift` command.
 For `cleave` and `shift`, you will notice that default values have been inserted.
 Indeed, these two commands are actually just `multishift chain` in disguise.
 The directory layout will change slightly, but using `cleave` is equivalent to using `chain` with a $$1\times 1$$ grid, and using `shift` is like using `chain` with a single null cleavage value.
@@ -33,14 +33,14 @@ You should recognize their values from the values you passed to the command line
 
 ### "shift_units"
 When shifting structures, the $$ab$$ glide plane is divided into a regular grid.
-The two vectors in this entry are integer divisions of the $$a$$ and $$b$$ vectors, determined by the grid values.
+The two vectors in this entry are integer divisions of the slab $$a$$ and $$b$$ vectors, determined by the grid values.
 These vectors are 2-dimensional, and can be used to get the Cartesian representation of each grid point.
 
 ### "ids"
 Each generated slab is assigned a unique ID in the form of "a:b:cleave".
 "a" and "b" are always integers, and describe the position of the structure in the grid.
 You can get the Cartesian position on the grid by multiplying "a" and "b" with the shift units.
-The "cleave" values is the spacing added (or removed, if negative) between the slab images.
+The "cleave" value is the spacing added (or removed, if negative) between the slab images.
 For example, the ID "0:4:5.000000" indicates that the slab has been shifted purely along the $$b$$ vector by 4 grid points, and has had $$5\\A$$ of vacuum inserted between the periodic images.
 
 Eeach entry in the "ids" section uses one of these IDs as a key, and provides information about the slab structure:
@@ -54,7 +54,7 @@ Eeach entry in the "ids" section uses one of these IDs as a key, and provides in
 ### "equivalents"
 When shifting structures, groups of shifts often result in symmetrically equivalent structures getting generated.
 The orbits of the structures are listed here, with each entry containing all the structures that are symmetrically equivalent to each other.
-The more you can shrink the number of orbits by proper grid selection, the DFT fewer calculations you'll have to do.
+The more you can shrink the number of orbits by proper grid selection, the fewer DFT calculations you'll have to do.
 
 ## `twist`
 In the twist reports, there are 4 entries at the top level:
@@ -83,13 +83,13 @@ We'll start with the entries that are not related to the deformation:
 * tile: path the VASP fromatted structure of the adjusted slab. A multiple of the tile is used to construct the final layer. For special angles, the tiles are either identical to the slab, or rigidly rotated by the twist angle.
 
 #### Deformation adjustment metrics
-When the Moir&#233; supercell is not perfectly coincident with the input (aligned) slab and the rotated slab, a deformation is applied to make commensurate with each other.
+When the Moir&#233; supercell is not perfectly coincident with the input (aligned) slab and the rotated slab, a deformation is applied to make the top and bottom layers commensurate with each other.
 This deformation is referred to as $$\mathbf{F}$$.
 
-The deformation gradient $$\mathbf{F}$$ can be factored into a product of a symmetric stretch matrix $$\mathbf{U}$$ and a rotation matrix $$\mathbf{R}$$ according to $$\mathbf{F}=\mathbf{R}\mathbf{U}$$
-The stretch matrix $$\mathbf{U}$$ describes the deformation of the crystal, while the rotation matrix $$\mathbf{R}$$ in this situation corresponds to a rotation around lattice vectors $$\mathbf{A}\times \mathbf{B}$$
+The deformation gradient $$\mathbf{F}$$ can be factored into a product of a symmetric stretch matrix $$\mathbf{U}$$ and a rotation matrix $$\mathbf{R}$$ according to $$\mathbf{F}=\mathbf{R}\mathbf{U}$$.
+The stretch matrix $$\mathbf{U}$$ describes the deformation of the crystal, while the rotation matrix $$\mathbf{R}$$ in this situation corresponds to a rotation around the axis $$\mathbf{A}\times \mathbf{B}$$
 
-A single rotation can be easily extracted from $$\mathbf{R}$$, because slabs will always get [realigned](../i/), and the rotation will be purely about the $$z$$-axis.
+A single rotation angle can be easily extracted from $$\mathbf{R}$$, because slabs will always get [realigned](../i/), and the rotation will be purely about the $$z$$-axis.
 To analyze the strain, we use the Biot strain defined as $$\mathbf{E}=\mathbf{U}-\mathbf{I}$$ where $$\mathbf{I}$$ is the identity matrix.
 The strain is restricted to the two-dimensional space parallel to the $$xy$$ twist plane.
 Convenient metrics of two-dimensional strain are
