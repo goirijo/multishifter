@@ -10,11 +10,18 @@ The repository is written and maintained by me, John Goiri.
 If this software helped your research please cite this repository and the following paper in addition to the papers listed in the [casm](https://github.com/prisms-center/CASMcode) repository.
 
 ```
-__CITATION GOES HERE__
+Goiri, Jon Gabriel, and Anton Van der Ven. "MultiShifter: software to generate structural models of extended two-dimensional defects in 3D and 2D crystals." arXiv preprint arXiv:2011.10734 (2020).
 ```
 
 ```bibtex
-__BIBTEX GOES HERE__
+@misc{goiri2020multishifter,
+      title={MultiShifter: software to generate structural models of extended two-dimensional defects in 3D and 2D crystals}, 
+      author={Jon Gabriel Goiri and Anton Van der Ven},
+      year={2020},
+      eprint={2011.10734},
+      archivePrefix={arXiv},
+      primaryClass={cond-mat.mtrl-sci}
+}
 ```
 
 The [paper](link/to/paper) outlines how the algorithms of `multishifter` operate, and applies them to metallic systems.
