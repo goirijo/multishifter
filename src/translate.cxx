@@ -68,11 +68,13 @@ void run_subcommand_translate(const mush::fs::path& input_path,
     if(frac)
     {
         frac_shift=shift;
-        Eigen::Vector3d shift=mush::cu::xtal::fractional_to_cartesian(shift,struc.lattice());
+        auto shift_coord=mush::cu::xtal::fractional_to_cartesian(shift,struc.lattice());
+        shift=shift_coord;
     }
     else
     {
-        frac_shift=mush::cu::xtal::cartesian_to_fractional(shift,struc.lattice());
+        auto shift_coord=shift;
+        frac_shift=mush::cu::xtal::cartesian_to_fractional(shift_coord, struc.lattice());
     }
 
 
