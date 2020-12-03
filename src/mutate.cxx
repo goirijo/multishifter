@@ -32,18 +32,18 @@ void run_subcommand_mutate(const mush::fs::path& input_path, const mush::fs::pat
     auto struc=mush::cu::xtal::Structure::from_poscar(input_path);
 
     Eigen::Vector3d vec_cart(mutation[0],mutation[1],mutation[2]);
-    Eigen::Vector3d vec_frac=mush::cu::xtal::Coordinate::from_fractional(vec_cart,struc.lattice()).cart();
+    Eigen::Vector3d vec_frac=mush::cu::xtal::fractional_to_cartesian(vec_cart,struc.lattice());
 
     if(frac)
     {
         vec_frac=Eigen::Vector3d(mutation[0],mutation[1],mutation[2]);
-        vec_cart=mush::cu::xtal::Coordinate::from_fractional(vec_frac,struc.lattice()).cart();
+        vec_cart=mush::cu::xtal::fractional_to_cartesian(vec_frac,struc.lattice());
     }
 
     else
     {
         vec_cart=Eigen::Vector3d(mutation[0],mutation[1],mutation[2]);
-        vec_frac=mush::cu::xtal::Coordinate(vec_cart).frac(struc.lattice());
+        vec_frac=mush::cu::xtal::cartesian_to_fractional(vec_cart, struc.lattice());
     }
 
     log << "Mutate c-vector by "<<vec_cart.transpose()<<" (Cartesian) or "<<vec_frac.transpose()<<" (fractional)...\n";
