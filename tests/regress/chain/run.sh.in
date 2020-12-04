@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source @abs_top_builddir@/plugins/multishifter/tests/regress/common.rc
+prepare_root chain
+
+chain_dir=licoo2-5
+multishift chain -i licoo2_stack5.vasp -o ${chain_dir} -c -0.04 0.0 0.1 0.5 1.0 -s 6 8
+
+for target in $(find ${chain_dir} -name POSCAR); do
+    check_target ${target}
+done

@@ -2,6 +2,7 @@ TESTS += plugins/multishifter/tests/regress/slice/run.sh
 TESTS += plugins/multishifter/tests/regress/stack/run.sh
 TESTS += plugins/multishifter/tests/regress/translate/run.sh
 TESTS += plugins/multishifter/tests/regress/mutate/run.sh
+TESTS += plugins/multishifter/tests/regress/chain/run.sh
 
 noinst_PROGRAMS += MUSH_compare_pos
 
