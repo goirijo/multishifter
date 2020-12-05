@@ -151,3 +151,8 @@ Each tutorial focuses on one or two of the available tools, and build on each ot
 [Tutorial VIII: Do the twist](./tutorials/viii)<br/>
 [Tutorial IX: What's in a record.json?](./tutorials/ix)<br/>
 
+# Acknowledgements
+Initial development of this software package was possible thanks to the financial support from NSF DMREF program under grant DMR-1534264.
+Subsequent development was made possible by additional grants.
+The scientific work was supported by the National Science Foundation DMREF grant: DMR-1729166 “DMREF/GOALI: Integrated ComputationalFramework for Designing Dynamically Controlled Alloy-Oxide Heterostructures”.
+Software development was supported by the National Science Foundation, Grant No. OAC-1642433.
