@@ -58,5 +58,3 @@ Initial development of this software package was possible thanks to the financia
 Subsequent development was made possible by additional grants.
 The scientific work was supported by the National Science Foundation DMREF grant: DMR-1729166 “DMREF/GOALI: Integrated ComputationalFramework for Designing Dynamically Controlled Alloy-Oxide Heterostructures”.
 Software development was supported by the National Science Foundation, Grant No. OAC-1642433.
-Computational resources provided by the National Energy Research Scientific Computing Center (NERSC), supported by the Office of Science and US Department of Energy under Contract No. DE-AC02-05CH11231, are gratefully acknowledged, in addition to support from the Center for Scientific Computing from the CNSI, MRL, and NSF MRSEC (No. DMR-1720256).
-
